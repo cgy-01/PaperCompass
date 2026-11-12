@@ -1,0 +1,35 @@
+name: "机器学习基础"
+description: "学习理论、优化、表示学习、图学习、因果推断与通用机器学习方法"
+
+feeds:
+  - "arxiv-cs-lg"
+  - "arxiv-cs-ai"
+
+filter:
+  pattern: '\b(machine learning|deep learning|learning theory|statistical learning|representation learning|self[- ]supervised learning|semi[- ]supervised learning|supervised learning|unsupervised learning|meta[- ]learning|few[- ]shot learning|continual learning|federated learning|transfer learning|domain adaptation|graph neural networks?|graph learning|geometric deep learning|causal (?:inference|discovery|learning)|bayesian (?:learning|inference|optimization)|kernel methods?|generalization (?:bound|theory)|optimization (?:algorithm|method|theory)|gradient (?:descent|method|optimization)|classification|clustering|regression|time[- ]series (?:forecasting|analysis)|neural network theory)\b'
+  min_matches: 1
+  fields: ["title", "summary"]
+
+ranking:
+  query: >
+    machine learning foundations, optimization, representation learning, graph learning, causal inference, generalization
+  negative_queries: [erratum, correction, corrigendum, editorial, withdrawn]
+  preferred_authors: []
+  priority_author_boost: 0.0
+  model: "all-MiniLM-L6-v2"
+
+abstract_fetch:
+  enabled: true
+  rank_threshold: 0.42
+
+paperqa:
+  download_rank_threshold: 0.62
+  rps: 0.3
+  max_retries: 3
+  llm: "gpt-5.2"
+  summary_llm: "gpt-5.2"
+
+output:
+  filename: "results_ml_foundations.html"
+  filename_ranked: "results_ml_foundations_ranked.html"
+  archive: true

@@ -1,0 +1,40 @@
+name: "AI Agent"
+description: "智能体的规划、记忆、工具调用、多智能体协作与计算机操作"
+
+feeds:
+  - "arxiv-cs-ai"
+  - "arxiv-cs-cl"
+  - "arxiv-cs-ma"
+  - "arxiv-cs-ro"
+  - "arxiv-cs-lg"
+
+filter:
+  pattern: '\b(AI agent|LLM agent|language agent|autonomous agent|agentic|multi[- ]agent|tool use|tool calling|function calling|computer use|web agent|embodied agent|agent memory|agent planning)\b'
+  fields: ["title", "summary"]
+
+ranking:
+  query: >
+    AI agents, autonomous language agents, tool use, planning, memory, multi-agent collaboration, computer use
+  negative_queries: [erratum, correction, corrigendum, editorial, withdrawn]
+  preferred_authors: []
+  priority_author_boost: 0.0
+  model: "all-MiniLM-L6-v2"
+
+abstract_fetch:
+  enabled: true
+  rank_threshold: 0.42
+
+paperqa:
+  download_rank_threshold: 0.62
+  rps: 0.3
+  max_retries: 3
+  llm: "gpt-5.2"
+  summary_llm: "gpt-5.2"
+  prompt: |
+    Summarize the paper for an AI researcher. Return only valid JSON with
+    summary, methods, evidence, limitations, and why_it_matters fields.
+
+output:
+  filename: "results_agents.html"
+  filename_ranked: "results_agents_ranked.html"
+  archive: true

@@ -1,0 +1,8 @@
+{
+  "name": "paper-compass-ui",
+  "private": true,
+  "description": "Frontend icon assets for the Paper Compass local dashboard",
+  "dependencies": {
+    "lucide": "^0.544.0"
+  }
+}

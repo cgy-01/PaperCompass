@@ -1,0 +1,41 @@
+name: "AI Infra"
+description: "大模型训练与推理系统、Serving、调度、通信、存储和 AI 硬件"
+
+feeds:
+  - "arxiv-cs-dc"
+  - "arxiv-cs-pf"
+  - "arxiv-cs-ar"
+  - "arxiv-cs-os"
+  - "arxiv-cs-lg"
+  - "arxiv-cs-ai"
+
+filter:
+  pattern: '\b(AI infrastructure|ML system|machine learning system|LLM serving|model serving|inference system|training system|distributed training|parallel training|tensor parallel|pipeline parallel|data parallel|GPU cluster|accelerator|throughput|latency|KV cache|memory management|inference engine|scheduler|scheduling|communication optimization)\b'
+  fields: ["title", "summary"]
+
+ranking:
+  query: >
+    AI infrastructure, distributed model training, LLM inference and serving, GPU systems, scheduling, KV cache, efficient communication
+  negative_queries: [erratum, correction, corrigendum, editorial, withdrawn]
+  preferred_authors: []
+  priority_author_boost: 0.0
+  model: "all-MiniLM-L6-v2"
+
+abstract_fetch:
+  enabled: true
+  rank_threshold: 0.42
+
+paperqa:
+  download_rank_threshold: 0.62
+  rps: 0.3
+  max_retries: 3
+  llm: "gpt-5.2"
+  summary_llm: "gpt-5.2"
+  prompt: |
+    Summarize the paper for an AI researcher. Return only valid JSON with
+    summary, methods, evidence, limitations, and why_it_matters fields.
+
+output:
+  filename: "results_ai_infra.html"
+  filename_ranked: "results_ai_infra_ranked.html"
+  archive: true

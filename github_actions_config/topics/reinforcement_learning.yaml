@@ -1,0 +1,40 @@
+name: "强化学习与决策"
+description: "强化学习、离线强化学习、规划、控制、博弈与奖励建模"
+
+feeds:
+  - "arxiv-cs-lg"
+  - "arxiv-cs-ai"
+  - "arxiv-cs-ro"
+  - "arxiv-cs-ma"
+  - "arxiv-cs-sy"
+
+filter:
+  pattern: '\b(reinforcement learning|offline RL|online RL|multi[- ]agent reinforcement|policy optimization|actor[- ]critic|Markov decision|reward learning|model[- ]based RL|decision making|bandit|planning|optimal control)\b'
+  fields: ["title", "summary"]
+
+ranking:
+  query: >
+    reinforcement learning, offline RL, decision making, planning, control, reward learning and multi-agent learning
+  negative_queries: [erratum, correction, corrigendum, editorial, withdrawn]
+  preferred_authors: []
+  priority_author_boost: 0.0
+  model: "all-MiniLM-L6-v2"
+
+abstract_fetch:
+  enabled: true
+  rank_threshold: 0.42
+
+paperqa:
+  download_rank_threshold: 0.62
+  rps: 0.3
+  max_retries: 3
+  llm: "gpt-5.2"
+  summary_llm: "gpt-5.2"
+  prompt: |
+    Summarize the paper for an AI researcher. Return only valid JSON with
+    summary, methods, evidence, limitations, and why_it_matters fields.
+
+output:
+  filename: "results_reinforcement_learning.html"
+  filename_ranked: "results_reinforcement_learning_ranked.html"
+  archive: true

@@ -1,0 +1,40 @@
+name: "多模态与生成模型"
+description: "视觉语言模型以及图像、视频、音频和三维内容生成"
+
+feeds:
+  - "arxiv-cs-cv"
+  - "arxiv-cs-mm"
+  - "arxiv-cs-cl"
+  - "arxiv-cs-ai"
+  - "arxiv-cs-sd"
+
+filter:
+  pattern: '\b(multimodal|vision[- ]language|VLM|text[- ]to[- ]image|text[- ]to[- ]video|image generation|video generation|audio generation|speech generation|diffusion model|flow matching|generative model|visual generation|3D generation)\b'
+  fields: ["title", "summary"]
+
+ranking:
+  query: >
+    multimodal foundation models, vision-language models, image video audio generation, diffusion models, flow matching
+  negative_queries: [erratum, correction, corrigendum, editorial, withdrawn]
+  preferred_authors: []
+  priority_author_boost: 0.0
+  model: "all-MiniLM-L6-v2"
+
+abstract_fetch:
+  enabled: true
+  rank_threshold: 0.42
+
+paperqa:
+  download_rank_threshold: 0.62
+  rps: 0.3
+  max_retries: 3
+  llm: "gpt-5.2"
+  summary_llm: "gpt-5.2"
+  prompt: |
+    Summarize the paper for an AI researcher. Return only valid JSON with
+    summary, methods, evidence, limitations, and why_it_matters fields.
+
+output:
+  filename: "results_multimodal_generative.html"
+  filename_ranked: "results_multimodal_generative_ranked.html"
+  archive: true

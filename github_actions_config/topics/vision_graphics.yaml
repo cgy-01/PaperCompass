@@ -1,0 +1,36 @@
+name: "视觉与图形"
+description: "传统计算机视觉、图像视频理解、三维视觉、图形学与视觉计算"
+
+feeds:
+  - "arxiv-cs-cv"
+  - "arxiv-cs-gr"
+  - "arxiv-cs-mm"
+
+filter:
+  pattern: '\b(computer vision|visual recognition|image (?:classification|segmentation|restoration|matching|retrieval|compression|processing)|video (?:understanding|recognition|segmentation|tracking|compression|processing)|object (?:detection|recognition|tracking)|semantic segmentation|instance segmentation|panoptic segmentation|3D vision|3D reconstruction|point clouds?|neural rendering|computer graphics|scene understanding|scene reconstruction|depth estimation|pose estimation|optical flow|camera calibration|gaussian splatting|neural radiance fields?|NeRF)\b'
+  min_matches: 1
+  fields: ["title", "summary"]
+
+ranking:
+  query: >
+    computer vision, image and video understanding, 3D vision, neural rendering, computer graphics
+  negative_queries: [erratum, correction, corrigendum, editorial, withdrawn]
+  preferred_authors: []
+  priority_author_boost: 0.0
+  model: "all-MiniLM-L6-v2"
+
+abstract_fetch:
+  enabled: true
+  rank_threshold: 0.42
+
+paperqa:
+  download_rank_threshold: 0.62
+  rps: 0.3
+  max_retries: 3
+  llm: "gpt-5.2"
+  summary_llm: "gpt-5.2"
+
+output:
+  filename: "results_vision_graphics.html"
+  filename_ranked: "results_vision_graphics_ranked.html"
+  archive: true

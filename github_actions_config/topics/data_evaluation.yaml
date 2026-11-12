@@ -1,0 +1,42 @@
+name: "数据与评测"
+description: "数据集、合成数据、数据治理、Benchmark、评估方法与污染检测"
+
+feeds:
+  - "arxiv-cs-lg"
+  - "arxiv-cs-ai"
+  - "arxiv-cs-cl"
+  - "arxiv-cs-cv"
+  - "arxiv-cs-dl"
+  - "arxiv-cs-db"
+
+filter:
+  pattern: '\b(dataset (?:construction|creation|curation|collection|release|documentation|governance|quality|filtering|selection|deduplication|distillation|condensation)|data (?:curation|collection|quality|governance|contamination|attribution|filtering|selection|deduplication|valuation|synthesis|augmentation)|synthetic data generation|training data (?:selection|filtering|mixture|attribution|quality)|benchmark (?:construction|creation|design|suite)|evaluation (?:framework|methodology|protocol|metric design)|data-centric (?:AI|machine learning))\b|\b(?:introduce|present|release|construct|create|curate|collect|build)(?:\s+\w+){0,6}\s+(?:dataset|benchmark)\b'
+  min_matches: 2
+  fields: ["title", "summary"]
+
+ranking:
+  query: >
+    AI datasets, benchmarks, evaluation methodology, synthetic data, data curation, contamination detection
+  negative_queries: [erratum, correction, corrigendum, editorial, withdrawn]
+  preferred_authors: []
+  priority_author_boost: 0.0
+  model: "all-MiniLM-L6-v2"
+
+abstract_fetch:
+  enabled: true
+  rank_threshold: 0.42
+
+paperqa:
+  download_rank_threshold: 0.62
+  rps: 0.3
+  max_retries: 3
+  llm: "gpt-5.2"
+  summary_llm: "gpt-5.2"
+  prompt: |
+    Summarize the paper for an AI researcher. Return only valid JSON with
+    summary, methods, evidence, limitations, and why_it_matters fields.
+
+output:
+  filename: "results_data_evaluation.html"
+  filename_ranked: "results_data_evaluation_ranked.html"
+  archive: true

@@ -1,0 +1,40 @@
+name: "具身智能与机器人"
+description: "具身智能、视觉语言动作模型、机器人学习、世界模型与自动驾驶"
+
+feeds:
+  - "arxiv-cs-ro"
+  - "arxiv-cs-ai"
+  - "arxiv-cs-cv"
+  - "arxiv-cs-sy"
+  - "arxiv-cs-lg"
+
+filter:
+  pattern: '\b(embodied AI|embodied intelligence|robot|robotic|robotics|vision[- ]language[- ]action|VLA|world model|manipulation|locomotion|navigation|autonomous driving|sim[- ]to[- ]real|imitation learning)\b'
+  fields: ["title", "summary"]
+
+ranking:
+  query: >
+    embodied AI, robotics, vision-language-action models, robot learning, world models, manipulation and navigation
+  negative_queries: [erratum, correction, corrigendum, editorial, withdrawn]
+  preferred_authors: []
+  priority_author_boost: 0.0
+  model: "all-MiniLM-L6-v2"
+
+abstract_fetch:
+  enabled: true
+  rank_threshold: 0.42
+
+paperqa:
+  download_rank_threshold: 0.62
+  rps: 0.3
+  max_retries: 3
+  llm: "gpt-5.2"
+  summary_llm: "gpt-5.2"
+  prompt: |
+    Summarize the paper for an AI researcher. Return only valid JSON with
+    summary, methods, evidence, limitations, and why_it_matters fields.
+
+output:
+  filename: "results_embodied_robotics.html"
+  filename_ranked: "results_embodied_robotics_ranked.html"
+  archive: true

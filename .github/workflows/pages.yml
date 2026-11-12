@@ -1,0 +1,377 @@
+name: Build and Deploy HTML
+
+on:
+  workflow_dispatch:
+    inputs:
+      purge_recent:
+        description: "Purge entries from the last day before running the pipeline"
+        required: false
+        default: "false"
+  # to enable scheduled runs, uncomment the following lines
+  # schedule:
+  #   # Run every day at 4 AM UTC
+  #   - cron: '0 5 * * *'
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages-runtime-data
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      PAPER_FIREHOSE_DATA_DIR: ${{ github.workspace }}/.paper_firehose
+      CONFIG_PATH: ${{ github.workspace }}/.paper_firehose/config/config.yaml
+      PURGE_RECENT: ${{ github.event.inputs.purge_recent || 'false' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Cache sentence transformer models
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/huggingface/hub
+          key: huggingface-models-${{ hashFiles('requirements.txt') }}
+          restore-keys: |
+            huggingface-models-
+
+      - name: Initialize data directory
+        run: |
+          set -euo pipefail
+          mkdir -p "$PAPER_FIREHOSE_DATA_DIR"
+
+      - name: Restore runtime databases cache
+        id: cache-runtime-dbs
+        uses: actions/cache@v3
+        with:
+          path: |
+            ${{ env.PAPER_FIREHOSE_DATA_DIR }}/all_feed_entries.db
+            ${{ env.PAPER_FIREHOSE_DATA_DIR }}/matched_entries_history.db
+            ${{ env.PAPER_FIREHOSE_DATA_DIR }}/papers.db
+          key: runtime-dbs-${{ github.run_id }}
+          restore-keys: |
+            runtime-dbs-
+
+      - name: Load databases from release or data branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$PAPER_FIREHOSE_DATA_DIR"
+
+          if ls "$PAPER_FIREHOSE_DATA_DIR"/*.db >/dev/null 2>&1; then
+            echo "✅ Databases restored from cache; skipping fetch"
+            exit 0
+          fi
+
+          # --- Try latest-data release first ---
+          echo "=== Trying latest-data release ==="
+          RELEASE_OK=false
+          if gh release view latest-data --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            mkdir -p /tmp/release-dbs
+            if gh release download latest-data --repo "$GITHUB_REPOSITORY" \
+                 --pattern "*.db.gz" --dir /tmp/release-dbs 2>/dev/null; then
+              for gz in /tmp/release-dbs/*.db.gz; do
+                [ -f "$gz" ] || continue
+                stem="$(basename "$gz" .db.gz)"
+                gunzip -c "$gz" > "$PAPER_FIREHOSE_DATA_DIR/${stem}.db"
+                echo "✅ Restored ${stem}.db from release"
+              done
+              RELEASE_OK=true
+            fi
+            rm -rf /tmp/release-dbs
+          fi
+
+          if [ "$RELEASE_OK" = true ] && ls "$PAPER_FIREHOSE_DATA_DIR"/*.db >/dev/null 2>&1; then
+            echo "✅ All databases restored from release"
+            exit 0
+          fi
+
+          # --- Fall back to data branch ---
+          echo "=== Falling back to data branch ==="
+          if ! git ls-remote --exit-code --heads origin data >/dev/null 2>&1; then
+            echo "ℹ️  data branch not found; starting with empty databases"
+            exit 0
+          fi
+
+          git fetch origin data
+
+          WT="$(mktemp -d)"
+          cleanup() { git worktree remove -f "$WT" >/dev/null 2>&1 || rm -rf "$WT"; }
+          trap cleanup EXIT
+
+          git worktree add --detach "$WT" origin/data
+
+          load_db() {
+            local remote_path="$1"
+            local dest="$2"
+            local label="$3"
+            local source="$WT/${remote_path}"
+            if [ -f "${source}" ]; then
+              cp "${source}" "${dest}"
+              echo "✅ Loaded ${label} from data branch into ${dest}"
+              ls -lh "${dest}"
+            else
+              echo "ℹ️  ${label} not found in data branch; starting fresh"
+              rm -f "${dest}"
+            fi
+          }
+
+          load_db "assets/all_feed_entries.latest.db" "$PAPER_FIREHOSE_DATA_DIR/all_feed_entries.db" "all_feed_entries.db"
+          load_db "assets/matched_entries_history.latest.db" "$PAPER_FIREHOSE_DATA_DIR/matched_entries_history.db" "matched_entries_history.db"
+          load_db "assets/papers.latest.db" "$PAPER_FIREHOSE_DATA_DIR/papers.db" "papers.db"
+
+          echo "=== Database loading complete ==="
+
+      - name: Populate runtime config
+        run: |
+          set -euo pipefail
+
+          CONFIG_SRC="$GITHUB_WORKSPACE/github_actions_config"
+          CONFIG_DEST="$PAPER_FIREHOSE_DATA_DIR/config"
+
+          if [ -d "$CONFIG_SRC" ]; then
+            mkdir -p "$CONFIG_DEST"
+            rsync -a --delete --exclude '.DS_Store' "$CONFIG_SRC"/ "$CONFIG_DEST"/
+            echo "✅ Copied workflow config from $CONFIG_SRC to $CONFIG_DEST"
+          else
+            echo "ℹ️  github_actions_config directory not found; using defaults bundled with the package"
+          fi
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          set -euo pipefail
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -e .[docs]
+
+      - name: Create secret files
+        run: |
+          set -euo pipefail
+          mkdir -p "$PAPER_FIREHOSE_DATA_DIR/config/secrets"
+
+          if [ -n "${{ secrets.SMTP_PASSWORD || '' }}" ]; then
+            printf '%s' "${{ secrets.SMTP_PASSWORD }}" > "$PAPER_FIREHOSE_DATA_DIR/config/secrets/email_password.env"
+            chmod 600 "$PAPER_FIREHOSE_DATA_DIR/config/secrets/email_password.env"
+            echo "✅ Wrote SMTP password file"
+          else
+            echo "ℹ️  SMTP_PASSWORD secret not set; email step may fail"
+          fi
+
+          if [ -n "${{ secrets.MAILING_LISTS_YAML || '' }}" ]; then
+            printf '%s\n' "${{ secrets.MAILING_LISTS_YAML }}" > "$PAPER_FIREHOSE_DATA_DIR/config/secrets/mailing_lists.yaml"
+            chmod 600 "$PAPER_FIREHOSE_DATA_DIR/config/secrets/mailing_lists.yaml"
+            echo "✅ Wrote mailing_lists.yaml from secret"
+          else
+            echo "ℹ️  MAILING_LISTS_YAML secret not set; falling back to default"
+          fi
+
+      - name: Purge recent entries
+        if: ${{ env.PURGE_RECENT == 'true' }}
+        run: |
+          set -euo pipefail
+          echo "=== Purging entries from the last day ==="
+          paper-firehose --config "$CONFIG_PATH" purge --days 1
+          echo "✅ Purge completed"
+
+      - name: Run paper firehose pipeline
+        run: |
+          set -euo pipefail
+
+          echo "=== Starting Paper Firehose pipeline (runtime data dir) ==="
+          echo "Data dir: $PAPER_FIREHOSE_DATA_DIR"
+
+          ls -la "$PAPER_FIREHOSE_DATA_DIR" || true
+
+          paper-firehose --config "$CONFIG_PATH" filter
+          paper-firehose --config "$CONFIG_PATH" rank
+          paper-firehose --config "$CONFIG_PATH" abstracts --mailto "github-actions@paper-firehose.com"
+
+          echo "Step 4: Abstract summarization skipped"
+
+          paper-firehose --config "$CONFIG_PATH" pqa_summary
+          paper-firehose --config "$CONFIG_PATH" email
+
+          paper-firehose --config "$CONFIG_PATH" html
+          paper-firehose --config "$CONFIG_PATH" export-recent --days 60
+
+          echo "✅ Pipeline completed successfully"
+
+          echo "Post-pipeline database state:"
+          ls -lh "$PAPER_FIREHOSE_DATA_DIR"/*.db || true
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+
+      - name: Upload databases as artifact
+        if: ${{ success() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: pipeline-databases
+          retention-days: 90
+          path: |
+            ${{ env.PAPER_FIREHOSE_DATA_DIR }}/all_feed_entries.db
+            ${{ env.PAPER_FIREHOSE_DATA_DIR }}/matched_entries_history.db
+            ${{ env.PAPER_FIREHOSE_DATA_DIR }}/papers.db
+            ${{ env.PAPER_FIREHOSE_DATA_DIR }}/matched_entries_history.recent.db
+
+      - name: Commit small databases to data branch
+        env:
+          DB_CURRENT: ".paper_firehose/papers.db"
+        run: |
+          set -euo pipefail
+
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin --prune
+
+          if ! git ls-remote --exit-code --heads origin data >/dev/null 2>&1; then
+            git branch -f data HEAD
+            git push -u origin data || true
+          fi
+
+          WT=/tmp/data-wt
+          mkdir -p "$WT"
+          git worktree add -B data "$WT" origin/data
+          cleanup() { git worktree remove -f "$WT" || true; }
+          trap cleanup EXIT
+
+          pushd "$WT" >/dev/null
+            mkdir -p assets
+            TS="$(date -u +%Y%m%dT%H%M%SZ)"
+
+            # papers.db is small — keep latest + one previous on data branch
+            if [ -f "$GITHUB_WORKSPACE/$DB_CURRENT" ]; then
+              if [ -f "assets/papers.latest.db" ]; then
+                mv "assets/papers.latest.db" "assets/papers.previous.db" || true
+              fi
+              cp "$GITHUB_WORKSPACE/$DB_CURRENT" "assets/papers.latest.db"
+              git add -f "assets/papers.latest.db" "assets/papers.previous.db" 2>/dev/null || true
+            fi
+
+            # recent database for history viewers
+            if [ -f "$GITHUB_WORKSPACE/.paper_firehose/matched_entries_history.recent.db" ]; then
+              cp "$GITHUB_WORKSPACE/.paper_firehose/matched_entries_history.recent.db" "assets/matched_entries_history.recent.db"
+              git add -f "assets/matched_entries_history.recent.db"
+              echo "✅ Updated recent database"
+            fi
+
+            # Clean up legacy LFS-tracked large databases from data branch
+            for legacy in all_feed_entries.latest.db all_feed_entries.previous.db all_feed_entries.previous2.db \
+                          matched_entries_history.latest.db matched_entries_history.previous.db matched_entries_history.previous2.db \
+                          papers.previous2.db; do
+              if [ -f "assets/$legacy" ]; then
+                git rm -f "assets/$legacy" 2>/dev/null || rm -f "assets/$legacy"
+              fi
+            done
+
+            # Remove old snapshot directory if it exists
+            if [ -d "assets/db_history" ]; then
+              git rm -rf "assets/db_history" || rm -rf "assets/db_history"
+            fi
+
+            # Remove .gitattributes LFS config if present
+            if [ -f ".gitattributes" ]; then
+              git rm -f .gitattributes 2>/dev/null || true
+            fi
+
+            if ! git diff --cached --quiet; then
+              git commit -m "Update databases @ ${TS} [skip ci]"
+              git push origin data
+              echo "✅ Databases committed and pushed to data branch"
+            else
+              echo "ℹ️  No changes to commit."
+            fi
+          popd >/dev/null
+
+      - name: Upload databases to weekly release
+        if: ${{ success() && github.event.schedule != '' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+
+          # Only run on Sundays (day 0)
+          if [ "$(date -u +%w)" != "0" ]; then
+            echo "ℹ️  Not Sunday — skipping weekly release upload"
+            exit 0
+          fi
+
+          echo "=== Uploading databases to latest-data release ==="
+
+          # Create release if it doesn't exist
+          if ! gh release view latest-data >/dev/null 2>&1; then
+            gh release create latest-data --title "Latest Database Backup" \
+              --notes "Automatically updated weekly with the latest pipeline databases." \
+              --latest=false
+          fi
+
+          # Compress and upload
+          for db in all_feed_entries matched_entries_history papers; do
+            src="$PAPER_FIREHOSE_DATA_DIR/${db}.db"
+            if [ -f "$src" ]; then
+              gzip -c "$src" > "/tmp/${db}.db.gz"
+              gh release upload latest-data "/tmp/${db}.db.gz" --clobber
+              echo "✅ Uploaded ${db}.db.gz"
+            fi
+          done
+
+          echo "✅ Weekly release upload complete"
+
+      - name: Save runtime databases cache
+        if: ${{ success() }}
+        uses: actions/cache/save@v3
+        with:
+          path: |
+            ${{ env.PAPER_FIREHOSE_DATA_DIR }}/all_feed_entries.db
+            ${{ env.PAPER_FIREHOSE_DATA_DIR }}/matched_entries_history.db
+            ${{ env.PAPER_FIREHOSE_DATA_DIR }}/papers.db
+          key: runtime-dbs-${{ github.run_id }}
+
+      - name: Build documentation
+        run: |
+          set -euo pipefail
+          sphinx-build -b html docs docs/_build/html
+
+      - name: Prepare site
+        run: |
+          set -euo pipefail
+          rm -rf site
+          mkdir -p site
+          if [ -d docs/_build/html ]; then
+            cp -R docs/_build/html/. site/
+          fi
+          if [ -d "$PAPER_FIREHOSE_DATA_DIR/html" ]; then
+            cp "$PAPER_FIREHOSE_DATA_DIR"/html/*.html site/ 2>/dev/null || true
+            cp -r "$PAPER_FIREHOSE_DATA_DIR"/html site/html || true
+          fi
+          cp history_viewer*.html site/ 2>/dev/null || true
+
+          # Copy databases for history viewer
+          cp "$PAPER_FIREHOSE_DATA_DIR/matched_entries_history.db" site/ 2>/dev/null || true
+          cp "$PAPER_FIREHOSE_DATA_DIR/matched_entries_history.recent.db" site/ 2>/dev/null || true
+
+          touch site/.nojekyll
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,0 +1,82 @@
+# Broad discovery topic for all CCF A subject areas.
+# The arXiv feeds provide early discovery; confirmed venue identity should later
+# be enriched through OpenAlex/Crossref rather than inferred from keywords.
+name: "CCF A — All Computer Science Areas"
+description: "Broad pre-publication discovery across all CCF computer-science subject areas"
+
+feeds:
+  - "arxiv-cs-ai"
+  - "arxiv-cs-ar"
+  - "arxiv-cs-cc"
+  - "arxiv-cs-ce"
+  - "arxiv-cs-cg"
+  - "arxiv-cs-cl"
+  - "arxiv-cs-cr"
+  - "arxiv-cs-cv"
+  - "arxiv-cs-cy"
+  - "arxiv-cs-db"
+  - "arxiv-cs-dc"
+  - "arxiv-cs-dl"
+  - "arxiv-cs-dm"
+  - "arxiv-cs-ds"
+  - "arxiv-cs-et"
+  - "arxiv-cs-fl"
+  - "arxiv-cs-gl"
+  - "arxiv-cs-gr"
+  - "arxiv-cs-gt"
+  - "arxiv-cs-hc"
+  - "arxiv-cs-ir"
+  - "arxiv-cs-it"
+  - "arxiv-cs-lg"
+  - "arxiv-cs-lo"
+  - "arxiv-cs-ma"
+  - "arxiv-cs-mm"
+  - "arxiv-cs-ms"
+  - "arxiv-cs-na"
+  - "arxiv-cs-ne"
+  - "arxiv-cs-ni"
+  - "arxiv-cs-oh"
+  - "arxiv-cs-os"
+  - "arxiv-cs-pf"
+  - "arxiv-cs-pl"
+  - "arxiv-cs-ro"
+  - "arxiv-cs-sc"
+  - "arxiv-cs-sd"
+  - "arxiv-cs-se"
+  - "arxiv-cs-si"
+  - "arxiv-cs-sy"
+
+filter:
+  # Keep every entry from the explicitly scoped computer-science feeds.
+  pattern: '(?s).+'
+  fields: ["title", "summary"]
+
+ranking:
+  query: >
+    high-impact original computer science research with strong novelty, rigorous
+    methods, convincing experiments or proofs, reproducible evaluation, and the
+    potential for publication in a CCF A conference or journal
+  negative_queries: [erratum, correction, corrigendum, editorial, withdrawn]
+  preferred_authors: []
+  priority_author_boost: 0.0
+  model: "all-MiniLM-L6-v2"
+
+abstract_fetch:
+  enabled: true
+  rank_threshold: 0.45
+
+paperqa:
+  download_rank_threshold: 0.60
+  rps: 0.3
+  max_retries: 3
+  llm: "gpt-5.2"
+  summary_llm: "gpt-5.2"
+  prompt: |
+    Assess this paper for a researcher targeting CCF A venues.
+    Return ONLY valid JSON: {"summary":"...","methods":"..."}
+    Focus on novelty, technical depth, evidence, limitations, and venue fit.
+
+output:
+  filename: "results_ccf_a_all.html"
+  filename_ranked: "results_ccf_a_all_ranked.html"
+  archive: true

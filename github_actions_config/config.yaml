@@ -1,0 +1,359 @@
+# Main application configuration
+database:
+  path: "papers.db" # resolved under the runtime data directory (defaults to ~/.paper_firehose)
+  all_feeds_path: "all_feed_entries.db" # all RSS entries for deduplication
+  history_path: "matched_entries_history.db" # historical matches across all topics
+
+feeds:
+  cond-mat:
+    name: "arXiv cond-mat"
+    url: "https://rss.arxiv.org/rss/cond-mat"
+    enabled: true
+  nature:
+    name: "Nature"
+    url: "https://www.nature.com/nature.rss"
+    enabled: true
+  science:
+    name: "Science"
+    url: "https://www.science.org/action/showFeed?type=axatoc&feed=rss&jc=science"
+    enabled: true
+  nat-mat:
+    name: "Nature Materials"
+    url: "https://www.nature.com/nmat.rss"
+    enabled: true
+  nat-nanotech:
+    name: "Nature Nanotechnology"
+    url: "https://www.nature.com/nnano.rss"
+    enabled: true
+  nat-phys:
+    name: "Nature Physics"
+    url: "https://www.nature.com/nphys.rss"
+    enabled: true
+  nat-chem:
+    name: "Nature Chemistry"
+    url: "https://www.nature.com/nchem.rss"
+    enabled: true
+  nat-ener:
+    name: "Nature Energy"
+    url: "https://www.nature.com/nenergy.rss"
+    enabled: true
+  nat-catal:
+    name: "Nature Catalysis"
+    url: "https://www.nature.com/natcatal.rss"
+    enabled: true
+  nat-chem-eng:
+    name: "Nature Chemical Engineering"
+    url: "https://www.nature.com/natchemeng.rss"
+    enabled: true
+  nat-rev-phys:
+    name: "Nature Reviews Physics"
+    url: "https://www.nature.com/natrevphys.rss"
+    enabled: true
+  pnas:
+    name: "PNAS"
+    url: "https://www.pnas.org/action/showFeed?type=searchTopic&taxonomyCode=topic&tagCode=phys-sci"
+    enabled: true
+  joule:
+    name: "Joule"
+    url: "https://www.cell.com/joule/inpress.rss"
+    enabled: true
+  prb:
+    name: "Physical Review B"
+    url: "http://feeds.aps.org/rss/recent/prb.xml"
+    enabled: true
+  prl:
+    name: "Physical Review Letters"
+    url: "http://feeds.aps.org/rss/recent/prl.xml"
+    enabled: true
+  prx:
+    name: "Physical Review X"
+    url: "http://feeds.aps.org/rss/recent/prx.xml"
+    enabled: true
+  pr_res:
+    name: "Physical Review Research"
+    url: "http://feeds.aps.org/rss/recent/prresearch.xml"
+    enabled: true
+  nano-lett:
+    name: "Nano Letters"
+    url: "https://pubs.acs.org/action/showFeed?type=axatoc&feed=rss&jc=nalefd"
+    enabled: true
+  acs-nano:
+    name: "ACS Nano"
+    url: "https://pubs.acs.org/action/showFeed?type=axatoc&feed=rss&jc=ancac3"
+    enabled: true
+  acs-en-lett:
+    name: "ACS Energy Letters"
+    url: "https://pubs.acs.org/action/showFeed?type=axatoc&feed=rss&jc=aelccp"
+    enabled: true
+  en-env-sci:
+    name: "Energy & Environmental Science"
+    url: "http://feeds.rsc.org/rss/ee"
+    enabled: true
+  science-adv:
+    name: "Science Advances"
+    url: "https://www.science.org/action/showFeed?type=etoc&feed=rss&jc=sciadv"
+    enabled: true
+  sci-rep:
+    name: "Scientific Reports"
+    url: "http://feeds.nature.com/srep/rss/current"
+    enabled: true
+  nat-comm:
+    name: "Nature Communications"
+    url: "https://www.nature.com/ncomms.rss"
+    enabled: true
+  comm-phys:
+    name: "Communications Physics"
+    url: "https://www.nature.com/commsphys.rss"
+    enabled: true
+  comm-mater:
+    name: "Communications Materials"
+    url: "https://www.nature.com/commsmat.rss"
+    enabled: true
+  scipost:
+    name: "SciPost"
+    url: "https://scipost.org/rss/submissions/"
+    enabled: true
+  small:
+    name: "Small"
+    url: "https://onlinelibrary.wiley.com/feed/16136829/most-recent"
+    enabled: true
+  adv-mater:
+    name: "Advanced Materials"
+    url: "https://onlinelibrary.wiley.com/feed/15214095/most-recent"
+    enabled: true
+  adv-sci:
+    name: "Advanced Science"
+    url: "https://onlinelibrary.wiley.com/feed/21983844/most-recent"
+    enabled: true
+  adv-func-mater:
+    name: "Advanced Functional Materials"
+    url: "https://onlinelibrary.wiley.com/feed/16163028/most-recent"
+    enabled: true
+  adv-phys-res:
+    name: "Advanced Physics Research"
+    url: "https://onlinelibrary.wiley.com/feed/27511200/most-recent"
+    enabled: true
+  national-sci-rev:
+    name: "National Science Review"
+    url: "https://academic.oup.com/rss/site_5332/advanceAccess_3198.xml"
+    enabled: true
+  npj-2d-mater:
+    name: "npj 2D Materials and Applications"
+    url: "https://www.nature.com/npj2dmaterials.rss"
+    enabled: true
+  npj-comp-mater:
+    name: "npj Computational Materials"
+    url: "https://www.nature.com/npjcompumats.rss"
+    enabled: true
+  npj-qmat:
+    name: "npj Quantum Materials"
+    url: "https://www.nature.com/npjquantmats.rss"
+    enabled: true
+
+# Broad computer-science discovery coverage. These arXiv categories provide a
+# stable pre-publication channel for every CCF subject area; venue-specific
+# CCF A ingestion will be layered on top via scholarly metadata APIs.
+  arxiv-cs-ai:
+    name: "arXiv cs.AI — Artificial Intelligence"
+    url: "https://rss.arxiv.org/rss/cs.AI"
+    enabled: true
+  arxiv-cs-ar:
+    name: "arXiv cs.AR — Hardware Architecture"
+    url: "https://rss.arxiv.org/rss/cs.AR"
+    enabled: true
+  arxiv-cs-cc:
+    name: "arXiv cs.CC — Computational Complexity"
+    url: "https://rss.arxiv.org/rss/cs.CC"
+    enabled: true
+  arxiv-cs-ce:
+    name: "arXiv cs.CE — Computational Engineering, Finance, and Science"
+    url: "https://rss.arxiv.org/rss/cs.CE"
+    enabled: true
+  arxiv-cs-cg:
+    name: "arXiv cs.CG — Computational Geometry"
+    url: "https://rss.arxiv.org/rss/cs.CG"
+    enabled: true
+  arxiv-cs-cl:
+    name: "arXiv cs.CL — Computation and Language"
+    url: "https://rss.arxiv.org/rss/cs.CL"
+    enabled: true
+  arxiv-cs-cr:
+    name: "arXiv cs.CR — Cryptography and Security"
+    url: "https://rss.arxiv.org/rss/cs.CR"
+    enabled: true
+  arxiv-cs-cv:
+    name: "arXiv cs.CV — Computer Vision and Pattern Recognition"
+    url: "https://rss.arxiv.org/rss/cs.CV"
+    enabled: true
+  arxiv-cs-cy:
+    name: "arXiv cs.CY — Computers and Society"
+    url: "https://rss.arxiv.org/rss/cs.CY"
+    enabled: true
+  arxiv-cs-db:
+    name: "arXiv cs.DB — Databases"
+    url: "https://rss.arxiv.org/rss/cs.DB"
+    enabled: true
+  arxiv-cs-dc:
+    name: "arXiv cs.DC — Distributed, Parallel, and Cluster Computing"
+    url: "https://rss.arxiv.org/rss/cs.DC"
+    enabled: true
+  arxiv-cs-dl:
+    name: "arXiv cs.DL — Digital Libraries"
+    url: "https://rss.arxiv.org/rss/cs.DL"
+    enabled: true
+  arxiv-cs-dm:
+    name: "arXiv cs.DM — Discrete Mathematics"
+    url: "https://rss.arxiv.org/rss/cs.DM"
+    enabled: true
+  arxiv-cs-ds:
+    name: "arXiv cs.DS — Data Structures and Algorithms"
+    url: "https://rss.arxiv.org/rss/cs.DS"
+    enabled: true
+  arxiv-cs-et:
+    name: "arXiv cs.ET — Emerging Technologies"
+    url: "https://rss.arxiv.org/rss/cs.ET"
+    enabled: true
+  arxiv-cs-fl:
+    name: "arXiv cs.FL — Formal Languages and Automata Theory"
+    url: "https://rss.arxiv.org/rss/cs.FL"
+    enabled: true
+  arxiv-cs-gl:
+    name: "arXiv cs.GL — General Literature"
+    url: "https://rss.arxiv.org/rss/cs.GL"
+    enabled: true
+  arxiv-cs-gr:
+    name: "arXiv cs.GR — Graphics"
+    url: "https://rss.arxiv.org/rss/cs.GR"
+    enabled: true
+  arxiv-cs-gt:
+    name: "arXiv cs.GT — Computer Science and Game Theory"
+    url: "https://rss.arxiv.org/rss/cs.GT"
+    enabled: true
+  arxiv-cs-hc:
+    name: "arXiv cs.HC — Human-Computer Interaction"
+    url: "https://rss.arxiv.org/rss/cs.HC"
+    enabled: true
+  arxiv-cs-ir:
+    name: "arXiv cs.IR — Information Retrieval"
+    url: "https://rss.arxiv.org/rss/cs.IR"
+    enabled: true
+  arxiv-cs-it:
+    name: "arXiv cs.IT — Information Theory"
+    url: "https://rss.arxiv.org/rss/cs.IT"
+    enabled: true
+  arxiv-cs-lg:
+    name: "arXiv cs.LG — Machine Learning"
+    url: "https://rss.arxiv.org/rss/cs.LG"
+    enabled: true
+  arxiv-cs-lo:
+    name: "arXiv cs.LO — Logic in Computer Science"
+    url: "https://rss.arxiv.org/rss/cs.LO"
+    enabled: true
+  arxiv-cs-ma:
+    name: "arXiv cs.MA — Multiagent Systems"
+    url: "https://rss.arxiv.org/rss/cs.MA"
+    enabled: true
+  arxiv-cs-mm:
+    name: "arXiv cs.MM — Multimedia"
+    url: "https://rss.arxiv.org/rss/cs.MM"
+    enabled: true
+  arxiv-cs-ms:
+    name: "arXiv cs.MS — Mathematical Software"
+    url: "https://rss.arxiv.org/rss/cs.MS"
+    enabled: true
+  arxiv-cs-na:
+    name: "arXiv cs.NA — Numerical Analysis"
+    url: "https://rss.arxiv.org/rss/cs.NA"
+    enabled: true
+  arxiv-cs-ne:
+    name: "arXiv cs.NE — Neural and Evolutionary Computing"
+    url: "https://rss.arxiv.org/rss/cs.NE"
+    enabled: true
+  arxiv-cs-ni:
+    name: "arXiv cs.NI — Networking and Internet Architecture"
+    url: "https://rss.arxiv.org/rss/cs.NI"
+    enabled: true
+  arxiv-cs-oh:
+    name: "arXiv cs.OH — Other Computer Science"
+    url: "https://rss.arxiv.org/rss/cs.OH"
+    enabled: true
+  arxiv-cs-os:
+    name: "arXiv cs.OS — Operating Systems"
+    url: "https://rss.arxiv.org/rss/cs.OS"
+    enabled: true
+  arxiv-cs-pf:
+    name: "arXiv cs.PF — Performance"
+    url: "https://rss.arxiv.org/rss/cs.PF"
+    enabled: true
+  arxiv-cs-pl:
+    name: "arXiv cs.PL — Programming Languages"
+    url: "https://rss.arxiv.org/rss/cs.PL"
+    enabled: true
+  arxiv-cs-ro:
+    name: "arXiv cs.RO — Robotics"
+    url: "https://rss.arxiv.org/rss/cs.RO"
+    enabled: true
+  arxiv-cs-sc:
+    name: "arXiv cs.SC — Symbolic Computation"
+    url: "https://rss.arxiv.org/rss/cs.SC"
+    enabled: true
+  arxiv-cs-sd:
+    name: "arXiv cs.SD — Sound"
+    url: "https://rss.arxiv.org/rss/cs.SD"
+    enabled: true
+  arxiv-cs-se:
+    name: "arXiv cs.SE — Software Engineering"
+    url: "https://rss.arxiv.org/rss/cs.SE"
+    enabled: true
+  arxiv-cs-si:
+    name: "arXiv cs.SI — Social and Information Networks"
+    url: "https://rss.arxiv.org/rss/cs.SI"
+    enabled: true
+  arxiv-cs-sy:
+    name: "arXiv cs.SY — Systems and Control"
+    url: "https://rss.arxiv.org/rss/cs.SY"
+    enabled: true
+
+# Priority journals (boosted in ranking)
+priority_journals:
+  - "nature"
+  - "science"
+  - "nat-nanotech"
+  - "nat-mat"
+  - "nat-phys"
+priority_journal_boost: 0.20
+
+# Global defaults
+defaults:
+  # Max age of feed entries to accumulate in all_feed_entries.db (days)
+  time_window_days: 365
+
+  top_n_per_topic: 10
+  # Above this threshold, the abstract is fetched
+  rank_threshold: 0.3
+
+  # Negative ranking penalty (applied when negative_queries match)
+  ranking_negative_penalty: 0.25
+
+  # Abstract fetching settings (Crossref and aggregators)
+  abstracts:
+    # Requests per second throttle (can be overridden by CLI --rps)
+    rps: 1.0
+    # Max retries per item (with exponential backoff and Retry-After)
+    max_retries: 3
+    # Contact email included in UA and as Crossref mailto param
+    mailto: "nemesp@gmail.com"
+
+# Email delivery (Mailman list)
+email:
+  recipients_file: "secrets/mailing_lists.yaml"
+  # Optional subject prefix
+  subject_prefix: "paper firehose"
+  # Sender address; defaults to smtp.username if omitted
+  from: "nemeslab@nemeslab.com"
+  smtp:
+    host: "mail.nemeslab.com"
+    port: 465
+    username: "_mainaccount@nemeslab.com"
+    # Prefer file-based secret storage. Put the password in this file (gitignored by you).
+    password_file: "secrets/email_password.env"

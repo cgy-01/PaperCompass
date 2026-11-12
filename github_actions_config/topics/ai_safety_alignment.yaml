@@ -1,0 +1,40 @@
+name: "AI 安全与对齐"
+description: "模型对齐、安全评估、越狱防御、隐私、鲁棒性与可解释性"
+
+feeds:
+  - "arxiv-cs-cr"
+  - "arxiv-cs-cy"
+  - "arxiv-cs-ai"
+  - "arxiv-cs-lg"
+  - "arxiv-cs-cl"
+
+filter:
+  pattern: '\b(AI safety|alignment|aligned model|jailbreak|red team|red[- ]teaming|prompt injection|guardrail|harmlessness|toxicity|misuse|model honesty|mechanistic interpretability|interpretability|robustness|adversarial attack|privacy|machine unlearning|constitutional AI)\b'
+  fields: ["title", "summary"]
+
+ranking:
+  query: >
+    AI safety and alignment, jailbreak defense, red teaming, robustness, privacy, interpretability, responsible foundation models
+  negative_queries: [erratum, correction, corrigendum, editorial, withdrawn]
+  preferred_authors: []
+  priority_author_boost: 0.0
+  model: "all-MiniLM-L6-v2"
+
+abstract_fetch:
+  enabled: true
+  rank_threshold: 0.42
+
+paperqa:
+  download_rank_threshold: 0.62
+  rps: 0.3
+  max_retries: 3
+  llm: "gpt-5.2"
+  summary_llm: "gpt-5.2"
+  prompt: |
+    Summarize the paper for an AI researcher. Return only valid JSON with
+    summary, methods, evidence, limitations, and why_it_matters fields.
+
+output:
+  filename: "results_ai_safety_alignment.html"
+  filename_ranked: "results_ai_safety_alignment_ranked.html"
+  archive: true

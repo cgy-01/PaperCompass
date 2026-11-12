@@ -1,0 +1,40 @@
+name: "大模型（LLM）"
+description: "大语言模型的架构、预训练、长上下文、检索增强、知识编辑与代码能力"
+
+feeds:
+  - "arxiv-cs-cl"
+  - "arxiv-cs-ai"
+  - "arxiv-cs-lg"
+  - "arxiv-cs-ir"
+
+filter:
+  pattern: '\b(large[- ]language models?|large[- ]scale language models?|LLMs?|large multimodal models?|LMMs?|large vision[- ]language models?|LVLMs?|GPT[- ]?[345](?:\.\d+)?|Llama[- ]?\d*|Qwen(?:2(?:\.5)?|3)?|Mistral|Mixtral|Claude(?:[- ]?\d+)?|Gemini(?:[- ]?\d+(?:\.\d+)?)?|DeepSeek(?:[- ][A-Za-z0-9.]+)?|PaLM[- ]?\d*|ChatGPT)\b'
+  min_matches: 2
+  fields: ["title", "summary"]
+
+ranking:
+  query: >
+    large language models, foundation models, pretraining, long context, retrieval augmented generation, code models, knowledge editing
+  negative_queries: [erratum, correction, corrigendum, editorial, withdrawn]
+  preferred_authors: []
+  priority_author_boost: 0.0
+  model: "all-MiniLM-L6-v2"
+
+abstract_fetch:
+  enabled: true
+  rank_threshold: 0.42
+
+paperqa:
+  download_rank_threshold: 0.62
+  rps: 0.3
+  max_retries: 3
+  llm: "gpt-5.2"
+  summary_llm: "gpt-5.2"
+  prompt: |
+    Summarize the paper for an AI researcher. Return only valid JSON with
+    summary, methods, evidence, limitations, and why_it_matters fields.
+
+output:
+  filename: "results_llm.html"
+  filename_ranked: "results_llm_ranked.html"
+  archive: true

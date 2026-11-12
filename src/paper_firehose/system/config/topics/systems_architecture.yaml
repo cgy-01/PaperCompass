@@ -1,0 +1,39 @@
+name: "系统与计算架构"
+description: "操作系统、分布式系统、网络、存储、数据库、编译器与计算机体系结构"
+
+feeds:
+  - "arxiv-cs-os"
+  - "arxiv-cs-dc"
+  - "arxiv-cs-ni"
+  - "arxiv-cs-ar"
+  - "arxiv-cs-db"
+  - "arxiv-cs-pl"
+
+filter:
+  pattern: '\b(operating systems?|distributed systems?|networked systems?|computer networks?|networking|storage systems?|file systems?|database systems?|database management|query processing|cloud computing|edge computing|datacenter|data center|resource scheduling|job scheduling|parallel computing|high performance computing|HPC|computer architecture|processor architecture|memory hierarchy|memory management|cache (?:system|management|coherence)|compilers?|programming languages?|runtime systems?|virtualization|container orchestration|fault tolerance|consensus protocol)\b'
+  min_matches: 1
+  fields: ["title", "summary"]
+
+ranking:
+  query: >
+    computer systems, distributed systems, networking, storage, databases, compilers, computer architecture
+  negative_queries: [erratum, correction, corrigendum, editorial, withdrawn]
+  preferred_authors: []
+  priority_author_boost: 0.0
+  model: "all-MiniLM-L6-v2"
+
+abstract_fetch:
+  enabled: true
+  rank_threshold: 0.42
+
+paperqa:
+  download_rank_threshold: 0.62
+  rps: 0.3
+  max_retries: 3
+  llm: "gpt-5.2"
+  summary_llm: "gpt-5.2"
+
+output:
+  filename: "results_systems_architecture.html"
+  filename_ranked: "results_systems_architecture_ranked.html"
+  archive: true

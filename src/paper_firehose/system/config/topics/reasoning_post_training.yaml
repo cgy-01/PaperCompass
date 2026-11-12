@@ -1,0 +1,38 @@
+name: "推理与后训练"
+description: "模型推理、测试时计算、RLHF、偏好优化、过程监督与能力蒸馏"
+
+feeds:
+  - "arxiv-cs-ai"
+  - "arxiv-cs-cl"
+  - "arxiv-cs-lg"
+
+filter:
+  pattern: '\b(reasoning|chain[- ]of[- ]thought|test[- ]time compute|test[- ]time scaling|inference[- ]time scaling|post[- ]training|RLHF|RLAIF|DPO|preference optimization|reward model|process supervision|verifier|self[- ]correction|distillation)\b'
+  fields: ["title", "summary"]
+
+ranking:
+  query: >
+    language model reasoning, test-time compute, post-training, preference optimization, RLHF, process supervision, verifiers
+  negative_queries: [erratum, correction, corrigendum, editorial, withdrawn]
+  preferred_authors: []
+  priority_author_boost: 0.0
+  model: "all-MiniLM-L6-v2"
+
+abstract_fetch:
+  enabled: true
+  rank_threshold: 0.42
+
+paperqa:
+  download_rank_threshold: 0.62
+  rps: 0.3
+  max_retries: 3
+  llm: "gpt-5.2"
+  summary_llm: "gpt-5.2"
+  prompt: |
+    Summarize the paper for an AI researcher. Return only valid JSON with
+    summary, methods, evidence, limitations, and why_it_matters fields.
+
+output:
+  filename: "results_reasoning_post_training.html"
+  filename_ranked: "results_reasoning_post_training_ranked.html"
+  archive: true

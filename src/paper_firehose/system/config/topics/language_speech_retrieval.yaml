@@ -1,0 +1,37 @@
+name: "语言、语音与检索"
+description: "传统自然语言处理、计算语言学、语音音频、搜索与信息检索"
+
+feeds:
+  - "arxiv-cs-cl"
+  - "arxiv-cs-ir"
+  - "arxiv-cs-sd"
+  - "arxiv-cs-ai"
+
+filter:
+  pattern: '\b(natural language processing|computational linguistics|language models?|machine translation|text (?:classification|generation|understanding|summarization)|question answering|dialogue systems?|dialog systems?|information retrieval|document retrieval|dense retrieval|semantic search|search engines?|retrieval systems?|named entity recognition|entity linking|relation extraction|sentiment analysis|semantic parsing|syntactic parsing|tokenization|speech recognition|automatic speech recognition|speech processing|speech synthesis|speaker recognition|audio processing|acoustic models?|phonetic|cross[- ]lingual|multilingual NLP)\b'
+  min_matches: 1
+  fields: ["title", "summary"]
+
+ranking:
+  query: >
+    natural language processing, computational linguistics, speech, audio, search, information retrieval
+  negative_queries: [erratum, correction, corrigendum, editorial, withdrawn]
+  preferred_authors: []
+  priority_author_boost: 0.0
+  model: "all-MiniLM-L6-v2"
+
+abstract_fetch:
+  enabled: true
+  rank_threshold: 0.42
+
+paperqa:
+  download_rank_threshold: 0.62
+  rps: 0.3
+  max_retries: 3
+  llm: "gpt-5.2"
+  summary_llm: "gpt-5.2"
+
+output:
+  filename: "results_language_speech_retrieval.html"
+  filename_ranked: "results_language_speech_retrieval_ranked.html"
+  archive: true

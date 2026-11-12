@@ -1,0 +1,40 @@
+name: "AI for Science"
+description: "面向生物医药、材料、物理、气象和科学发现的人工智能"
+
+feeds:
+  - "arxiv-cs-lg"
+  - "arxiv-cs-ai"
+  - "arxiv-cs-ce"
+  - "arxiv-cs-cl"
+  - "arxiv-cs-cv"
+
+filter:
+  pattern: '\b(AI for science|scientific discovery|AI scientist|machine learning for science|protein|drug discovery|molecule|molecular|materials discovery|weather forecasting|climate model|physics[- ]informed|neural operator|computational biology|genomics|medical AI|clinical AI)\b'
+  fields: ["title", "summary"]
+
+ranking:
+  query: >
+    AI for scientific discovery, biology, medicine, molecules, materials, physics, climate, neural operators and AI scientists
+  negative_queries: [erratum, correction, corrigendum, editorial, withdrawn]
+  preferred_authors: []
+  priority_author_boost: 0.0
+  model: "all-MiniLM-L6-v2"
+
+abstract_fetch:
+  enabled: true
+  rank_threshold: 0.42
+
+paperqa:
+  download_rank_threshold: 0.62
+  rps: 0.3
+  max_retries: 3
+  llm: "gpt-5.2"
+  summary_llm: "gpt-5.2"
+  prompt: |
+    Summarize the paper for an AI researcher. Return only valid JSON with
+    summary, methods, evidence, limitations, and why_it_matters fields.
+
+output:
+  filename: "results_ai_for_science.html"
+  filename_ranked: "results_ai_for_science_ranked.html"
+  archive: true
