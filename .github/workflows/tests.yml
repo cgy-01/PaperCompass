@@ -30,4 +30,6 @@ jobs:
           python -m pip install -e '.[dev]'
           npm ci
       - name: Test
-        run: python -m pytest -q
+        run: |
+          python -m pytest -q
+          node --test tests/frontend_routes.mjs

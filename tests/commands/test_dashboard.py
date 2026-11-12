@@ -46,36 +46,17 @@ def test_dashboard_generates_lightweight_api_client(tmp_path, monkeypatch):
     assert "主要主题分布" in html
     assert 'id="sourceDonut"' in html
     assert 'id="yearTrend"' in html
-    assert "function drawYearTrend()" in html
-    assert "近 30 天新增" in html
-    assert "论文信息完整度" in html
-    assert "Agent Systems" not in html
-    assert "Complete Proceedings Paper" not in html
-    assert "Unrelated Journal Paper" not in html
-    assert "sort:'date'" in html
-    assert '<option value="date">按时间：最新优先</option><option value="score">按分数：高分优先</option>' in html
-    assert "api('/api/bootstrap')" in html
-    assert "api('/api/papers?'" in html
-    assert "api('/api/docs')" in html
-    assert "api('/api/docs/'" in html
-    assert "error.status===503" in html
-    assert "正在载入论文索引" in html
-    assert "['docs','使用文档']" in html
-    assert 'data-lucide="book-open-text"' not in html
-    assert "docs:'book-open-text'" in html
-    assert 'id="docsDirectory"' in html
-    assert 'id="docArticle"' in html
-    assert "function openDiscover(filters)" in html
-    assert "openDiscover({source:c.dataset.source,type:c.dataset.sourceType})" in html
-    assert "openDiscover({theme:c.dataset.theme})" in html
-    assert "const themes=topicCatalog.map(t=>t.name).sort()" in html
-    assert "paper-data" not in html
-    assert "检索更新" not in html
-    assert "/api/refresh" not in html
-    assert '<h3>${esc(name)}</h3><p>${esc(p.theme)}</p>' not in html
-    assert '<script src="lucide.min.js"></script>' in html
-    assert 'data-lucide="compass"' in html
-    assert "stroke-width':1.75" in html
-    assert "<svg" not in html
-    assert (tmp_path / "lucide.min.js").is_file()
-    assert output.stat().st_size < 100_000
+    assert 'type="module" src="assets/app.js"' in html
+    assert 'href="assets/styles/app.css"' in html
+    assert 'id="paperDetail"' in html
+    assert 'id="drawer"' not in html
+    assert '<script>' not in html
+    assert 'Complete Proceedings Paper' not in html
+    assert '<option value="date">按时间：最新优先</option>' in html
+    assets = tmp_path / 'assets'
+    assert (assets / 'app.js').is_file()
+    assert (assets / 'pages' / 'paper.js').is_file()
+    assert (assets / 'router.js').is_file()
+    assert (assets / 'styles' / 'app.css').is_file()
+    assert (tmp_path / 'lucide.min.js').is_file()
+    assert output.stat().st_size < 15000

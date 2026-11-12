@@ -18,7 +18,7 @@ from urllib.parse import parse_qs, unquote, urlparse
 import markdown
 
 from .commands import dashboard
-from .query_store import PublishedRepository
+from .query_store import PublishedRepository, present_paper
 from .core.paths import resolve_data_path
 
 
@@ -164,6 +164,12 @@ def _handler(app: LocalApplication):
         def __init__(self, *args: Any, **kwargs: Any):
             super().__init__(*args, directory=str(app.html_dir), **kwargs)
 
+        def end_headers(self) -> None:
+            # Revalidate modules after deployment, including their relative imports.
+            if urlparse(self.path).path.startswith('/assets/'):
+                self.send_header('Cache-Control', 'no-cache')
+            super().end_headers()
+
         def _json(self, value: Any, status: HTTPStatus = HTTPStatus.OK) -> None:
             payload = json.dumps(value, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
             self.send_response(status)
@@ -201,6 +207,56 @@ def _handler(app: LocalApplication):
 
         def do_GET(self) -> None:  # noqa: N802
             parsed = urlparse(self.path)
+            if parsed.path.startswith('/api/v1/'):
+                repository = self._paper_repository()
+                if repository is None:
+                    return
+                try:
+                    if not repository.path.is_file():
+                        repository = PublishedRepository()
+                    params = parse_qs(parsed.query)
+                    version = params.pop('version', [''])[0]
+                    if version:
+                        if not re.fullmatch(r'[a-f0-9]{32}', version):
+                            self._json({'error': 'invalid data version'}, HTTPStatus.BAD_REQUEST)
+                            return
+                        path = repository.path.parent / ('query-' + version + '.db')
+                        if not path.is_file():
+                            self._json({'error': 'data version expired; reload the list'}, HTTPStatus.CONFLICT)
+                            return
+                        if path != repository.path:
+                            repository = PublishedRepository(path)
+                    data_version = repository.path.stem.removeprefix('query-')
+                    if parsed.path == '/api/v1/bootstrap':
+                        data = repository.bootstrap()
+                        data = {**data, 'overview': {**data['overview'], 'latest': [
+                            present_paper(p, compact=True) for p in data['overview']['latest']]},
+                            'dataVersion': data_version}
+                        self._json(data)
+                    elif parsed.path == '/api/v1/papers':
+                        try:
+                            for key in ('page', 'page_size', 'days'):
+                                if key in params and int(params[key][0]) < (0 if key == 'days' else 1):
+                                    raise ValueError(key)
+                            if params.get('sort', ['date'])[0] not in ('date', 'score', 'title'):
+                                raise ValueError('sort')
+                        except ValueError:
+                            self._json({'error': 'invalid pagination or sort parameters'}, HTTPStatus.BAD_REQUEST)
+                            return
+                        data = repository.query(params, pinned=True)
+                        self._json({**data, 'items': [present_paper(p, compact=True) for p in data['items']],
+                                    'dataVersion': data_version})
+                    elif parsed.path.startswith('/api/v1/papers/'):
+                        paper = repository.detail(parsed.path.removeprefix('/api/v1/papers/'), pinned=True)
+                        if paper is None:
+                            self._json({'error': 'paper not found'}, HTTPStatus.NOT_FOUND)
+                        else:
+                            self._json({'paper': paper, 'dataVersion': data_version})
+                    else:
+                        self._json({'error': 'not found'}, HTTPStatus.NOT_FOUND)
+                except FileNotFoundError:
+                    self._json({'error': 'data version expired; reload the list'}, HTTPStatus.CONFLICT)
+                return
             if parsed.path == "/api/bootstrap":
                 repository = self._paper_repository()
                 if repository is not None:

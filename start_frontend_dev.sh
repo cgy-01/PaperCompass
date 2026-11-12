@@ -6,6 +6,7 @@ DATA_DIR="${PAPER_FIREHOSE_DATA_DIR:-${PROJECT_DIR}/.runtime-demo}"
 PORT="${1:-9000}"
 HOST="${PAPER_COMPASS_HOST:-127.0.0.1}"
 TEMPLATE="${PROJECT_DIR}/src/paper_firehose/system/templates/dashboard_template.html"
+FRONTEND="${PROJECT_DIR}/src/paper_firehose/system/frontend"
 OUTPUT="${DATA_DIR}/html/index.html"
 CLI_BIN="/home/cgy/miniconda3/envs/paper-compass/bin/paper-firehose"
 
@@ -54,11 +55,14 @@ echo "保存前端模板后会自动重建；浏览器刷新即可查看。"
 echo "按 Ctrl+C 停止服务。"
 echo
 
-last_signature="$(stat -c '%Y:%s' "${TEMPLATE}")"
+frontend_signature() {
+  find "${TEMPLATE}" "${FRONTEND}" -type f -printf '%p:%T@:%s\n' | sort | sha256sum
+}
+last_signature="$(frontend_signature)"
 
 while kill -0 "${SERVER_PID}" 2>/dev/null; do
   sleep 1
-  signature="$(stat -c '%Y:%s' "${TEMPLATE}")"
+  signature="$(frontend_signature)"
   if [[ "${signature}" != "${last_signature}" ]]; then
     last_signature="${signature}"
     if "${CLI_BIN}" \

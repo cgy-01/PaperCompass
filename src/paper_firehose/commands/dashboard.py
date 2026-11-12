@@ -205,6 +205,7 @@ def run(config_path: str, output: str | None = None, days: int | None = None) ->
     if not output_path.is_absolute():
         output_path = resolve_data_path("html", str(output_path), ensure_parent=True)
     output_path.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copytree(get_system_path('frontend'), output_path.parent / 'assets', dirs_exist_ok=True)
     output_path.write_text(html, encoding="utf-8")
     lucide_source = Path(__file__).resolve().parents[3] / "node_modules" / "lucide" / "dist" / "umd" / "lucide.min.js"
     if lucide_source.is_file():

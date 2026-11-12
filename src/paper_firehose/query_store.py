@@ -11,6 +11,8 @@ import sqlite3
 import tempfile
 import time
 import uuid
+import threading
+from collections import OrderedDict
 from contextlib import closing
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -21,6 +23,19 @@ from .core.paths import resolve_data_file, resolve_data_path
 
 LOGGER = logging.getLogger(__name__)
 FORMAT_VERSION = 1
+
+
+def public_id(identifier):
+    """Stable URL identity, independent of publication versions and raw ID format."""
+    return hashlib.sha256(('paper-compass:' + identifier).encode('utf-8')).hexdigest()
+
+
+def present_paper(paper, *, compact=False):
+    result = {**paper, 'publicId': public_id(paper['id'])}
+    if compact:
+        result['summaryPreview'] = result.pop('summary', '')[:320]
+        result.pop('insight', None)
+    return result
 
 
 def read_connection(path):
@@ -121,6 +136,8 @@ def build(config_path, *, updated_at=None):
                         CREATE INDEX IF NOT EXISTS papers_type ON papers(venue_type);
                         CREATE INDEX IF NOT EXISTS papers_title ON papers(title);
                         CREATE INDEX IF NOT EXISTS topics_name ON paper_topics(topic,paper_id);
+                        CREATE TABLE IF NOT EXISTS public_paper_ids (
+                            public_id TEXT PRIMARY KEY, paper_id TEXT NOT NULL UNIQUE);
                     ''')
                     stored = conn.execute("SELECT value FROM metadata WHERE key='signature'").fetchone()
                     if not stored or stored[0] != signature:
@@ -167,6 +184,11 @@ def build(config_path, *, updated_at=None):
                     conn.execute('DELETE FROM papers WHERE id NOT IN (SELECT id FROM seen)')
                     conn.execute('DELETE FROM paper_topics WHERE paper_id NOT IN (SELECT id FROM papers)')
                     conn.execute('DELETE FROM fingerprints WHERE id NOT IN (SELECT id FROM seen)')
+                    # Only the disposable read model gains a URL lookup index. Existing
+                    # snapshots and original IDs remain valid for older API clients.
+                    conn.create_function('paper_public_id', 1, public_id, deterministic=True)
+                    conn.execute('DELETE FROM public_paper_ids WHERE paper_id NOT IN (SELECT id FROM papers)')
+                    conn.execute('INSERT OR IGNORE INTO public_paper_ids SELECT paper_public_id(id),id FROM papers')
                     public_catalog = [{k: v for k, v in topic.items() if k != 'pattern'} for topic in catalog]
                     previous_time = conn.execute("SELECT value FROM metadata WHERE key='updated_at'").fetchone()
                     if updated_at is None:
@@ -242,19 +264,57 @@ class PublishedRepository:
 
     def __init__(self, path=None):
         self.path = Path(path) if path else current_path()
+        self._counts = OrderedDict()
+        self._count_lock = threading.Lock()
 
-    def _connect(self):
+    def _count(self, conn, where, values):
+        # Cache only exact filter predicates, never rows or complete abstracts.
+        # Including the connected immutable version prevents cross-version reuse.
+        version = conn.execute('PRAGMA database_list').fetchone()[2]
+        key = (version, where, tuple(values))
+        now = time.monotonic()
+        with self._count_lock:
+            cached = self._counts.get(key)
+            if cached and now - cached[0] < 60:
+                self._counts.move_to_end(key)
+                return cached[1]
+        total = conn.execute('SELECT count(*) FROM papers' + where, values).fetchone()[0]
+        with self._count_lock:
+            self._counts[key] = (now, total)
+            while len(self._counts) > 128:
+                self._counts.popitem(last=False)
+        return total
+
+    def _connect(self, *, pinned=False):
         try:
             return read_connection(self.path)
         except sqlite3.OperationalError:
             if self.path.exists():
                 raise
+            if pinned:
+                raise FileNotFoundError('Published query version expired')
             # A very old idle reader may resume after retention cleanup. Pin the
             # current complete version before doing any query or count.
             return read_connection(current_path())
 
-    def query(self, params):
-        with closing(self._connect()) as conn:
+    def detail(self, identifier, *, pinned=False):
+        """Resolve a hashed URL without relying on previously visited list pages."""
+        if len(identifier) != 64 or any(c not in '0123456789abcdef' for c in identifier):
+            return None
+        with closing(self._connect(pinned=pinned)) as conn:
+            indexed = conn.execute("SELECT 1 FROM sqlite_master WHERE name='public_paper_ids'").fetchone()
+            if indexed:
+                row = conn.execute('SELECT payload FROM papers JOIN public_paper_ids '
+                                   'ON papers.id=public_paper_ids.paper_id WHERE public_id=?', (identifier,)).fetchone()
+            else:
+                # Compatibility for v1.0 snapshots. The next build-query creates the
+                # indexed mapping offline; no migration runs in the web process.
+                conn.create_function('paper_public_id', 1, public_id, deterministic=True)
+                row = conn.execute('SELECT payload FROM papers WHERE paper_public_id(id)=?', (identifier,)).fetchone()
+            return present_paper(json.loads(row[0])) if row else None
+
+    def query(self, params, *, pinned=False):
+        with closing(self._connect(pinned=pinned)) as conn:
             ids = [key for value in params.get('ids', []) for key in value.split(',') if key][:250]
             if ids:
                 found = {row['id']: json.loads(row['payload']) for row in conn.execute(
@@ -283,9 +343,10 @@ class PublishedRepository:
                 days, page, size = 0, 1, 30
             if days:
                 clauses.append('timestamp>=?')
-                values.append((datetime.now(timezone.utc) - timedelta(days=days)).timestamp())
+                cutoff = datetime.now(timezone.utc).replace(second=0, microsecond=0) - timedelta(days=days)
+                values.append(cutoff.timestamp())
             where = ' WHERE ' + ' AND '.join(clauses) if clauses else ''
-            total = conn.execute('SELECT count(*) FROM papers' + where, values).fetchone()[0]
+            total = self._count(conn, where, values)
             pages = max(1, (total + size - 1) // size)
             page = min(page, pages)
             order = {'date': 'timestamp DESC,score DESC,base_date DESC,source_rowid',

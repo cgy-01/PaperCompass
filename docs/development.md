@@ -26,6 +26,7 @@ src/paper_firehose/
   processors/              可选处理模块
   system/config/           默认配置模板
   system/templates/        前端与其他 HTML 模板
+  system/frontend/         页面、路由、请求层、公共组件与样式
 deploy/systemd/            采集任务部署示例
 docs/                      用户、管理员和开发者文档
 tests/                     测试
@@ -35,13 +36,19 @@ tests/                     测试
 
 ## 前端开发
 
-主要页面是 `system/templates/dashboard_template.html`，通过 `dashboard` 命令生成轻量 HTML 外壳；论文来自 `/api/bootstrap` 与 `/api/papers`。
+`system/templates/dashboard_template.html` 只保留页面外壳。`system/frontend/app.js` 负责装配，`pages/` 按页面组织，`components/` 放公共组件，`state.js` 保存浏览器状态，`router.js` 管理 hash 路由，`api.js` 管理请求取消、超时与有界缓存，`styles/app.css` 保存样式。使用浏览器原生 ES modules，不新增构建框架或运行依赖。
+
+首页为 `#home`，其他页面为 `#discover`、`#venues`、`#topics`、`#library`、`#docs`；论文详情使用 `#paper/<SHA-256 哈希>`。筛选与页码写入 URL，浏览器前进后退恢复筛选和当前会话滚动位置。直接刷新详情会独立请求数据，不依赖列表缓存。标题是站内链接，点击卡片空白处同样进入详情，原文链接在详情页提供。
+
+前端使用新增的 `/api/v1/bootstrap`、`/api/v1/papers` 和 `/api/v1/papers/<hash>`，详见 [接口说明](api_v1.md)。旧 API 保留供现有客户端和 MCP 使用。
 
 ```bash
 paper-firehose dashboard
 ```
 
-保存模板后重新生成页面并刷新浏览器。Node 仅准备 Lucide 资源：必须先执行 `npm ci`；Python 的 `dashboard` 会从仓库 `node_modules/lucide/` 复制脚本。不会自动从 CDN 下载图标。
+保存模板或前端模块后重新生成页面并刷新浏览器。`start_frontend_dev.sh` 会监听两者，重新生成外壳并复制模块，服务继续运行。Node 仅准备 Lucide 资源：必须先执行 `npm ci`；Python 的 `dashboard` 会从仓库 `node_modules/lucide/` 复制脚本。不会自动从 CDN 下载图标。
+
+前端路由单元测试：`node --test tests/frontend_routes.mjs`。可选浏览器回归测试：将 `PAPER_COMPASS_BROWSER` 设置为本机 Chrome 可执行文件，再执行 `python -m pytest tests/test_frontend_browser.py -q`；需要 Node 22 或更新版本的原生 WebSocket，但不需要安装浏览器测试框架。测试使用临时数据库与随机本地端口。
 
 本地辅助脚本保留现有行为：`start_dashboard.sh` 优先选择原开发环境 `/home/cgy/miniconda3/envs/paper-compass`，否则选择仓库 `.venv`；`start_frontend_dev.sh` 使用相同约定，且依赖 Linux `stat`。其他环境建议直接使用已激活环境中的 `paper-firehose serve`，不必修改脚本或创建同名个人路径。
 

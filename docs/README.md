@@ -26,6 +26,7 @@
 | [CLI 与 Python 使用说明](usage.rst) | 开发者 | 否 |
 | [配置与环境变量](configuration.md) | 开发者和自托管用户 | 否 |
 | [开发与测试](development.md) | 开发者 | 否 |
+| [网站只读 API v1](api_v1.md) | 开发者 | 否 |
 | [Python API](api.rst) | 开发者 | 否 |
 | [Sphinx 文档入口](index.rst) | 文档维护者 | 否 |
 | [`generated/`](generated/) | API 自动生成内容 | 否 |
