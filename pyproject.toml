@@ -7,7 +7,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "paper_firehose"
-version = "0.4.2"
+version = "1.0.0"
 description = "Paper Compass: an AI-paper workspace with incremental ingestion, a read-only web API, and MCP."
 readme = "README.md"
 license = { file = "LICENSE" }
