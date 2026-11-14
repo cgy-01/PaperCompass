@@ -48,6 +48,9 @@ def test_dashboard_generates_lightweight_api_client(tmp_path, monkeypatch):
     assert 'id="yearTrend"' in html
     assert 'type="module" src="assets/app.js"' in html
     assert 'href="assets/styles/app.css"' in html
+    assert 'href="assets/styles/welcome.css"' in html
+    assert 'id="welcome"' in html
+    assert '进入研究工作区' in html
     assert 'id="paperDetail"' in html
     assert 'id="drawer"' not in html
     assert '<script>' not in html
@@ -59,4 +62,4 @@ def test_dashboard_generates_lightweight_api_client(tmp_path, monkeypatch):
     assert (assets / 'router.js').is_file()
     assert (assets / 'styles' / 'app.css').is_file()
     assert (tmp_path / 'lucide.min.js').is_file()
-    assert output.stat().st_size < 15000
+    assert output.stat().st_size < 24000

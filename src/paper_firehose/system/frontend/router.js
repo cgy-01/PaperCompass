@@ -1,4 +1,5 @@
 const views = new Set([
+  "welcome",
   "overview",
   "discover",
   "venues",
@@ -6,13 +7,14 @@ const views = new Set([
   "library",
   "docs",
   "paper",
+  "account",
 ]);
 export function parseRoute(hash) {
   const [path, query = ""] = hash.replace(/^#\/?/, "").split("?");
   const [name, id = ""] = path.split("/"),
     params = new URLSearchParams(query);
   const view =
-    name === "home" || !name ? "overview" : views.has(name) ? name : "overview";
+    name === "home" ? "overview" : views.has(name) ? name : "welcome";
   const page = Number(params.get("page"));
   return {
     view,
@@ -55,14 +57,14 @@ export function routeHash(state) {
 }
 export function createRouter(onRoute) {
   const positions = new Map();
-  let active = location.hash || "#home",
+  let active = location.hash || "#welcome",
     sequence = 0,
     initial = true,
     restoring = false;
   history.scrollRestoration = "manual";
   async function apply() {
     const request = ++sequence,
-      hash = location.hash || "#home";
+      hash = location.hash || "#welcome";
     const position = positions.get(hash) || 0;
     restoring = true;
     active = hash;
@@ -90,7 +92,7 @@ export function createRouter(onRoute) {
   addEventListener("hashchange", apply);
   return {
     start() {
-      if (!location.hash) history.replaceState(null, "", "#home");
+      if (!location.hash) history.replaceState(null, "", "#welcome");
       return apply();
     },
     navigate(hash, { replace = false } = {}) {

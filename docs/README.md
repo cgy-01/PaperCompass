@@ -7,6 +7,7 @@
 | 文档 | 受众 | 网站公开 |
 |---|---|---|
 | [MCP 用户指南](MCP_USER_GUIDE.md) | Paper Compass 用户 | 是 |
+| [账号与文献库](ACCOUNT_USER_GUIDE.md) | Paper Compass 用户 | 是 |
 
 公开文档只应包含用户实际需要的信息，例如产品能力、客户端连接、使用示例、常见问题和能力边界。不得包含服务器路径、systemd、Nginx、数据库维护或部署凭据。
 
@@ -16,6 +17,7 @@
 |---|---|---|
 | [MCP 部署说明](mcp_setup.md) | 服务器管理员 | 否 |
 | [自动更新、查询库与部署](admin/automatic_updates.md) | 服务器管理员 | 否 |
+| [账号与使用情况统计](admin/accounts_analytics.md) | 服务器管理员 | 否 |
 | [源码发布检查](admin/source_release.md) | 项目维护者 | 否 |
 | [GitHub Actions 配置](github_actions_setup.rst) | 项目维护者 | 否 |
 

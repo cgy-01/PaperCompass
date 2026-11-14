@@ -2,6 +2,8 @@
 
 > 当前实现说明｜更新于 2026-09-29
 > 运行形态：SQLite 数据库、Python 只读 API、按需加载的 Web 前端、只读 MCP
+
+v1.2 开发新增独立账号与行为服务：原始论文库及论文 API 继续只读，用户写入位于 `users/users.db`，行为明细与每日汇总位于 `analytics/events.db`。GitHub 登录需要环境凭据；配置、备份和回滚见 [账号与分析部署说明](docs/admin/accounts_analytics.md)。
 > 产品定位：面向计算机与 AI 研究者的论文雷达，优先覆盖顶会完整论文集，并用主题标签辅助筛选。
 
 ## 1. 产品与数据流

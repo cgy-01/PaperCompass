@@ -1,4 +1,4 @@
-"""Read-only web application for browsing the Paper Compass database."""
+"""Read-only paper catalog with independent account and activity services."""
 
 from __future__ import annotations
 
@@ -18,6 +18,7 @@ from urllib.parse import parse_qs, unquote, urlparse
 import markdown
 
 from .commands import dashboard
+from .accounts import AccountAPI
 from .query_store import PublishedRepository, present_paper
 from .core.paths import resolve_data_path
 
@@ -51,6 +52,13 @@ class DocumentationRepository:
             "title": "MCP 用户指南",
             "description": "连接 Codex、Claude Code，并让 Agent 使用 Paper Compass 调研论文。",
             "icon": "plug-zap",
+        },
+        {
+            "slug": "account",
+            "file": "ACCOUNT_USER_GUIDE.md",
+            "title": "账号与文献库",
+            "description": "登录、同步收藏、导入本机记录与使用情况设置。",
+            "icon": "user-round",
         },
     )
 
@@ -122,6 +130,14 @@ class LocalApplication:
         self.repository_error: str | None = None
         self.documentation = DocumentationRepository()
         self._reload_lock = threading.Lock()
+        self._account_lock = threading.Lock()
+        self.accounts: AccountAPI | None = None
+
+    def account_api(self):
+        with self._account_lock:
+            if self.accounts is None:
+                self.accounts = AccountAPI()
+            return self.accounts
 
     def load_repository(self) -> None:
         """Open the published database while retaining the previous version on error."""
@@ -149,6 +165,11 @@ class LocalApplication:
                             version = current
                 except OSError:
                     LOGGER.exception('Failed to inspect paper update marker')
+                if self.accounts is not None:
+                    try:
+                        self.accounts.events.maintain()
+                    except Exception:
+                        LOGGER.exception('Activity retention maintenance failed')
 
         worker = threading.Thread(
             target=watch,
@@ -170,12 +191,30 @@ def _handler(app: LocalApplication):
                 self.send_header('Cache-Control', 'no-cache')
             super().end_headers()
 
-        def _json(self, value: Any, status: HTTPStatus = HTTPStatus.OK) -> None:
+        def log_request(self, code='-', size='-'):
+            if urlparse(self.path).path.startswith('/auth/'):
+                self.log_message('"%s %s" %s %s', self.command, urlparse(self.path).path, code, size)
+            else:
+                super().log_request(code, size)
+
+        def _user_api(self, method, parsed):
+            if not (parsed.path.startswith('/api/account') or parsed.path.startswith('/auth/github/') or parsed.path == '/api/events'):
+                return False
+            try:
+                return app.account_api().handle(self, method, parsed.path, parse_qs(parsed.query))
+            except Exception:
+                LOGGER.exception('Account service unavailable')
+                self._json({'error': 'account service temporarily unavailable'}, HTTPStatus.SERVICE_UNAVAILABLE, cache_control='no-store')
+                return True
+
+        def _json(self, value: Any, status: HTTPStatus = HTTPStatus.OK, *, headers=(), cache_control='private, max-age=60') -> None:
             payload = json.dumps(value, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
             self.send_response(status)
             self.send_header("Content-Type", "application/json; charset=utf-8")
             self.send_header("Content-Length", str(len(payload)))
-            self.send_header("Cache-Control", "private, max-age=60")
+            self.send_header("Cache-Control", cache_control)
+            for key, value in headers:
+                self.send_header(key, value)
             self.end_headers()
             self.wfile.write(payload)
 
@@ -207,6 +246,8 @@ def _handler(app: LocalApplication):
 
         def do_GET(self) -> None:  # noqa: N802
             parsed = urlparse(self.path)
+            if self._user_api('GET', parsed):
+                return
             if parsed.path.startswith('/api/v1/'):
                 repository = self._paper_repository()
                 if repository is None:
@@ -298,6 +339,8 @@ def _handler(app: LocalApplication):
             super().do_GET()
 
         def do_POST(self) -> None:  # noqa: N802
+            if self._user_api('POST', urlparse(self.path)):
+                return
             self._json({"error": "read-only service"}, HTTPStatus.METHOD_NOT_ALLOWED)
 
     return Handler

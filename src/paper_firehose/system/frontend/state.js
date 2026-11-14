@@ -5,7 +5,7 @@ export let topicCatalog = [],
   documents = [];
 export const paperIndex = new Map();
 export const state = {
-  view: "overview",
+  view: "welcome",
   page: 1,
   type: "",
   theme: "",

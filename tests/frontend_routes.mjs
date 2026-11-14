@@ -9,10 +9,12 @@ const source = await readFile(
 const { parseRoute, routeHash } = await import(
   "data:text/javascript;base64," + Buffer.from(source).toString("base64")
 );
-test("home default and unknown routes", () => {
-  assert.equal(parseRoute("").view, "overview");
-  assert.equal(parseRoute("#missing").view, "overview");
-  assert.equal(routeHash(parseRoute("")), "#home");
+test("welcome default preserves existing workspace home", () => {
+  assert.equal(parseRoute("").view, "welcome");
+  assert.equal(parseRoute("#missing").view, "welcome");
+  assert.equal(routeHash(parseRoute("")), "#welcome");
+  assert.equal(parseRoute("#home").view, "overview");
+  assert.equal(routeHash(parseRoute("#home")), "#home");
 });
 test("filters, page and Unicode survive a round trip", () => {
   const route = parseRoute(

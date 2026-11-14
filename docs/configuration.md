@@ -51,6 +51,11 @@ output:
 | `PAPER_COMPASS_DOCS_DIR` | 可选，自托管的 Markdown 文档目录 |
 | `PAPER_COMPASS_API_URL` | MCP 调用的 Web API 地址，默认本机服务 |
 | `PAPER_COMPASS_HOST` | 本地启动脚本监听地址，默认 127.0.0.1 |
+| `PAPER_COMPASS_PUBLIC_URL` | 账号服务的规范站点 Origin，生产必须为 HTTPS |
+| `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` | GitHub OAuth App 凭据，仅供后端使用 |
+| `PAPER_COMPASS_EVENTS_ENABLED` | 行为事件总开关，默认 1；0 关闭接收 |
+| `PAPER_COMPASS_EVENTS_RETENTION_DAYS` | 行为明细保留天数，默认 90，范围 1～365 |
+| `PAPER_COMPASS_EVENTS_DAILY_LIMIT` | 每日事件接收上限，默认 100000 |
 | `OPENALEX_API_KEY` | 显式启用 OpenAlex 时使用 |
 | `OPENAI_API_KEY` | 可选 LLM/摘要处理功能使用 |
 
@@ -67,3 +72,5 @@ output:
 - 默认是否调用 OpenAlex、任务阶段：`commands/update.py` 和 CLI 参数。
 
 数据流、来源成功水位及回滚见[自动更新说明](admin/automatic_updates.md)。
+
+账号库与分析库位于运行目录的 `users/`、`analytics/`，不进入论文查询快照。GitHub 回调、凭据配置、私有统计和备份见[账号部署说明](admin/accounts_analytics.md)。

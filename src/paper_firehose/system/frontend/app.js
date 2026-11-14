@@ -8,6 +8,8 @@ import {
 } from "./state.js";
 import { api } from "./api.js";
 import { configureActions } from "./actions.js";
+import { initAccount, persistCollections, renderAccount } from "./account.js";
+import { trackPage } from "./analytics.js";
 import { createRouter, routeHash } from "./router.js";
 import {
   $,
@@ -26,6 +28,9 @@ import { renderVenues, renderTopics } from "./pages/catalog.js";
 import { renderLibrary } from "./pages/library.js";
 import { renderDocs } from "./pages/docs.js";
 import { renderPaper } from "./pages/paper.js";
+import { renderWelcome } from "./pages/welcome.js";
+import { setWelcomeMotionActive } from "./pages/welcome-motion.js";
+import { initTypography } from "./typography.js";
 
 const navItems = [
   ["overview", "总览"],
@@ -43,17 +48,24 @@ const navIconNames = {
   library: "star",
   docs: "book-open-text",
 };
+const mobileNavLabels = {
+  overview: "总览",
+  discover: "发现",
+  venues: "期刊<br>会议",
+  topics: "研究<br>主题",
+  library: "我的<br>文献库",
+  docs: "使用<br>文档",
+};
 export function navMarkup(mobile = false) {
   return navItems
     .map(
       ([id, label]) =>
-        `<button data-go="${id}" class="${state.view === id ? "active" : ""}"><span class="icon-wrap nav-icon-wrap" aria-hidden="true"><i data-lucide="${navIconNames[id]}"></i></span>${label}${!mobile && id === "library" ? `<small>${saved.size}</small>` : ""}</button>`,
+        `<button data-go="${id}" aria-label="${label}" class="${state.view === id ? "active" : ""}"><span class="icon-wrap nav-icon-wrap" aria-hidden="true"><i data-lucide="${navIconNames[id]}"></i></span>${mobile ? `<span class="nav-label">${mobileNavLabels[id]}</span>` : label}${!mobile && id === "library" ? `<small>${saved.size}</small>` : ""}</button>`,
     )
     .join("");
 }
 export function saveStores() {
-  localStorage.setItem("pc-saved", JSON.stringify([...saved]));
-  localStorage.setItem("pc-read", JSON.stringify([...read]));
+  persistCollections();
   $("#nav").innerHTML = navMarkup();
   bindGo();
   refreshIcons($("#nav"));
@@ -75,18 +87,86 @@ export function syncFilters() {
 }
 
 let renderedView = state.view;
+let appMounted = false;
+const catalogViews = new Set([
+  "overview",
+  "discover",
+  "venues",
+  "topics",
+  "library",
+]);
+let catalogPromise,
+  catalogReady = false;
+function ensureCatalog() {
+  if (!catalogPromise)
+    catalogPromise = refreshCatalog()
+      .then(() => {
+        $("#themeFilter").innerHTML =
+          '<option value="">全部主题</option>' +
+          topicCatalog
+            .map((t) => t.name)
+            .sort()
+            .map((x) => `<option>${esc(x)}</option>`)
+            .join("");
+        $("#sourceFilter").innerHTML =
+          '<option value="">全部来源</option>' +
+          sources
+            .map((x) => x.name)
+            .sort()
+            .map((x) => `<option>${esc(x)}</option>`)
+            .join("");
+        enhanceSelects();
+        catalogReady = true;
+      })
+      .catch((error) => {
+        catalogPromise = null;
+        throw error;
+      });
+  return catalogPromise;
+}
 const router = createRouter(async (route, { initial }) => {
   if (!initial && renderedView !== "paper" && route.view === "paper")
     history.replaceState({ pcDetailOrigin: true }, "");
   Object.assign(state, route);
   renderedView = route.view;
+  document.body.classList.toggle("is-welcome", route.view === "welcome");
+  setWelcomeMotionActive(route.view === "welcome");
   $$(".view").forEach((v) => v.classList.toggle("active", v.id === state.view));
   $("#nav").innerHTML = navMarkup();
   $("#mobileNav").innerHTML = navMarkup(true);
   bindGo();
   syncFilters();
-  document.title = "Paper Compass · AI 研究工作台";
-  await render();
+  document.title =
+    route.view === "welcome"
+      ? "Paper Compass · 找到你的研究方向"
+      : "Paper Compass · AI 研究工作台";
+  const notice = $("#workspaceNotice");
+  notice.hidden = true;
+  try {
+    if (catalogViews.has(route.view) && !catalogReady) {
+      notice.textContent = "正在准备文献工作区…";
+      notice.hidden = false;
+      await ensureCatalog();
+      if (routeHash(route) !== routeHash(state)) return;
+      notice.hidden = true;
+      syncFilters();
+    }
+    await render();
+  } catch (error) {
+    if (routeHash(route) !== routeHash(state)) return;
+    notice.textContent =
+      error.status === 503
+        ? "文献服务正在准备，请稍后重试。"
+        : "文献服务暂时无法连接，请重试。";
+    const retry = document.createElement("button");
+    retry.className = "text-btn";
+    retry.textContent = "重试";
+    retry.onclick = () => commitRoute({ replace: true });
+    notice.appendChild(retry);
+    notice.hidden = false;
+  }
+  appMounted = true;
+  trackPage(state);
 });
 export function commitRoute(options) {
   return router.navigate(routeHash(state), options);
@@ -114,7 +194,9 @@ export function openDiscover(filters) {
   commitRoute();
 }
 export async function render() {
+  if (catalogViews.has(state.view) && !catalogReady) return;
   const pages = {
+    welcome: renderWelcome,
     overview: renderOverview,
     discover: renderDiscover,
     venues: renderVenues,
@@ -122,6 +204,7 @@ export async function render() {
     library: renderLibrary,
     docs: renderDocs,
     paper: renderPaper,
+    account: renderAccount,
   };
   const result = pages[state.view]?.();
   refreshIcons();
@@ -145,67 +228,54 @@ export async function refreshCatalog() {
   }
 }
 async function init() {
-  try {
-    await refreshCatalog();
-    $("#themeFilter").innerHTML += topicCatalog
-      .map((t) => t.name)
-      .sort()
-      .map((x) => `<option>${esc(x)}</option>`)
-      .join("");
-    $("#sourceFilter").innerHTML += sources
-      .map((x) => x.name)
-      .sort()
-      .map((x) => `<option>${esc(x)}</option>`)
-      .join("");
-    for (const [id, key] of [
-      ["typeFilter", "type"],
-      ["themeFilter", "theme"],
-      ["sourceFilter", "source"],
-      ["dateFilter", "days"],
-      ["sortFilter", "sort"],
-    ])
-      $("#" + id).onchange = (e) => {
-        state[key] = e.target.value;
-        state.page = 1;
-        commitRoute();
-      };
-    let searchTimer;
-    $("#globalSearch").oninput = (e) => {
-      clearTimeout(searchTimer);
-      searchTimer = setTimeout(() => {
-        state.query = e.target.value.trim();
-        state.page = 1;
-        state.view = "discover";
-        commitRoute();
-      }, 250);
-    };
-    $("#clearBtn").onclick = () => {
-      Object.assign(state, {
-        page: 1,
-        type: "",
-        theme: "",
-        source: "",
-        days: "",
-        sort: "date",
-        query: "",
-      });
-      syncFilters();
+  for (const [id, key] of [
+    ["typeFilter", "type"],
+    ["themeFilter", "theme"],
+    ["sourceFilter", "source"],
+    ["dateFilter", "days"],
+    ["sortFilter", "sort"],
+  ])
+    $("#" + id).onchange = (e) => {
+      state[key] = e.target.value;
+      state.page = 1;
       commitRoute();
     };
-    $("#libraryFilter").onchange = (e) => {
-      state.libraryMode = e.target.value;
+  let searchTimer;
+  $("#globalSearch").oninput = (e) => {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => {
+      state.query = e.target.value.trim();
+      state.page = 1;
+      state.view = "discover";
       commitRoute();
-    };
-    document.addEventListener("click", () => closeCustomSelects());
-    enhanceSelects();
-    await router.start();
-  } catch (error) {
-    if (error.status === 503) {
-      setTimeout(init, 2000);
-      return;
-    }
-    $(".content").innerHTML = empty("无法连接论文数据服务：" + error.message);
-  }
+    }, 250);
+  };
+  $("#clearBtn").onclick = () => {
+    Object.assign(state, {
+      page: 1,
+      type: "",
+      theme: "",
+      source: "",
+      days: "",
+      sort: "date",
+      query: "",
+    });
+    syncFilters();
+    commitRoute();
+  };
+  $("#libraryFilter").onchange = (e) => {
+    state.libraryMode = e.target.value;
+    commitRoute();
+  };
+  document.addEventListener("click", () => closeCustomSelects());
+  enhanceSelects();
+  await router.start();
+  if (state.view === "welcome")
+    void ensureCatalog()
+      .then(() => {
+        if (state.view === "welcome") renderWelcome();
+      })
+      .catch(() => {});
 }
 configureActions({
   commitRoute,
@@ -214,4 +284,8 @@ configureActions({
   openDiscover,
   refreshCatalog,
 });
+initTypography();
 init();
+initAccount().then(() => {
+  if (appMounted) render();
+});

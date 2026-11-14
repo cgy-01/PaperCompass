@@ -2,6 +2,7 @@ import { state, paperIndex, saved, read } from "../state.js";
 import { api } from "../api.js";
 import { $, esc, date, icon, empty, refreshIcons } from "../components/ui.js";
 import { saveStores, commitRoute } from "../actions.js";
+import { toggleFavorite, markRead } from "../account.js";
 let requestNumber = 0;
 export function openPaper(id) {
   const identifier = paperIndex.get(id)?.publicId || id;
@@ -34,8 +35,7 @@ export async function renderPaper() {
       state.paperId !== identifier
     )
       return;
-    read.add(p.id);
-    saveStores();
+    void markRead(p.id);
     const url = safeURL(p.url);
     document.title = p.title + " · Paper Compass";
     root.innerHTML = `<div class="detail-nav"><button class="text-btn" id="paperBack">${icon("arrow-left", true)} 返回</button><span>Paper Compass / 论文详情</span></div>
@@ -50,10 +50,17 @@ export async function renderPaper() {
         commitRoute();
       }
     };
-    $("#detailSave").onclick = () => {
-      saved.has(p.id) ? saved.delete(p.id) : saved.add(p.id);
-      saveStores();
-      $("#detailSave span:last-child").textContent = saved.has(p.id)
+    $("#detailSave").onclick = async () => {
+      const button = $("#detailSave");
+      button.disabled = true;
+      try {
+        await toggleFavorite(p.id);
+      } catch {
+        return;
+      } finally {
+        button.disabled = false;
+      }
+      button.querySelector("span:last-child").textContent = saved.has(p.id)
         ? "已收藏"
         : "收藏论文";
     };

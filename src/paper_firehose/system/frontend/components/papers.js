@@ -2,6 +2,7 @@ import { paperIndex, saved } from "../state.js";
 import { esc, date, icon } from "./ui.js";
 import { saveStores, render } from "../actions.js";
 import { openPaper } from "../pages/paper.js";
+import { toggleFavorite } from "../account.js";
 export function paperHref(p) {
   return "#paper/" + p.publicId;
 }
@@ -27,12 +28,17 @@ export function card(p) {
 export function bindCards(root) {
   root.querySelectorAll(".save").forEach(
     (b) =>
-      (b.onclick = (e) => {
+      (b.onclick = async (e) => {
         e.stopPropagation();
         const id = b.closest(".paper").dataset.id;
-        saved.has(id) ? saved.delete(id) : saved.add(id);
-        saveStores();
-        render();
+        b.disabled = true;
+        try {
+          await toggleFavorite(id);
+          render();
+        } catch {
+        } finally {
+          b.disabled = false;
+        }
       }),
   );
   root.querySelectorAll(".paper").forEach(

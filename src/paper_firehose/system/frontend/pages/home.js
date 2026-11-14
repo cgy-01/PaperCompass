@@ -1,5 +1,5 @@
-import { overview, institutionCatalog } from "../state.js";
-import { $, esc, date, refreshIcons } from "../components/ui.js";
+import { overview } from "../state.js";
+import { $, esc, date } from "../components/ui.js";
 import { remember, paperHref } from "../components/papers.js";
 export function drawYearTrend() {
   const canvas = $("#yearTrend"),
@@ -56,7 +56,7 @@ export function drawYearTrend() {
   ctx.strokeStyle = "#12664f";
   ctx.lineWidth = 2;
   ctx.stroke();
-  ctx.font = "10px system-ui";
+  ctx.font = `13px ${getComputedStyle(document.body).fontFamily}`;
   ctx.textAlign = "center";
   points.forEach((point, index) => {
     ctx.beginPath();
@@ -75,29 +75,6 @@ export function drawYearTrend() {
     ctx.fillStyle = "#7a8983";
     ctx.fillText(String(years[index]), point[0], height - 6);
   });
-}
-export function institutionPlaceholder(name) {
-  return `<span class="institution-placeholder" aria-hidden="true"><i data-lucide="landmark"></i></span><span class="sr-only">${esc(name)}</span>`;
-}
-export function renderInstitutions() {
-  const root = $("#institutionList");
-  if (!root) return;
-  root.innerHTML = institutionCatalog
-    .map(
-      (item) =>
-        `<div class="institution-mark" title="${esc(item.name)}">${item.logo ? `<img src="${esc(item.logo)}" alt="${esc(item.name)}" loading="lazy">` : institutionPlaceholder(item.name)}</div>`,
-    )
-    .join("");
-  root.querySelectorAll("img").forEach((img) =>
-    img.addEventListener(
-      "error",
-      () => {
-        img.parentElement.innerHTML = institutionPlaceholder(img.alt);
-        refreshIcons(root);
-      },
-      { once: true },
-    ),
-  );
 }
 export function renderOverview() {
   const total = Math.max(overview.total || 0, 1),
@@ -166,7 +143,6 @@ export function renderOverview() {
         `<div class="legend-row"><i class="legend-dot" style="background:${palette[i]}"></i><span>${esc(item.name)}</span><b>${item.count.toLocaleString()} · ${Math.round((item.count / classified) * 100)}%</b></div>`,
     )
     .join("");
-  renderInstitutions();
   requestAnimationFrame(drawYearTrend);
 }
 addEventListener("resize", () => {

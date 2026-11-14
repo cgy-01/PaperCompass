@@ -6,6 +6,7 @@ import json
 import logging
 import os
 import sys
+from pathlib import Path
 
 import click
 
@@ -192,6 +193,28 @@ def serve(ctx: click.Context, host: str, port: int) -> None:
     except OSError as exc:
         click.echo(f"❌ Local server failed: {exc}", err=True)
         sys.exit(ERR_RUNTIME)
+
+
+@cli.command("analytics")
+@click.option('--days', type=click.IntRange(1, 3650), default=30, show_default=True)
+def analytics(days):
+    """Show private daily usage totals; no analytics API is exposed to visitors."""
+    from .accounts import AccountAPI
+    service = AccountAPI()
+    service.events.maintain()
+    click.echo(json.dumps(service.events.report(days), ensure_ascii=False, indent=2))
+
+
+@cli.command('backup-users')
+@click.option('--output', required=True, type=click.Path(path_type=Path))
+def backup_users(output):
+    """Back up the independent user database using SQLite's online backup API."""
+    from .accounts import AccountAPI
+    try:
+        AccountAPI().users.backup(output)
+    except (ValueError, OSError) as exc:
+        raise click.ClickException(str(exc)) from exc
+    click.echo(str(output))
 
 
 @cli.command("mcp")

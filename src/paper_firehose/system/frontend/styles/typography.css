@@ -1,0 +1,364 @@
+/* Chinese typography roles. System fonts only; no webfont requests. */
+:root {
+  --font-sans:
+    -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB",
+    "Microsoft YaHei", "Noto Sans SC", sans-serif;
+  --font-serif: Georgia, "Noto Serif SC", "Songti SC", serif;
+  --font-mono: ui-monospace, "Cascadia Code", Consolas, var(--font-sans);
+}
+body {
+  font: 400 16px/1.7 var(--font-sans);
+}
+button,
+input,
+select,
+textarea {
+  font-family: var(--font-sans);
+}
+em,
+i {
+  font-style: normal;
+}
+b,
+strong {
+  font-weight: 600;
+}
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: 600;
+}
+h1 {
+  line-height: 1.25;
+}
+h2,
+h3,
+h4,
+h5,
+h6 {
+  line-height: 1.35;
+}
+
+/* Preserve existing heading sizes and their responsive breakpoints. */
+.page-head h1,
+.doc-article > h1:first-child,
+.detail-header h1,
+.welcome-intro h1 {
+  font-family: var(--font-serif);
+  font-weight: 500;
+  line-height: 1.25;
+}
+.hero h2,
+.paper h3,
+.venue-row h3,
+.topic-copy h3,
+.institution-head h3,
+.doc-article h2,
+.welcome-section-intro h2,
+.welcome-paper h3,
+.welcome-reading-sheet h3,
+.welcome-library-note h3,
+.welcome-update-note h3,
+.welcome-prompt-note blockquote,
+.welcome-final h2 {
+  font-family: var(--font-serif);
+  font-weight: 500;
+  line-height: 1.35;
+}
+.panel h3,
+.doc-article h3,
+.detail-reading h2,
+.account-profile h2,
+.account-privacy h3 {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  line-height: 1.35;
+}
+.welcome-intro h1 em {
+  font-weight: inherit;
+  font-style: normal;
+}
+.brand,
+.eyebrow,
+.text-btn,
+.mini-paper a,
+.score,
+.group-card .big,
+.topic-icon,
+.mobile-nav button.active,
+.pagination button.current,
+.welcome-brand,
+.welcome-primary {
+  font-weight: 600;
+}
+
+/* Reading text: body 16/1.7, cards 15/1.65, bounded in character-relative units. */
+.hero p,
+.welcome-description,
+.welcome-section-intro > p,
+.welcome-final > p:not(.welcome-cluster-label),
+.detail-abstract,
+.detail-authors,
+.doc-article p,
+.doc-article li,
+.account-profile p,
+.account-controls p,
+.account-privacy p {
+  font-family: var(--font-sans);
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.7;
+  max-width: 36em;
+}
+.paper .abstract,
+.topic-copy p,
+.group-card p,
+.welcome-paper p,
+.welcome-reading-sheet > p,
+.welcome-library-note > p,
+.welcome-update-note p,
+.welcome-prompt-note > p {
+  font-family: var(--font-sans);
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.65;
+  max-width: 36em;
+}
+.welcome-final > p {
+  margin-inline: auto;
+}
+.doc-article :is(ul, ol, blockquote) {
+  max-width: 36em;
+}
+.doc-article td {
+  font-size: 15px;
+  line-height: 1.65;
+}
+.doc-article th {
+  font-size: 13px;
+  line-height: 1.5;
+  font-weight: 600;
+}
+.doc-article :is(strong, b) {
+  font-weight: 600;
+}
+.doc-article :is(em, i) {
+  font-style: normal;
+}
+.detail-reading h2 span {
+  font-family: var(--font-serif);
+  font-size: 13px;
+}
+
+/* Sources, captions and supporting text share a readable baseline. */
+.side-foot,
+.side-foot .update-label,
+.side-foot .copyright,
+.hero-stat span,
+.stat span,
+.stat small,
+.mini-paper p,
+.bar-label,
+.authors,
+.paper-foot,
+.paper-foot .score,
+.topic-total,
+.venue-directory-head,
+.venue-kind,
+.legend-row span,
+.legend-row b,
+.donut-center span,
+.trend-head strong,
+.trend-head span,
+.institution-head p,
+.docs-directory button small,
+.detail-source,
+.detail-meta,
+.detail-nav,
+.detail-aside h3,
+.detail-read,
+.detail-muted,
+.welcome-tape,
+.welcome-metrics > div,
+.welcome-window-bar,
+.welcome-example,
+.welcome-window-label,
+.welcome-desk-paper .welcome-window-label,
+.welcome-desk-paper small,
+.welcome-source-strip > span,
+.welcome-cluster-heading,
+.welcome-cluster-heading > span:nth-child(2),
+.welcome-preview-label,
+.welcome-paper-source,
+.welcome-paper-meta time,
+.welcome-paper footer,
+.welcome-area-copy small,
+.welcome-section-foot p,
+.welcome-sheet-heading > span:last-child,
+.welcome-note-stamp,
+.welcome-library-labels > span,
+.welcome-mcp-terminal > p,
+.welcome-mcp-steps,
+.welcome-cluster-label,
+.welcome-footer,
+.welcome-footer > span,
+.welcome-footer > div,
+.welcome-sticky > div > div > span {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.5;
+}
+.welcome-desk-paper strong,
+.welcome-area-copy strong {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.5;
+}
+.docs-directory button b {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+.paper .badge,
+.badge {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.5;
+}
+.paper .badges {
+  row-gap: 4px;
+}
+.welcome-reading-sheet dl > div {
+  font-size: 14px;
+  line-height: 1.65;
+}
+.welcome-note-stamp {
+  font-size: 13px;
+  letter-spacing: 0.02em;
+}
+.welcome-sticky strong,
+.welcome-metrics strong,
+.welcome-source-strip > div {
+  font-family: var(--font-serif);
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+/* Explicit button roles avoid the earlier `font: inherit` specificity conflict. */
+.nav button,
+.mobile-nav button,
+.custom-select-trigger,
+.custom-select-option,
+.pagination button,
+.page-jump,
+.result-meta,
+.icon-btn,
+.account-entry,
+.detail-actions > a,
+.detail-actions > button,
+.welcome-nav nav a,
+.welcome-nav nav button,
+.welcome-nav-enter,
+.welcome-primary,
+.welcome-text-link,
+.welcome-page button.welcome-text-link,
+.welcome-section-foot a,
+.welcome-reading-grid a,
+.welcome-mcp-grid a,
+.welcome-endpoint button,
+.welcome-sticky a {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.5;
+}
+.welcome-page button.welcome-text-link {
+  font-weight: 400;
+}
+.welcome-page button.welcome-scroll-cue {
+  font: 400 13px/1.5 var(--font-sans);
+}
+.welcome-brand small,
+.welcome-endpoint code,
+.doc-article code {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.65;
+}
+/* The training terminal owns its separate developer-font role in welcome.css. */
+
+@media (max-width: 900px) {
+  .welcome-nav nav {
+    gap: 12px;
+  }
+  .welcome-nav {
+    gap: 14px;
+  }
+}
+@media (max-width: 760px) {
+  .mobile-nav {
+    height: calc(90px + env(safe-area-inset-bottom));
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .mobile-nav button {
+    display: grid;
+    grid-template-rows: 20px 42px;
+    align-content: center;
+    justify-items: center;
+    gap: 4px;
+    flex: 1;
+    min-width: 0;
+    padding: 4px 2px;
+  }
+  .mobile-nav .nav-label {
+    display: block;
+    text-align: center;
+    line-height: 1.5;
+  }
+  .content {
+    padding-bottom: calc(112px + env(safe-area-inset-bottom));
+  }
+}
+@media (max-width: 680px) {
+  .welcome-cluster-heading {
+    flex-wrap: wrap;
+    letter-spacing: 0.03em;
+  }
+  .welcome-note-stamp {
+    position: static;
+    display: inline-block;
+    margin-bottom: 8px;
+  }
+  .welcome-reading-sheet dl > div {
+    flex-wrap: wrap;
+  }
+  .welcome-reading-sheet dd {
+    margin-left: 0;
+  }
+  .welcome-metrics {
+    flex-wrap: wrap;
+    gap: 12px 20px;
+  }
+  .welcome-metrics > div {
+    gap: 5px;
+  }
+  .welcome-endpoint {
+    flex-wrap: wrap;
+  }
+  .welcome-endpoint code {
+    overflow-wrap: anywhere;
+    min-width: 0;
+  }
+  .welcome-footer > div {
+    flex-wrap: wrap;
+  }
+  .welcome-sticky > div {
+    gap: 10px;
+  }
+}
