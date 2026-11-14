@@ -105,6 +105,19 @@ try {
     throw new Error("Timed out: " + expression);
   }
   const base = process.argv[2];
+  // The first screen must work even before the workspace and full icon library
+  // arrive. Fail those downloads to model a slow/unavailable dependency chain.
+  await call("Fetch.enable", {
+    patterns: [{ urlPattern: "*/assets/app.js" }, { urlPattern: "*/lucide.min.js" }],
+  });
+  await call("Page.navigate", { url: base });
+  await until("document.querySelector('.welcome-log-track') && document.querySelectorAll('#welcomeNav svg.lucide-arrow-up-right').length===2");
+  assert.equal(await evaluate("getComputedStyle(document.querySelector('.welcome-log-track')).animationDelay"), "0s");
+  assert.equal(await evaluate("getComputedStyle(document.querySelector('.welcome-log-track')).animationPlayState"), "running");
+  const initialLogTransform = await evaluate("getComputedStyle(document.querySelector('.welcome-log-track')).transform");
+  await new Promise((resolve) => setTimeout(resolve, 150));
+  assert.notEqual(await evaluate("getComputedStyle(document.querySelector('.welcome-log-track')).transform"), initialLogTransform);
+  await call("Fetch.disable");
   await call("Fetch.enable", {
     patterns: [{ urlPattern: "*/api/v1/bootstrap*" }],
   });

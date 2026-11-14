@@ -210,4 +210,16 @@ def run(config_path: str, output: str | None = None, days: int | None = None) ->
     lucide_source = Path(__file__).resolve().parents[3] / "node_modules" / "lucide" / "dist" / "umd" / "lucide.min.js"
     if lucide_source.is_file():
         shutil.copyfile(lucide_source, output_path.parent / "lucide.min.js")
+        # A small, official Lucide subset lets the landing page initialize
+        # without waiting for the full library or workspace module graph.
+        esm_source = lucide_source.parent.parent / 'esm'
+        vendor = output_path.parent / 'assets' / 'vendor' / 'lucide'
+        for relative in ['replaceElement.js', 'createElement.js', 'defaultAttributes.js',
+                         *[f'icons/{name}.js' for name in (
+                             'arrow-up-right', 'arrow-right', 'arrow-down-right',
+                             'arrow-down', 'compass', 'files', 'trending-down')]]:
+            destination = vendor / relative
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(esm_source / relative, destination)
+        shutil.copyfile(lucide_source.parents[2] / 'LICENSE', vendor / 'LICENSE')
     return output_path

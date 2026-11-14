@@ -2,6 +2,9 @@
 <html lang="zh-CN">
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="modulepreload" href="assets/welcome-boot.js">
+  <link rel="modulepreload" href="assets/pages/welcome-desk.js">
+  <link rel="modulepreload" href="assets/components/ui.js">
   <title>Paper Compass · AI 研究工作台</title>
   <link rel="stylesheet" href="assets/styles/app.css">
   <link rel="stylesheet" href="assets/styles/welcome.css">
@@ -87,5 +90,6 @@
     </div>
   </main>
 </div><nav class="mobile-nav" id="mobileNav"></nav>
-<script src="lucide.min.js"></script>
+<script type="module" src="assets/welcome-boot.js"></script>
+<script defer src="lucide.min.js"></script>
 <script type="module" src="assets/app.js"></script></body></html>

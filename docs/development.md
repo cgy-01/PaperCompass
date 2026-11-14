@@ -59,6 +59,8 @@ paper-firehose dashboard
 
 宣传页的研究领域区直接使用 bootstrap 的 `topics` 名单、图标和说明，不维护另一份主题清单。主题链接按准确名称编码到 `#discover?theme=...`，在已发布目录更新并刷新页面后同步展示。
 
+首屏由独立入口 `welcome-boot.js` 提前初始化终端、曲线与必要图标，不等待工作区模块或论文接口。页面生成时从已安装的 Lucide 包复制少量官方 ESM 文件（含许可证）；不新增图标依赖。终端与来源条带使用 CSS 连续滚动，终端不再额外等待 1.5 秒；离开宣传页、隐藏标签页或启用减少动态效果时暂停。浏览器回归包含阻断主应用和完整图标库下载的首屏检查。
+
 本地辅助脚本保留现有行为：`start_dashboard.sh` 优先选择原开发环境 `/home/cgy/miniconda3/envs/paper-compass`，否则选择仓库 `.venv`；`start_frontend_dev.sh` 使用相同约定，且依赖 Linux `stat`。其他环境建议直接使用已激活环境中的 `paper-firehose serve`，不必修改脚本或创建同名个人路径。
 
 ## 文档与打包

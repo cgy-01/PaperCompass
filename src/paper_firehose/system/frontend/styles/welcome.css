@@ -401,7 +401,7 @@ body.is-welcome {
   width: max-content;
   min-width: 100%;
   /* 20 rows × 20.4px / 34px per second, preserving the reference scroll speed. */
-  animation: welcome-log-scroll 12s linear 1.5s infinite;
+  animation: welcome-log-scroll 12s linear infinite;
   animation-play-state: paused;
 }
 .welcome-log-track code {
@@ -421,8 +421,11 @@ body.is-welcome {
 .welcome-log-output {
   color: var(--terminal-output);
 }
-.welcome-motion-active .welcome-log-track {
+.is-welcome .welcome-log-track {
   animation-play-state: running;
+}
+.welcome-motion-paused .welcome-log-track {
+  animation-play-state: paused;
 }
 .welcome-log-viewport:hover .welcome-log-track {
   animation-play-state: paused;
@@ -630,8 +633,11 @@ body.is-welcome {
 .welcome-source-group > span {
   white-space: nowrap;
 }
-.welcome-motion-active .welcome-source-track {
+.is-welcome .welcome-source-track {
   animation-play-state: running;
+}
+.welcome-motion-paused .welcome-source-track {
+  animation-play-state: paused;
 }
 .welcome-source-strip:hover .welcome-source-track,
 .welcome-source-strip:focus-within .welcome-source-track {
