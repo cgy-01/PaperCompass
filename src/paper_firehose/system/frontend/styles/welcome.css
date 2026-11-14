@@ -606,27 +606,44 @@ body.is-welcome {
   letter-spacing: 0.18em;
 }
 .welcome-source-strip {
-  display: flex;
-  align-items: center;
-  gap: 30px;
+  overflow: hidden;
   padding-block: 28px;
   border-bottom: 1px solid var(--welcome-rule);
 }
-.welcome-source-strip > span {
-  color: #8b9682;
-  font-size: 10px;
-  white-space: nowrap;
-}
-.welcome-source-strip > div {
+.welcome-source-strip > .welcome-source-track {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  flex: 1;
-  gap: 18px;
+  width: max-content;
   color: #76846b;
   font:
     500 15px Georgia,
     serif;
+  animation: welcome-source-scroll 40s linear infinite;
+  animation-play-state: paused;
+}
+.welcome-source-group {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  gap: 48px;
+  padding-right: 48px;
+}
+.welcome-source-group > span {
+  white-space: nowrap;
+}
+.welcome-motion-active .welcome-source-track {
+  animation-play-state: running;
+}
+.welcome-source-strip:hover .welcome-source-track,
+.welcome-source-strip:focus-within .welcome-source-track {
+  animation-play-state: paused;
+}
+@keyframes welcome-source-scroll {
+  to { transform: translateX(-50%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .welcome-source-strip { overflow-x: auto; }
+  .welcome-source-strip > .welcome-source-track { animation: none; }
+  .welcome-source-group[aria-hidden="true"] { display: none; }
 }
 .welcome-section {
   padding-block: 88px 0;
@@ -1271,14 +1288,6 @@ body.is-welcome {
   .welcome-section-intro h2 {
     font-size: 31px;
   }
-  .welcome-source-strip {
-    flex-direction: column;
-    align-items: start;
-    gap: 17px;
-  }
-  .welcome-source-strip > div {
-    width: 100%;
-  }
   .welcome-reading-sheet {
     padding: 25px;
   }
@@ -1404,15 +1413,9 @@ body.is-welcome {
   }
   .welcome-source-strip {
     padding-block: 24px;
-    gap: 14px;
   }
-  .welcome-source-strip > div {
-    justify-content: start;
-    gap: 12px 22px;
+  .welcome-source-strip > .welcome-source-track {
     font-size: 13px;
-  }
-  .welcome-source-strip > span {
-    font-size: 9px;
   }
   .welcome-section {
     padding-top: 55px;

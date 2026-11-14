@@ -5,6 +5,11 @@ PROJECT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 DATA_DIR="${PAPER_FIREHOSE_DATA_DIR:-${PROJECT_DIR}/.runtime-demo}"
 PORT="${1:-9000}"
 HOST="${PAPER_COMPASS_HOST:-127.0.0.1}"
+# WSL localhost forwarding can fail independently of the application. Bind the
+# development server to its network interface so Windows can also use its IP.
+if [[ -z "${PAPER_COMPASS_HOST:-}" ]] && grep -qi microsoft /proc/sys/kernel/osrelease 2>/dev/null; then
+  HOST="0.0.0.0"
+fi
 TEMPLATE="${PROJECT_DIR}/src/paper_firehose/system/templates/dashboard_template.html"
 FRONTEND="${PROJECT_DIR}/src/paper_firehose/system/frontend"
 OUTPUT="${DATA_DIR}/html/index.html"
@@ -37,6 +42,20 @@ fi
 export PAPER_FIREHOSE_DATA_DIR="${DATA_DIR}"
 export PAPER_COMPASS_HOST="${HOST}"
 
+# Fail before polling: otherwise an older server could satisfy the health check.
+"$(dirname -- "${CLI_BIN}")/python" - "${HOST}" "${PORT}" <<'PY'
+import socket
+import sys
+
+try:
+    with socket.socket() as listener:
+        listener.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        listener.bind((sys.argv[1], int(sys.argv[2])))
+except OSError as exc:
+    print(f"无法监听 {sys.argv[1]}:{sys.argv[2]}：{exc}。请停止旧服务或换一个端口。", file=sys.stderr)
+    sys.exit(1)
+PY
+
 cleanup() {
   if [[ -n "${SERVER_PID:-}" ]] && kill -0 "${SERVER_PID}" 2>/dev/null; then
     kill "${SERVER_PID}" 2>/dev/null || true
@@ -45,11 +64,43 @@ cleanup() {
 }
 trap cleanup EXIT INT TERM
 
+trap 'exit 130' INT
+trap 'exit 143' TERM
+
 "${PROJECT_DIR}/start_dashboard.sh" "${PORT}" &
 SERVER_PID=$!
 
+CHECK_HOST="${HOST}"
+if [[ "${HOST}" == "0.0.0.0" ]]; then
+  CHECK_HOST="127.0.0.1"
+fi
+ready=false
+for (( attempt=0; attempt<30; attempt++ )); do
+  if ! kill -0 "${SERVER_PID}" 2>/dev/null; then
+    wait "${SERVER_PID}"
+    exit 1
+  fi
+  if curl --noproxy '*' --fail --silent --max-time 1 \
+    "http://${CHECK_HOST}:${PORT}/api/health" | grep -q '"ready"'; then
+    ready=true
+    break
+  fi
+  sleep 1
+done
+if [[ "${ready}" != true ]]; then
+  echo "错误：服务未在 30 秒内就绪，请检查上面的启动日志。" >&2
+  exit 1
+fi
+
 echo
-echo "前端开发模式已启动：http://${HOST}:${PORT}"
+echo "前端开发模式已就绪：http://${CHECK_HOST}:${PORT}"
+if [[ "${HOST}" == "0.0.0.0" ]]; then
+  read -r -a LOCAL_IPS <<< "$(hostname -I)"
+  if [[ ${#LOCAL_IPS[@]} -gt 0 ]]; then
+    echo "Windows 浏览器若无法访问 localhost，请打开：http://${LOCAL_IPS[0]}:${PORT}"
+  fi
+  echo "开发服务监听所有网卡，请仅在可信网络使用。"
+fi
 echo "监听文件：${TEMPLATE}"
 echo "保存前端模板后会自动重建；浏览器刷新即可查看。"
 echo "按 Ctrl+C 停止服务。"

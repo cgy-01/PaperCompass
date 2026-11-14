@@ -51,6 +51,8 @@ paper-firehose dashboard
 
 保存模板或前端模块后重新生成页面并刷新浏览器。`start_frontend_dev.sh` 会监听两者，重新生成外壳并复制模块，服务继续运行。Node 仅准备 Lucide 资源：必须先执行 `npm ci`；Python 的 `dashboard` 会从仓库 `node_modules/lucide/` 复制脚本。不会自动从 CDN 下载图标。
 
+运行 `./start_frontend_dev.sh 9000` 启动开发预览。脚本先检查端口，并在健康检查通过后提示就绪。在 WSL 中默认监听 `0.0.0.0`，同时打印 WSL IP 链接；Windows 的 localhost 转发失效时使用该链接。IP 可能随 WSL 重启变化，以本次输出为准。此模式仅用于可信网络；可用 `PAPER_COMPASS_HOST=127.0.0.1 ./start_frontend_dev.sh 9000` 限制为回环监听。云服务器的 systemd 服务不受影响。
+
 前端路由单元测试：`node --test tests/frontend_routes.mjs`。可选浏览器回归测试：将 `PAPER_COMPASS_BROWSER` 设置为本机 Chrome 可执行文件，再执行 `python -m pytest tests/test_frontend_browser.py -q`；需要 Node 22 或更新版本的原生 WebSocket，但不需要安装浏览器测试框架。测试使用临时数据库与随机本地端口。
 
 宣传页由 `pages/welcome.js` 和独立的 `styles/welcome.css` 增强；首屏、瀑布流等视觉结构参考 [Digest 模板预览](https://digest-zebno66.app.builtwithrocket.new/digest)，使用本项目的原生模块重新实现，不依赖 Rocket 或 Next.js。首屏论文统计和论文预览使用 bootstrap 中的真实数据；浮动终端与 Loss Curve 使用指定的演示日志，不会实际执行训练命令。中文排版与显示层间距由 `styles/typography.css` 和 `typography.js` 统一处理，不改写数据库字段、筛选值和代码。页内滚动不改变 `#welcome`，滚动监听只安装一次，进入工作区后隐藏宣传页浮层。
