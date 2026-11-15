@@ -49,17 +49,19 @@ tests/                     测试
 paper-firehose dashboard
 ```
 
-保存模板或前端模块后重新生成页面并刷新浏览器。`start_frontend_dev.sh` 会监听两者，重新生成外壳并复制模块，服务继续运行。Node 仅准备 Lucide 资源：必须先执行 `npm ci`；Python 的 `dashboard` 会从仓库 `node_modules/lucide/` 复制脚本。不会自动从 CDN 下载图标。
+保存模板或前端模块后重新生成页面并刷新浏览器。`start_frontend_dev.sh` 会监听两者，重新发布页面外壳与资源，服务继续运行。必须先执行 `npm ci` 准备锁定版本的 Lucide；Python 的 `dashboard` 从官方包中提取本项目使用的图标（含别名），保留原始图形和许可证。浏览器不再下载完整图标库，也不从 CDN 下载图标。
 
 运行 `./start_frontend_dev.sh 9000` 启动开发预览。脚本先检查端口，并在健康检查通过后提示就绪。在 WSL 中默认监听 `0.0.0.0`，同时打印 WSL IP 链接；Windows 的 localhost 转发失效时使用该链接。IP 可能随 WSL 重启变化，以本次输出为准。此模式仅用于可信网络；可用 `PAPER_COMPASS_HOST=127.0.0.1 ./start_frontend_dev.sh 9000` 限制为回环监听。云服务器的 systemd 服务不受影响。
 
-前端路由单元测试：`node --test tests/frontend_routes.mjs`。可选浏览器回归测试：将 `PAPER_COMPASS_BROWSER` 设置为本机 Chrome 可执行文件，再执行 `python -m pytest tests/test_frontend_browser.py -q`；需要 Node 22 或更新版本的原生 WebSocket，但不需要安装浏览器测试框架。测试使用临时数据库与随机本地端口。
+前端单元测试：`node --test tests/frontend_routes.mjs tests/frontend_typography.mjs tests/frontend_api.mjs`。可选浏览器回归测试：将 `PAPER_COMPASS_BROWSER` 设置为本机 Chrome 可执行文件，再执行 `python -m pytest tests/test_frontend_browser.py -q`；需要 Node 22 或更新版本的原生 WebSocket，但不需要安装浏览器测试框架。测试使用临时数据库与随机本地端口。设置 `PAPER_COMPASS_VISUAL_FREEZE=1` 可把循环动画固定到相同帧用于视觉对比，不改变产品代码中的动效。
 
 宣传页由 `pages/welcome.js` 和独立的 `styles/welcome.css` 增强；首屏、瀑布流等视觉结构参考 [Digest 模板预览](https://digest-zebno66.app.builtwithrocket.new/digest)，使用本项目的原生模块重新实现，不依赖 Rocket 或 Next.js。首屏论文统计和论文预览使用 bootstrap 中的真实数据；浮动终端与 Loss Curve 使用指定的演示日志，不会实际执行训练命令。中文排版与显示层间距由 `styles/typography.css` 和 `typography.js` 统一处理，不改写数据库字段、筛选值和代码。页内滚动不改变 `#welcome`，滚动监听只安装一次，进入工作区后隐藏宣传页浮层。
 
 宣传页的研究领域区直接使用 bootstrap 的 `topics` 名单、图标和说明，不维护另一份主题清单。主题链接按准确名称编码到 `#discover?theme=...`，在已发布目录更新并刷新页面后同步展示。
 
-首屏由独立入口 `welcome-boot.js` 提前初始化终端、曲线与必要图标，不等待工作区模块或论文接口。页面生成时从已安装的 Lucide 包复制少量官方 ESM 文件（含许可证）；不新增图标依赖。终端与来源条带使用 CSS 连续滚动，终端不再额外等待 1.5 秒；离开宣传页、隐藏标签页或启用减少动态效果时暂停。浏览器回归包含阻断主应用和完整图标库下载的首屏检查。
+首屏由独立入口 `welcome-boot.js` 提前初始化终端、曲线与必要图标，不等待工作区模块或论文接口。工作区页面按需导入，在用户悬停、聚焦或点击工作区入口时预热总览；开启省流量设置时不做预热。图标只替换未绘制的占位元素，账号就绪不再重建宣传页。终端与来源条带的 CSS 动效参数不变。浏览器回归包含阻断主应用下载的首屏检查、按需加载检查与图标节点复用检查。
+
+前端资源使用整组内容版本 `/assets/<20 位哈希>/...`，所有相对导入锁定同一版本；旧版本保留给已经打开的标签页。脚本启动时自动生成静态 gzip 副本；HTTP 层提供 gzip 协商、ETag、HEAD/304 和不可变资源缓存，HTML 与未版本化兼容链接仍重新验证。详见 [前端性能与发布](admin/frontend_performance.md)。
 
 本地辅助脚本保留现有行为：`start_dashboard.sh` 优先选择原开发环境 `/home/cgy/miniconda3/envs/paper-compass`，否则选择仓库 `.venv`；`start_frontend_dev.sh` 使用相同约定，且依赖 Linux `stat`。其他环境建议直接使用已激活环境中的 `paper-firehose serve`，不必修改脚本或创建同名个人路径。
 

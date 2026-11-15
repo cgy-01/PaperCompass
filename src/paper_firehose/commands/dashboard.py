@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import re
 import shutil
+import tempfile
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -12,6 +13,7 @@ from zoneinfo import ZoneInfo
 from ..core.config import ConfigManager
 from ..core.database import DatabaseManager
 from ..core.paths import get_system_path, resolve_data_path
+from ..frontend_assets import publish as publish_assets
 
 
 THEME_GROUPS = {
@@ -205,21 +207,19 @@ def run(config_path: str, output: str | None = None, days: int | None = None) ->
     if not output_path.is_absolute():
         output_path = resolve_data_path("html", str(output_path), ensure_parent=True)
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    shutil.copytree(get_system_path('frontend'), output_path.parent / 'assets', dirs_exist_ok=True)
-    output_path.write_text(html, encoding="utf-8")
     lucide_source = Path(__file__).resolve().parents[3] / "node_modules" / "lucide" / "dist" / "umd" / "lucide.min.js"
+    version = publish_assets(get_system_path('frontend'), template, lucide_source.parents[2],
+                             output_path.parent, TOPIC_ICONS.values())
+    html = html.replace('assets/', f'assets/{version}/')
+    with tempfile.NamedTemporaryFile(mode='w', encoding='utf-8', dir=output_path.parent,
+                                     prefix='.' + output_path.name + '-', delete=False) as stream:
+        temporary = Path(stream.name)
+        stream.write(html)
+    try:
+        temporary.replace(output_path)
+    finally:
+        temporary.unlink(missing_ok=True)
     if lucide_source.is_file():
+        # Compatibility only: current HTML no longer requests the full library.
         shutil.copyfile(lucide_source, output_path.parent / "lucide.min.js")
-        # A small, official Lucide subset lets the landing page initialize
-        # without waiting for the full library or workspace module graph.
-        esm_source = lucide_source.parent.parent / 'esm'
-        vendor = output_path.parent / 'assets' / 'vendor' / 'lucide'
-        for relative in ['replaceElement.js', 'createElement.js', 'defaultAttributes.js',
-                         *[f'icons/{name}.js' for name in (
-                             'arrow-up-right', 'arrow-right', 'arrow-down-right',
-                             'arrow-down', 'compass', 'files', 'trending-down')]]:
-            destination = vendor / relative
-            destination.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copyfile(esm_source / relative, destination)
-        shutil.copyfile(lucide_source.parents[2] / 'LICENSE', vendor / 'LICENSE')
     return output_path

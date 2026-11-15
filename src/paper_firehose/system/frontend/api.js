@@ -1,10 +1,13 @@
 // Bounded response cache and per-view cancellation keep navigation responsive.
 const cache = new Map(),
   pending = new Map();
+export function cancelApiChannel(channel) {
+  pending.get(channel)?.abort();
+  pending.delete(channel);
+}
 export async function api(path, { channel = "", ttl = 30000 } = {}) {
   if (channel) {
-    pending.get(channel)?.abort();
-    pending.delete(channel);
+    cancelApiChannel(channel);
   }
   const hit = cache.get(path);
   if (hit && Date.now() - hit.time < ttl) return hit.data;

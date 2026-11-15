@@ -1,4 +1,5 @@
 from pathlib import Path
+import re
 
 from paper_firehose.commands import dashboard
 
@@ -46,9 +47,11 @@ def test_dashboard_generates_lightweight_api_client(tmp_path, monkeypatch):
     assert "主要主题分布" in html
     assert 'id="sourceDonut"' in html
     assert 'id="yearTrend"' in html
-    assert 'type="module" src="assets/app.js"' in html
-    assert 'href="assets/styles/app.css"' in html
-    assert 'href="assets/styles/welcome.css"' in html
+    version = re.search(r'assets/([a-f0-9]{20})/app.js', html)[1]
+    assert f'type="module" src="assets/{version}/app.js"' in html
+    assert f'href="assets/{version}/styles/app.css"' in html
+    assert f'href="assets/{version}/styles/welcome.css"' in html
+    assert '<script defer src="lucide.min.js">' not in html
     assert 'id="welcome"' in html
     assert '进入研究工作区' in html
     assert 'id="paperDetail"' in html
@@ -62,4 +65,5 @@ def test_dashboard_generates_lightweight_api_client(tmp_path, monkeypatch):
     assert (assets / 'router.js').is_file()
     assert (assets / 'styles' / 'app.css').is_file()
     assert (tmp_path / 'lucide.min.js').is_file()
+    assert (assets / version / 'icon-data.js').is_file()
     assert output.stat().st_size < 24000

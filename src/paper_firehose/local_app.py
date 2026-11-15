@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import json
+import gzip
+import io
 import logging
 import mimetypes
 import os
@@ -24,6 +26,28 @@ from .core.paths import resolve_data_path
 
 
 LOGGER = logging.getLogger(__name__)
+
+
+def _accepts_gzip(value: str) -> bool:
+    qualities = {}
+    for item in value.lower().split(','):
+        name, *parameters = item.strip().split(';')
+        quality = 1.0
+        for parameter in parameters:
+            if parameter.strip().startswith('q='):
+                try:
+                    quality = float(parameter.strip()[2:])
+                except ValueError:
+                    quality = 0
+        qualities[name] = quality
+    return 0 < qualities.get('gzip', qualities.get('*', 0)) <= 1
+
+
+def _immutable_asset_path(path: str) -> bool:
+    parts = unquote(path).split('/')
+    return (len(parts) > 3 and parts[:2] == ['', 'assets']
+            and bool(re.fullmatch(r'[a-f0-9]{20}', parts[2]))
+            and all(part not in ('', '.', '..') and '\\' not in part for part in parts[3:]))
 
 
 class PaperRepository(PublishedRepository):
@@ -185,11 +209,56 @@ def _handler(app: LocalApplication):
         def __init__(self, *args: Any, **kwargs: Any):
             super().__init__(*args, directory=str(app.html_dir), **kwargs)
 
+        def send_response(self, code, message=None):
+            self._response_status = code
+            super().send_response(code, message)
+
         def end_headers(self) -> None:
-            # Revalidate modules after deployment, including their relative imports.
-            if urlparse(self.path).path.startswith('/assets/'):
+            path = urlparse(self.path).path
+            if path.startswith('/assets/'):
+                immutable = _immutable_asset_path(path) and self._response_status in (200, 304)
+                self.send_header('Cache-Control', 'public, max-age=31536000, immutable' if immutable else 'no-cache')
+            elif path in ('/', '/index.html', '/lucide.min.js'):
                 self.send_header('Cache-Control', 'no-cache')
             super().end_headers()
+
+        def send_head(self):
+            """Serve negotiated compressed assets without changing legacy URLs.
+
+            Versioned sidecars are precompressed at publication. HTML and legacy
+            aliases are compressed on demand, avoiding stale mutable sidecars.
+            """
+            path = Path(self.translate_path(self.path))
+            if not path.is_file() or path.suffix not in ('.html', '.js', '.css', '.json', '.svg', '.txt'):
+                return super().send_head()
+            stat = path.stat()
+            compressed = stat.st_size >= 1024 and _accepts_gzip(self.headers.get('Accept-Encoding', ''))
+            etag = f'"{stat.st_mtime_ns:x}-{stat.st_size:x}{"-gzip" if compressed else ""}"'
+            matches = [tag.strip().removeprefix('W/') for tag in self.headers.get('If-None-Match', '').split(',')]
+            if etag in matches or '*' in matches:
+                self.send_response(HTTPStatus.NOT_MODIFIED)
+                self.send_header('ETag', etag)
+                self.send_header('Vary', 'Accept-Encoding')
+                self.end_headers()
+                return None
+            sidecar = path.with_name(path.name + '.gz')
+            immutable = _immutable_asset_path(urlparse(self.path).path)
+            if compressed and immutable and sidecar.is_file():
+                payload = sidecar.read_bytes()
+            else:
+                payload = path.read_bytes()
+                if compressed:
+                    payload = gzip.compress(payload, compresslevel=6, mtime=0)
+            self.send_response(HTTPStatus.OK)
+            self.send_header('Content-Type', self.guess_type(str(path)))
+            self.send_header('Content-Length', str(len(payload)))
+            self.send_header('ETag', etag)
+            self.send_header('Last-Modified', self.date_time_string(stat.st_mtime))
+            self.send_header('Vary', 'Accept-Encoding')
+            if compressed:
+                self.send_header('Content-Encoding', 'gzip')
+            self.end_headers()
+            return io.BytesIO(payload)
 
         def log_request(self, code='-', size='-'):
             if urlparse(self.path).path.startswith('/auth/'):
@@ -208,11 +277,23 @@ def _handler(app: LocalApplication):
                 return True
 
         def _json(self, value: Any, status: HTTPStatus = HTTPStatus.OK, *, headers=(), cache_control='private, max-age=60') -> None:
+            if status >= 400:
+                cache_control = 'no-store'
             payload = json.dumps(value, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+            # Never compress authenticated/session responses. Public paper data
+            # benefits even when Nginx has no JSON gzip configuration enabled.
+            compressible = cache_control != 'no-store'
+            compressed = compressible and len(payload) >= 1024 and _accepts_gzip(self.headers.get('Accept-Encoding', ''))
+            if compressed:
+                payload = gzip.compress(payload, compresslevel=6, mtime=0)
             self.send_response(status)
             self.send_header("Content-Type", "application/json; charset=utf-8")
             self.send_header("Content-Length", str(len(payload)))
             self.send_header("Cache-Control", cache_control)
+            if compressible:
+                self.send_header('Vary', 'Accept-Encoding')
+            if compressed:
+                self.send_header('Content-Encoding', 'gzip')
             for key, value in headers:
                 self.send_header(key, value)
             self.end_headers()

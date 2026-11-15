@@ -1,7 +1,6 @@
-import { paperIndex, saved } from "../state.js";
+import { paperIndex, saved, state } from "../state.js";
 import { esc, date, icon } from "./ui.js";
-import { saveStores, render } from "../actions.js";
-import { openPaper } from "../pages/paper.js";
+import { render, openPaper } from "../actions.js";
 import { toggleFavorite } from "../account.js";
 export function paperHref(p) {
   return "#paper/" + p.publicId;
@@ -34,7 +33,15 @@ export function bindCards(root) {
         b.disabled = true;
         try {
           await toggleFavorite(id);
-          render();
+          if (state.view === "library") {
+            render();
+          } else {
+            // A star toggle does not invalidate a discovery query or its cards.
+            const enabled = saved.has(id), label = enabled ? "取消收藏" : "收藏";
+            b.classList.toggle("on", enabled);
+            b.title = label;
+            b.setAttribute("aria-label", label);
+          }
         } catch {
         } finally {
           b.disabled = false;

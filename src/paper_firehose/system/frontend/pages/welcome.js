@@ -6,6 +6,7 @@ import { renderInstitutions } from "../components/institutions.js";
 
 let chromeBound = false,
   chromeFrame = false;
+let renderedTopics, renderedLatest;
 function updateWelcomeChrome() {
   chromeFrame = false;
   const visible = document.body.classList.contains("is-welcome");
@@ -67,7 +68,8 @@ function paperPreview(paper, index) {
 // Static copy works without the catalog. Only genuine catalog data enhances it.
 export function renderWelcome() {
   renderInstitutions();
-  if (topicCatalog.length) {
+  if (topicCatalog.length && renderedTopics !== topicCatalog) {
+    renderedTopics = topicCatalog;
     $("#welcomeAreaList").innerHTML = topicCatalog
       .map((topic) => {
         const href = "#discover?" + new URLSearchParams({ theme: topic.name });
@@ -80,13 +82,16 @@ export function renderWelcome() {
     ["welcomeTopics", overview.topicCount],
     ["welcomeSources", overview.sourceCount],
   ]) {
-    if (value !== undefined)
-      $("#" + id).textContent = Number(value).toLocaleString();
+    if (value !== undefined) {
+      const node = $("#" + id), text = Number(value).toLocaleString();
+      if (node.textContent !== text) node.textContent = text;
+    }
   }
   const papers = (overview.latest || []).filter((paper) =>
     /^[a-f0-9]{64}$/.test(paper.publicId),
   );
-  if (papers.length) {
+  if (papers.length && renderedLatest !== overview.latest) {
+    renderedLatest = overview.latest;
     $("#welcomePreview").innerHTML = papers
       .slice(0, 6)
       .map(paperPreview)

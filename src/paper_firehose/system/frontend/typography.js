@@ -3,7 +3,7 @@ const han = /\p{Script=Han}/u;
 const ascii = /[A-Za-z0-9]/;
 const punctuation = "，。！？；：、（）【】《》“”‘’";
 const skip =
-  "script,style,pre,code,textarea,input,select,option,[contenteditable],.welcome-log-track";
+  "script,style,pre,code,textarea,input,select,option,svg,.icon-wrap,[contenteditable],.welcome-log-track";
 const flow = "p,li,blockquote,td,th,dt,dd,h1,h2,h3,h4,h5,h6";
 
 export function formatCJKSpacing(value) {
@@ -94,9 +94,24 @@ export function initTypography() {
           ? record.target.parentElement
           : record.target;
       if (parent?.closest(skip)) continue;
-      roots.add(parent?.closest(flow) || parent);
+      const block = parent?.closest(flow);
+      if (block || record.type === "characterData") {
+        roots.add(block || parent);
+      } else {
+        // A list replacement only needs its newly added subtrees formatted.
+        // In particular, do not rescan a whole page for an icon insertion.
+        for (const node of record.addedNodes) {
+          if (node.nodeType === Node.ELEMENT_NODE) roots.add(node);
+          else if (node.nodeType === Node.TEXT_NODE) roots.add(parent);
+        }
+      }
     }
-    for (const root of roots) if (root?.isConnected) formatText(root);
+    for (const root of roots) {
+      if (!root?.isConnected) continue;
+      let ancestor = root.parentElement;
+      while (ancestor && !roots.has(ancestor)) ancestor = ancestor.parentElement;
+      if (!ancestor) formatText(root);
+    }
   });
   observer.observe(document.body, {
     childList: true,

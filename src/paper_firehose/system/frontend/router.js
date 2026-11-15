@@ -59,12 +59,14 @@ export function createRouter(onRoute) {
   const positions = new Map();
   let active = location.hash || "#welcome",
     sequence = 0,
+    scrollIntent = 0,
     initial = true,
     restoring = false;
   history.scrollRestoration = "manual";
   async function apply() {
     const request = ++sequence,
       hash = location.hash || "#welcome";
+    const intent = scrollIntent;
     const position = positions.get(hash) || 0;
     restoring = true;
     active = hash;
@@ -73,7 +75,8 @@ export function createRouter(onRoute) {
     await onRoute(parseRoute(hash), { initial: first });
     if (request === sequence)
       requestAnimationFrame(() => {
-        scrollTo(0, position);
+        // A slow lazy-loaded route must never undo a user's newer scroll intent.
+        if (intent === scrollIntent) scrollTo(0, position);
         requestAnimationFrame(() => {
           if (request === sequence) restoring = false;
         });
@@ -90,6 +93,12 @@ export function createRouter(onRoute) {
     { passive: true },
   );
   addEventListener("hashchange", apply);
+  const interruptRestoration = () => { scrollIntent++; restoring = false; };
+  addEventListener("wheel", interruptRestoration, { passive: true });
+  addEventListener("touchstart", interruptRestoration, { passive: true });
+  document.addEventListener("click", event => {
+    if (event.target.closest?.("[data-welcome-scroll]")) interruptRestoration();
+  });
   return {
     start() {
       if (!location.hash) history.replaceState(null, "", "#welcome");

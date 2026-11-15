@@ -1,3 +1,5 @@
+import { replaceIcons } from "../icons.js";
+
 export const $ = (s) => document.querySelector(s),
   $$ = (s) => [...document.querySelectorAll(s)];
 export const esc = (s) =>
@@ -17,12 +19,7 @@ export function icon(name, small = false) {
   return `<span class="icon-wrap${small ? " small" : ""}" aria-hidden="true"><i data-lucide="${name}"></i></span>`;
 }
 export function refreshIcons(root = document) {
-  if (window.lucide)
-    lucide.createIcons({
-      icons: lucide.icons,
-      root,
-      attrs: { width: 20, height: 20, "stroke-width": 1.75 },
-    });
+  replaceIcons(root);
 }
 export function closeCustomSelects(except = null) {
   $$(".custom-select.open").forEach((wrap) => {
@@ -34,10 +31,13 @@ export function closeCustomSelects(except = null) {
     }
   });
 }
+const selectSignatures = new WeakMap();
 export function refreshCustomSelect(select, rebuild = true) {
   const wrap = select.closest(".custom-select");
   if (!wrap) return;
-  if (rebuild) {
+  const signature = rebuild ? JSON.stringify([...select.options].map(option => option.textContent)) : null;
+  if (rebuild && selectSignatures.get(select) !== signature) {
+    selectSignatures.set(select, signature);
     const menu = wrap.querySelector(".custom-select-menu");
     menu.innerHTML = [...select.options]
       .map(
@@ -59,8 +59,9 @@ export function refreshCustomSelect(select, rebuild = true) {
         }),
     );
   }
-  wrap.querySelector(".custom-select-label").textContent =
-    select.options[select.selectedIndex]?.textContent || "";
+  const label = wrap.querySelector(".custom-select-label");
+  const text = select.options[select.selectedIndex]?.textContent || "";
+  if (label.textContent !== text) label.textContent = text;
   wrap
     .querySelectorAll("[data-option-index]")
     .forEach((button, index) =>

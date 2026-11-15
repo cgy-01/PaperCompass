@@ -63,7 +63,20 @@ try {
         ).toString("base64"),
       });
   });
-  function call(method, params = {}, sessionId = session) {
+  async function call(method, params = {}, sessionId = session) {
+    if (method === "Page.captureScreenshot" && process.env.PAPER_COMPASS_VISUAL_FREEZE) {
+      const frozen = await call("Runtime.evaluate", {expression: `(()=>{
+        const stamp=document.querySelector('#generated');
+        if(stamp) stamp.textContent='2026-11-15 00:00（UTC+8）';
+        document.getAnimations().forEach(animation=>{
+          if(['welcome-log-scroll','welcome-source-scroll'].includes(animation.animationName)) {
+            animation.pause(); animation.currentTime=3000;
+          } else if(!animation.animationName) animation.finish();
+        });
+        return new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)))
+      })()`, awaitPromise:true}, sessionId);
+      if (frozen.exceptionDetails) throw new Error(JSON.stringify(frozen.exceptionDetails));
+    }
     return new Promise((resolve, reject) => {
       const id = ++serial;
       pending.set(id, { resolve, reject });
@@ -108,7 +121,7 @@ try {
   // The first screen must work even before the workspace and full icon library
   // arrive. Fail those downloads to model a slow/unavailable dependency chain.
   await call("Fetch.enable", {
-    patterns: [{ urlPattern: "*/assets/app.js" }, { urlPattern: "*/lucide.min.js" }],
+    patterns: [{ urlPattern: "*/app.js" }, { urlPattern: "*/lucide.min.js" }],
   });
   await call("Page.navigate", { url: base });
   await until("document.querySelector('.welcome-log-track') && document.querySelectorAll('#welcomeNav svg.lucide-arrow-up-right').length===2");
@@ -117,6 +130,7 @@ try {
   const initialLogTransform = await evaluate("getComputedStyle(document.querySelector('.welcome-log-track')).transform");
   await new Promise((resolve) => setTimeout(resolve, 150));
   assert.notEqual(await evaluate("getComputedStyle(document.querySelector('.welcome-log-track')).transform"), initialLogTransform);
+  assert.equal(await evaluate("performance.getEntriesByType('resource').some(r=>r.name.includes('/api/v1/bootstrap'))"), false);
   await call("Fetch.disable");
   await call("Fetch.enable", {
     patterns: [{ urlPattern: "*/api/v1/bootstrap*" }],
@@ -125,6 +139,14 @@ try {
   await until(
     "location.hash==='#welcome' && document.body.classList.contains('is-welcome')",
   );
+  assert.equal(await evaluate("performance.getEntriesByType('resource').some(r=>/pages\\/(home|discover|docs|library|paper)\\.js/.test(r.name))"), false);
+  assert.equal(await evaluate("performance.getEntriesByType('resource').some(r=>r.name.endsWith('/lucide.min.js'))"), false);
+  assert.equal(await evaluate("document.querySelector('#welcome [data-lucide=\"align-left\"]').tagName.toLowerCase()"), "svg");
+  assert.ok(await evaluate(`(()=>{
+    const original=document.querySelector('#welcomeNav svg');
+    return import(document.querySelector('script[src$="/app.js"]').src.replace('/app.js','/components/ui.js'))
+      .then(ui=>{ui.refreshIcons(document);ui.refreshIcons(document);return original===document.querySelector('#welcomeNav svg')});
+  })()`));
   assert.equal(
     await evaluate("getComputedStyle(document.querySelector('.app')).display"),
     "none",

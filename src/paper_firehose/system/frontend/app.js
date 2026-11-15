@@ -6,9 +6,9 @@ import {
   sources,
   updateCatalog,
 } from "./state.js";
-import { api } from "./api.js";
+import { api, cancelApiChannel } from "./api.js";
 import { configureActions } from "./actions.js";
-import { initAccount, persistCollections, renderAccount } from "./account.js";
+import { initAccount, persistCollections } from "./account.js";
 import { trackPage } from "./analytics.js";
 import { createRouter, routeHash } from "./router.js";
 import {
@@ -22,13 +22,6 @@ import {
   closeCustomSelects,
   empty,
 } from "./components/ui.js";
-import { renderOverview } from "./pages/home.js";
-import { renderDiscover } from "./pages/discover.js";
-import { renderVenues, renderTopics } from "./pages/catalog.js";
-import { renderLibrary } from "./pages/library.js";
-import { renderDocs } from "./pages/docs.js";
-import { renderPaper } from "./pages/paper.js";
-import { renderWelcome } from "./pages/welcome.js";
 import { setWelcomeMotionActive } from "./pages/welcome-motion.js";
 import { initTypography } from "./typography.js";
 
@@ -66,9 +59,8 @@ export function navMarkup(mobile = false) {
 }
 export function saveStores() {
   persistCollections();
-  $("#nav").innerHTML = navMarkup();
-  bindGo();
-  refreshIcons($("#nav"));
+  const count = $('#nav [data-go="library"] small');
+  if (count && count.textContent !== String(saved.size)) count.textContent = saved.size;
 }
 export function bindGo() {
   $$("[data-go]").forEach((b) => (b.onclick = () => go(b.dataset.go)));
@@ -97,25 +89,22 @@ const catalogViews = new Set([
 ]);
 let catalogPromise,
   catalogReady = false;
+let filterTopics, filterSources;
+function prepareWorkspaceFilters() {
+  if (filterTopics !== topicCatalog || filterSources !== sources) {
+    filterTopics = topicCatalog;
+    filterSources = sources;
+    $("#themeFilter").innerHTML = '<option value="">全部主题</option>' + topicCatalog
+      .map(t => t.name).sort().map(x => `<option>${esc(x)}</option>`).join("");
+    $("#sourceFilter").innerHTML = '<option value="">全部来源</option>' + sources
+      .map(x => x.name).sort().map(x => `<option>${esc(x)}</option>`).join("");
+    enhanceSelects();
+  }
+}
 function ensureCatalog() {
   if (!catalogPromise)
     catalogPromise = refreshCatalog()
       .then(() => {
-        $("#themeFilter").innerHTML =
-          '<option value="">全部主题</option>' +
-          topicCatalog
-            .map((t) => t.name)
-            .sort()
-            .map((x) => `<option>${esc(x)}</option>`)
-            .join("");
-        $("#sourceFilter").innerHTML =
-          '<option value="">全部来源</option>' +
-          sources
-            .map((x) => x.name)
-            .sort()
-            .map((x) => `<option>${esc(x)}</option>`)
-            .join("");
-        enhanceSelects();
         catalogReady = true;
       })
       .catch((error) => {
@@ -127,6 +116,7 @@ function ensureCatalog() {
 const router = createRouter(async (route, { initial }) => {
   if (!initial && renderedView !== "paper" && route.view === "paper")
     history.replaceState({ pcDetailOrigin: true }, "");
+  if (renderedView !== route.view) cancelApiChannel(renderedView);
   Object.assign(state, route);
   renderedView = route.view;
   document.body.classList.toggle("is-welcome", route.view === "welcome");
@@ -135,6 +125,8 @@ const router = createRouter(async (route, { initial }) => {
   $("#nav").innerHTML = navMarkup();
   $("#mobileNav").innerHTML = navMarkup(true);
   bindGo();
+  refreshIcons($("#nav"));
+  refreshIcons($("#mobileNav"));
   syncFilters();
   document.title =
     route.view === "welcome"
@@ -149,6 +141,9 @@ const router = createRouter(async (route, { initial }) => {
       await ensureCatalog();
       if (routeHash(route) !== routeHash(state)) return;
       notice.hidden = true;
+    }
+    if (catalogViews.has(route.view)) {
+      prepareWorkspaceFilters();
       syncFilters();
     }
     await render();
@@ -193,21 +188,34 @@ export function openDiscover(filters) {
   );
   commitRoute();
 }
+const pageLoaders = {
+  welcome: () => import("./pages/welcome.js"),
+  overview: () => import("./pages/home.js"),
+  discover: () => import("./pages/discover.js"),
+  venues: () => import("./pages/catalog.js"),
+  topics: () => import("./pages/catalog.js"),
+  library: () => import("./pages/library.js"),
+  docs: () => import("./pages/docs.js"),
+  paper: () => import("./pages/paper.js"),
+  account: () => import("./account.js"),
+};
+const pageExports = {
+  welcome: "renderWelcome", overview: "renderOverview", discover: "renderDiscover",
+  venues: "renderVenues", topics: "renderTopics", library: "renderLibrary",
+  docs: "renderDocs", paper: "renderPaper", account: "renderAccount",
+};
+const loadedPages = new Map();
 export async function render() {
   if (catalogViews.has(state.view) && !catalogReady) return;
-  const pages = {
-    welcome: renderWelcome,
-    overview: renderOverview,
-    discover: renderDiscover,
-    venues: renderVenues,
-    topics: renderTopics,
-    library: renderLibrary,
-    docs: renderDocs,
-    paper: renderPaper,
-    account: renderAccount,
-  };
-  const result = pages[state.view]?.();
-  refreshIcons();
+  const view = state.view;
+  let page = loadedPages.get(view);
+  if (!page) {
+    page = await pageLoaders[view]?.();
+    loadedPages.set(view, page);
+  }
+  if (view !== state.view) return;
+  const result = page?.[pageExports[view]]();
+  refreshIcons(document.getElementById(view === "overview" ? "overview" : view));
   await result;
 }
 export async function refreshCatalog() {
@@ -268,12 +276,20 @@ async function init() {
     commitRoute();
   };
   document.addEventListener("click", () => closeCustomSelects());
-  enhanceSelects();
+  // Warm the next screen on explicit intent, without competing with first paint.
+  const warmWorkspace = () => {
+    if (navigator.connection?.saveData || loadedPages.has("overview")) return;
+    void pageLoaders.overview().then(page => loadedPages.set("overview", page)).catch(() => {});
+  };
+  document.querySelectorAll('a[href="#home"]').forEach(link => {
+    for (const event of ["pointerenter", "focusin", "pointerdown"])
+      link.addEventListener(event, warmWorkspace, { once: true, passive: true });
+  });
   await router.start();
   if (state.view === "welcome")
     void ensureCatalog()
       .then(() => {
-        if (state.view === "welcome") renderWelcome();
+        if (state.view === "welcome") return render();
       })
       .catch(() => {});
 }
@@ -283,9 +299,18 @@ configureActions({
   render,
   openDiscover,
   refreshCatalog,
+  openPaper(identifier) {
+    if (!/^[a-f0-9]{64}$/.test(identifier)) return;
+    state.view = "paper";
+    state.paperId = identifier;
+    return commitRoute();
+  },
 });
+// Render static shell icons once. Later renders only touch their own subtree.
+refreshIcons(document);
 initTypography();
 init();
 initAccount().then(() => {
-  if (appMounted) render();
+  // Account chrome updates itself. Do not rebuild an unrelated landing page.
+  if (appMounted && ["account", "library", "discover", "paper"].includes(state.view)) render();
 });

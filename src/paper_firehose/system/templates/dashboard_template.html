@@ -5,6 +5,8 @@
   <link rel="modulepreload" href="assets/welcome-boot.js">
   <link rel="modulepreload" href="assets/pages/welcome-desk.js">
   <link rel="modulepreload" href="assets/components/ui.js">
+  <link rel="modulepreload" href="assets/icons.js">
+  <link rel="modulepreload" href="assets/icon-data.js">
   <title>Paper Compass · AI 研究工作台</title>
   <link rel="stylesheet" href="assets/styles/app.css">
   <link rel="stylesheet" href="assets/styles/welcome.css">
@@ -90,6 +92,5 @@
     </div>
   </main>
 </div><nav class="mobile-nav" id="mobileNav"></nav>
-<script type="module" src="assets/welcome-boot.js"></script>
-<script defer src="lucide.min.js"></script>
-<script type="module" src="assets/app.js"></script></body></html>
+<script type="module" src="assets/welcome-boot.js" fetchpriority="high"></script>
+<script type="module" src="assets/app.js" fetchpriority="low"></script></body></html>

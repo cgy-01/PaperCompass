@@ -19,3 +19,6 @@ export function openDiscover(filters) {
 export function refreshCatalog() {
   return handlers.refreshCatalog();
 }
+export function openPaper(identifier) {
+  return handlers.openPaper(identifier);
+}

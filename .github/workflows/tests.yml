@@ -32,4 +32,4 @@ jobs:
       - name: Test
         run: |
           python -m pytest -q
-          node --test tests/frontend_routes.mjs tests/frontend_typography.mjs
+          node --test tests/frontend_routes.mjs tests/frontend_typography.mjs tests/frontend_api.mjs
