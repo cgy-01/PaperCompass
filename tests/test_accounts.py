@@ -176,6 +176,58 @@ def test_callback_failures_and_safe_redirect(http_service, monkeypatch, caplog):
     login(service, request, monkeypatch)
 
 
+@pytest.mark.parametrize('failure,reason', [('denied', 'cancelled'), ('exchange', 'failed'), ('expired', 'expired')])
+def test_browser_oauth_failures_return_to_account_without_provider_secrets(http_service, monkeypatch, failure, reason):
+    service, request, cookies, origin = http_service
+    _, _, headers = request('GET', '/auth/github/login?return_to=%23discover%3Fq%3DKV%2Bcache')
+    state = parse_qs(urlsplit(headers['Location']).query)['state'][0]
+    monkeypatch.setattr(service, '_profile', Mock(side_effect=requests.Timeout('PRIVATE_SECRET')))
+    query = '&error=access_denied' if failure == 'denied' else '&code=PRIVATE_CODE'
+    if failure == 'expired':
+        with service.users.connect() as conn:
+            conn.execute('UPDATE oauth_states SET expires_at=0')
+    status, _, headers = request('GET', '/auth/github/callback?state=' + state + query,
+                                 headers={'Accept': 'text/html'})
+    assert status == 302
+    target = urlsplit(headers['Location'])
+    feedback = parse_qs(target.fragment.split('?', 1)[1])
+    assert target.fragment.startswith('welcome?') and feedback['auth'] == [reason]
+    assert feedback['return_to'] == ['#home' if failure == 'expired' else '#discover?q=KV+cache']
+    assert headers['Cache-Control'] == 'no-store'
+    assert 'pc_oauth' not in cookies
+    assert 'PRIVATE' not in headers['Location']
+
+
+def test_browser_disabled_login_returns_to_app_but_json_clients_keep_status(http_service):
+    service, request, _, origin = http_service
+    service.settings = Settings(origin)
+    assert request('GET', '/auth/github/login')[0] == 503
+    status, _, headers = request('GET', '/auth/github/login', headers={'Accept': 'text/html'})
+    assert status == 302 and headers['Location'].startswith(origin + '/#welcome?auth=unavailable')
+
+
+def test_existing_session_enters_target_without_starting_another_oauth_flow(http_service, monkeypatch):
+    service, request, _, origin = http_service
+    login(service, request, monkeypatch)
+    status, _, headers = request('GET', '/auth/github/login?return_to=%23discover%3Ftheme%3DAI%2BInfra')
+    assert status == 302 and headers['Location'] == origin + '/#discover?theme=AI+Infra'
+    assert 'Set-Cookie' not in headers
+    with service.users.connect() as conn:
+        assert conn.execute('SELECT count(*) FROM oauth_states').fetchone()[0] == 0
+
+
+def test_successful_oauth_returns_to_exact_filtered_page(http_service, monkeypatch):
+    service, request, _, origin = http_service
+    monkeypatch.setattr(service, '_profile', Mock(return_value={'id': 42, 'login': 'researcher'}))
+    target = '#discover?theme=AI+Infra&q=KV+cache&page=2'
+    from urllib.parse import quote
+    _, _, headers = request('GET', '/auth/github/login?return_to=' + quote(target, safe=''))
+    state = parse_qs(urlsplit(headers['Location']).query)['state'][0]
+    status, _, headers = request('GET', '/auth/github/callback?state=' + state + '&code=test')
+    assert status == 302 and headers['Location'] == origin + '/' + target
+    assert request('GET', '/api/account')[1]['user']['login'] == 'researcher'
+
+
 def test_github_exchange_uses_pkce_and_revalidates_identity(service, monkeypatch):
     token_response = Mock()
     token_response.json.return_value = {'access_token': 'private-token'}
@@ -196,6 +248,76 @@ def test_disabled_login_and_secure_cookie(tmp_path):
     name, value = Settings('https://papercompass.cn').cookie('session', 'value')
     assert '__Host-pc_session=' in value and 'HttpOnly' in value and 'Secure' in value
     assert 'SameSite=Lax' in value and 'Path=/' in value
+
+
+@pytest.mark.parametrize('origin', ['', 'https://papercompass.cn', 'http://0.0.0.0:9000',
+    'http://192.168.1.1:9000', 'https://localhost', 'http://127.0.0.1:9000/path'])
+def test_development_login_rejects_nonlocal_configuration(origin):
+    with pytest.raises(ValueError, match='Development login'):
+        Settings(origin, dev_login=True)
+
+
+def test_development_login_is_explicit_and_cannot_mix_github_credentials(monkeypatch):
+    monkeypatch.delenv('PAPER_COMPASS_DEV_LOGIN', raising=False)
+    monkeypatch.setenv('PAPER_COMPASS_PUBLIC_URL', 'http://127.0.0.1:9000')
+    monkeypatch.delenv('GITHUB_CLIENT_ID', raising=False)
+    monkeypatch.delenv('GITHUB_CLIENT_SECRET', raising=False)
+    assert Settings.from_env().dev_login is False
+    monkeypatch.setenv('PAPER_COMPASS_DEV_LOGIN', '1')
+    assert Settings.from_env().dev_login is True
+    monkeypatch.setenv('GITHUB_CLIENT_ID', 'production-client')
+    with pytest.raises(ValueError):
+        Settings.from_env()
+
+
+def test_local_developer_uses_real_collections_and_isolated_database(http_service, tmp_path, monkeypatch):
+    service, request, cookies, origin = http_service
+    production = service.users
+    production_token = production.login({'id': 42, 'login': 'production-user'})
+    production_user = production.user(production_token)
+    production.set_ids(production_user['id'], 'favorites', ['production-paper'])
+    service.__init__(tmp_path, Settings(origin, dev_login=True))
+    monkeypatch.setattr(service, '_profile', Mock(side_effect=AssertionError('must not contact GitHub')))
+    status, data, headers = request('GET', '/api/account')
+    assert status == 200 and data['devMode'] is True and data['loginEnabled'] is True
+    assert data['user']['login'] == 'local-developer' and data['csrfToken']
+    assert 'pc_dev_session' in cookies and 'pc_session' not in cookies
+    assert headers['Cache-Control'] == 'no-store'
+    csrf = {'X-CSRF-Token': data['csrfToken']}
+    assert request('POST', '/api/account/favorites', {'ids': ['dev-paper']}, csrf)[0] == 200
+    assert request('POST', '/api/account/reading', {'ids': ['dev-paper']}, csrf)[0] == 200
+    assert request('GET', '/api/account/favorites')[1]['ids'] == ['dev-paper']
+    assert request('GET', '/api/account/reading')[1]['ids'] == ['dev-paper']
+    assert request('GET', '/auth/github/login?return_to=%23discover')[2]['Location'] == origin + '/#discover'
+    assert service.users.path.name == 'development.db'
+    assert production.list_ids(production_user['id'], 'favorites')['ids'] == ['production-paper']
+    # A fresh server instance retains the developer account and reading data.
+    service.__init__(tmp_path, Settings(origin, dev_login=True))
+    assert request('GET', '/api/account')[1]['user']['id'] == data['user']['id']
+    assert request('GET', '/api/account/reading')[1]['ids'] == ['dev-paper']
+    assert request('GET', '/auth/github/callback?code=anything&state=anything')[0] == 404
+    assert request('POST', '/api/account/logout', {}, csrf)[0] == 200
+    assert request('GET', '/api/account')[1]['user']['id'] == data['user']['id']
+
+
+def test_development_login_rejects_public_host_and_ignores_forwarded_headers(http_service, tmp_path):
+    service, request, _, origin = http_service
+    service.__init__(tmp_path, Settings(origin, dev_login=True))
+    assert request('GET', '/api/account', headers={
+        'Host': 'papercompass.cn', 'X-Forwarded-Host': origin.split('://')[1],
+        'X-Forwarded-For': '127.0.0.1'})[0] == 403
+    with service.users.connect() as conn:
+        assert conn.execute('SELECT count(*) FROM users').fetchone()[0] == 0
+
+
+def test_development_login_rejects_nonlocal_peer_even_with_local_host(tmp_path):
+    from types import SimpleNamespace
+    service = AccountAPI(tmp_path, Settings('http://127.0.0.1:9000', dev_login=True))
+    replies = []
+    handler = SimpleNamespace(client_address=('203.0.113.5', 1234), headers={'Host': '127.0.0.1:9000'},
+                              _json=lambda body, status, **kwargs: replies.append(status))
+    assert service.handle(handler, 'GET', '/api/account', {}) is True
+    assert replies == [403]
 
 
 def test_telemetry_duplicates_quota_and_server_identity(http_service, monkeypatch):

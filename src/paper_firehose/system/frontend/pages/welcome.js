@@ -1,4 +1,7 @@
-import { overview, topicCatalog } from "../state.js";
+import { overview, topicCatalog, sources, state } from "../state.js";
+import { workspaceHref, authMessage } from "../auth-navigation.js";
+import { commitRoute } from "../actions.js";
+import { groupSources } from "../catalog-data.js";
 import { $, esc, icon, refreshIcons, date } from "../components/ui.js";
 import { syncWelcomeMotion, showWelcomeSticky } from "./welcome-motion.js";
 import { renderWelcomeDesk } from "./welcome-desk.js";
@@ -62,25 +65,32 @@ function paperPreview(paper, index) {
     length && text
       ? text.slice(0, length) + (text.length > length ? "…" : "")
       : "";
-  return `<a class="welcome-paper${index % 3 === 0 ? " is-featured" : ""}" href="#paper/${paper.publicId}" data-track="preview_paper" data-public-id="${paper.publicId}"><span class="welcome-paper-pin" aria-hidden="true"></span><div class="welcome-paper-meta"><span class="welcome-paper-source">${esc(paper.source)}</span><time>${esc(date(paper.published))}</time></div><h3>${esc(paper.title)}</h3>${excerpt ? `<p>${esc(excerpt)}</p>` : ""}<footer><span class="welcome-author">${esc(paper.authors)}</span>${icon("arrow-up-right", true)}</footer></a>`;
+  return `<a class="welcome-paper${index % 3 === 0 ? " is-featured" : ""}" href="${workspaceHref('#paper/' + paper.publicId)}" data-track="preview_paper" data-public-id="${paper.publicId}"><span class="welcome-paper-pin" aria-hidden="true"></span><div class="welcome-paper-meta"><span class="welcome-paper-source">${esc(paper.source)}</span><time>${esc(date(paper.published))}</time></div><h3>${esc(paper.title)}</h3>${excerpt ? `<p>${esc(excerpt)}</p>` : ""}<footer><span class="welcome-author">${esc(paper.authors)}</span>${icon("arrow-up-right", true)}</footer></a>`;
 }
 
 // Static copy works without the catalog. Only genuine catalog data enhances it.
 export function renderWelcome() {
+  const feedback = $("#welcomeAuthFeedback"), message = authMessage(state.authStatus);
+  feedback.hidden = !message;
+  feedback.innerHTML = message ? `<span>${esc(message)}</span><a href="${esc(workspaceHref(state.authReturn))}">重试登录</a><button type="button" aria-label="关闭登录提示">${icon("x", true)}</button>` : "";
+  feedback.querySelector("button")?.addEventListener("click", () => {
+    state.authStatus = "";
+    commitRoute({ replace: true });
+  });
   renderInstitutions();
   if (topicCatalog.length && renderedTopics !== topicCatalog) {
     renderedTopics = topicCatalog;
     $("#welcomeAreaList").innerHTML = topicCatalog
       .map((topic) => {
         const href = "#discover?" + new URLSearchParams({ theme: topic.name });
-        return `<a class="welcome-area" href="${esc(href)}" data-track="${esc(("research_area:" + topic.key).slice(0, 80))}">${icon(esc(topic.icon || "circle-dot"))}<span class="welcome-area-copy"><strong>${esc(topic.name)}</strong><small title="${esc(topic.description)}">${esc(topic.description)}</small></span>${icon("arrow-up-right", true)}</a>`;
+        return `<a class="welcome-area" href="${esc(workspaceHref(href))}" data-track="${esc(("research_area:" + topic.key).slice(0, 80))}">${icon(esc(topic.icon || "circle-dot"))}<span class="welcome-area-copy"><strong>${esc(topic.name)}</strong><small title="${esc(topic.description)}">${esc(topic.description)}</small></span>${icon("arrow-up-right", true)}</a>`;
       })
       .join("");
   }
   for (const [id, value] of [
     ["welcomeTotal", overview.total],
     ["welcomeTopics", overview.topicCount],
-    ["welcomeSources", overview.sourceCount],
+    ["welcomeSources", overview.sourceCount === undefined ? undefined : groupSources(sources).length],
   ]) {
     if (value !== undefined) {
       const node = $("#" + id), text = Number(value).toLocaleString();

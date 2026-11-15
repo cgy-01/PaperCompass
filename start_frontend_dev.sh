@@ -20,6 +20,21 @@ if [[ ! "${PORT}" =~ ^[0-9]+$ ]] || (( PORT < 1 || PORT > 65535 )); then
   exit 1
 fi
 
+# This script is for local development. Production systemd runs `serve`
+# directly and never enables the development account implicitly.
+export PAPER_COMPASS_DEV_LOGIN="${PAPER_COMPASS_DEV_LOGIN:-1}"
+if [[ "${PAPER_COMPASS_DEV_LOGIN}" == "1" ]]; then
+  if [[ -n "${PAPER_COMPASS_PUBLIC_URL:-}" && "${PAPER_COMPASS_PUBLIC_URL}" != "http://127.0.0.1:${PORT}" ]]; then
+    echo "错误：开发账号不能使用非本地站点地址。请先 unset PAPER_COMPASS_PUBLIC_URL，或设置 PAPER_COMPASS_DEV_LOGIN=0。" >&2
+    exit 1
+  fi
+  HOST="127.0.0.1"
+  export PAPER_COMPASS_PUBLIC_URL="http://127.0.0.1:${PORT}"
+  export PAPER_COMPASS_EVENTS_ENABLED="${PAPER_COMPASS_EVENTS_ENABLED:-0}"
+  unset GITHUB_CLIENT_ID GITHUB_CLIENT_SECRET
+  echo "本地开发账号已启用：local-developer（收藏与已读使用独立开发用户库）"
+fi
+
 if [[ ! -x "${CLI_BIN}" ]]; then
   CLI_BIN="${PROJECT_DIR}/.venv/bin/paper-firehose"
 fi

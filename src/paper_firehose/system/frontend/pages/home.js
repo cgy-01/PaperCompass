@@ -1,4 +1,5 @@
-import { overview } from "../state.js";
+import { overview, sources } from "../state.js";
+import { groupSources } from "../catalog-data.js";
 import { $, esc, date } from "../components/ui.js";
 import { remember, paperHref } from "../components/papers.js";
 export function drawYearTrend() {
@@ -82,7 +83,7 @@ export function renderOverview() {
     stats = [
       ["收录论文", (overview.total || 0).toLocaleString(), "本地论文库总量"],
       [
-        "近 30 天新增",
+        "近 30 天发表",
         (overview.recent30 || 0).toLocaleString(),
         "按公开日期统计",
       ],
@@ -99,18 +100,19 @@ export function renderOverview() {
       ],
     ];
   $("#heroTopics").textContent = overview.topicCount || 0;
-  $("#heroSources").textContent = overview.sourceCount || 0;
+  $("#heroSources").textContent = groupSources(sources).length;
+  $("#heroSources").title = "按会议系列、期刊与预印本平台统计";
   $("#stats").innerHTML = stats
     .map(
       ([label, value, detail]) =>
-        `<div class="stat"><b>${value}</b><span>${label}</span><small>${detail}</small></div>`,
+        `<div class="stat" ${label === "论文信息完整度" ? 'title="作者、摘要、发表日期、来源与原文链接齐全"' : ''}><b>${value}</b><span>${label}</span><small>${detail}</small></div>`,
     )
     .join("");
   remember(overview.latest || []);
   $("#topPapers").innerHTML = (overview.latest || [])
     .map(
       (p) =>
-        `<div class="mini-paper"><a href="${paperHref(p)}">${esc(p.title)}</a><p>${esc(p.source)} · ${date(p.published || p.matched)} · 相关度 ${p.score ? Math.round(p.score * 100) + "%" : "—"}</p></div>`,
+        `<div class="mini-paper"><a href="${paperHref(p)}">${esc(p.title)}</a><p>${esc(p.source)} · ${date(p.published || p.matched)} · 主题匹配度 ${p.score ? Math.round(p.score * 100) + "%" : "—"}</p></div>`,
     )
     .join("");
   const palette = [

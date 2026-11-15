@@ -21,82 +21,124 @@ export function icon(name, small = false) {
 export function refreshIcons(root = document) {
   replaceIcons(root);
 }
+const selectControllers = new WeakMap();
+let selectSequence = 0;
 export function closeCustomSelects(except = null) {
-  $$(".custom-select.open").forEach((wrap) => {
-    if (wrap !== except) {
-      wrap.classList.remove("open");
-      wrap
-        .querySelector(".custom-select-trigger")
-        ?.setAttribute("aria-expanded", "false");
-    }
+  $$(".custom-select.open").forEach(wrap => {
+    if (wrap !== except) selectControllers.get(wrap.querySelector("select"))?.close(false);
   });
 }
-const selectSignatures = new WeakMap();
 export function refreshCustomSelect(select, rebuild = true) {
-  const wrap = select.closest(".custom-select");
-  if (!wrap) return;
-  const signature = rebuild ? JSON.stringify([...select.options].map(option => option.textContent)) : null;
-  if (rebuild && selectSignatures.get(select) !== signature) {
-    selectSignatures.set(select, signature);
-    const menu = wrap.querySelector(".custom-select-menu");
-    menu.innerHTML = [...select.options]
-      .map(
-        (option, index) =>
-          `<button type="button" class="custom-select-option${index === select.selectedIndex ? " selected" : ""}" data-option-index="${index}">${esc(option.textContent)}</button>`,
-      )
-      .join("");
-    menu.querySelectorAll("[data-option-index]").forEach(
-      (button) =>
-        (button.onclick = (event) => {
-          event.stopPropagation();
-          select.selectedIndex = Number(button.dataset.optionIndex);
-          select.dispatchEvent(new Event("change", { bubbles: true }));
-          refreshCustomSelect(select, false);
-          wrap.classList.remove("open");
-          wrap
-            .querySelector(".custom-select-trigger")
-            .setAttribute("aria-expanded", "false");
-        }),
-    );
-  }
-  const label = wrap.querySelector(".custom-select-label");
-  const text = select.options[select.selectedIndex]?.textContent || "";
-  if (label.textContent !== text) label.textContent = text;
-  wrap
-    .querySelectorAll("[data-option-index]")
-    .forEach((button, index) =>
-      button.classList.toggle("selected", index === select.selectedIndex),
-    );
+  selectControllers.get(select)?.render(rebuild);
 }
 export function enhanceSelect(select) {
-  if (select.closest(".custom-select")) {
-    refreshCustomSelect(select, true);
-    return;
-  }
+  if (selectControllers.has(select)) { refreshCustomSelect(select); return; }
   const wrap = document.createElement("div");
   wrap.className = "custom-select";
   select.parentNode.insertBefore(wrap, select);
   wrap.appendChild(select);
-  wrap.insertAdjacentHTML(
-    "beforeend",
-    `<button type="button" class="custom-select-trigger" aria-haspopup="listbox" aria-expanded="false"><span class="custom-select-label"></span><i data-lucide="chevron-down" aria-hidden="true"></i></button><div class="custom-select-menu" role="listbox"></div>`,
-  );
-  const trigger = wrap.querySelector(".custom-select-trigger");
-  trigger.onclick = (event) => {
-    event.stopPropagation();
-    const opening = !wrap.classList.contains("open");
+  const id = (select.id || "select-" + ++selectSequence) + "-picker";
+  select.tabIndex = -1;
+  select.setAttribute("aria-hidden", "true");
+  wrap.insertAdjacentHTML("beforeend", `<button type="button" id="${id}-trigger" class="custom-select-trigger" role="combobox" aria-haspopup="listbox" aria-expanded="false" aria-controls="${id}"><span class="custom-select-label"></span><i data-lucide="chevron-down" aria-hidden="true"></i></button><div id="${id}" class="custom-select-menu" role="listbox"></div>`);
+  const trigger = wrap.querySelector(".custom-select-trigger"), menu = wrap.querySelector(".custom-select-menu");
+  const label = select.getAttribute("aria-label") || select.labels?.[0]?.textContent || "选择条件";
+  trigger.setAttribute("aria-label", label);
+  menu.setAttribute("aria-label", label);
+  let signature, active = select.selectedIndex, typed = "", typedAt = 0;
+  const available = () => [...select.options].map((option, index) =>
+    option.disabled || option.parentElement.disabled ? -1 : index).filter(index => index >= 0);
+  function render(rebuild = true) {
+    const next = rebuild ? JSON.stringify([...select.options].map(option => [option.value, option.textContent, option.disabled])) : signature;
+    if (next !== signature) {
+      signature = next;
+      menu.innerHTML = [...select.options].map((option, index) => `<div id="${id}-${index}" class="custom-select-option" role="option" aria-selected="${index === select.selectedIndex}" aria-disabled="${option.disabled}" data-option-index="${index}">${esc(option.textContent)}</div>`).join("");
+    }
+    if (!wrap.classList.contains("open")) active = select.selectedIndex;
+    const text = select.options[select.selectedIndex]?.textContent || "";
+    const value = trigger.querySelector(".custom-select-label");
+    if (value.textContent !== text) value.textContent = text;
+    trigger.disabled = select.disabled || !select.options.length;
+    menu.querySelectorAll("[data-option-index]").forEach(option => {
+      const index = Number(option.dataset.optionIndex), selected = index === select.selectedIndex;
+      option.classList.toggle("selected", selected);
+      option.classList.toggle("is-active", wrap.classList.contains("open") && index === active);
+      option.setAttribute("aria-selected", String(selected));
+    });
+    if (wrap.classList.contains("open") && active >= 0) trigger.setAttribute("aria-activedescendant", id + "-" + active);
+    else trigger.removeAttribute("aria-activedescendant");
+  }
+  function close(focus = false) {
+    wrap.classList.remove("open");
+    trigger.setAttribute("aria-expanded", "false");
+    render(false);
+    typed = "";
+    if (focus) trigger.focus({ preventScroll: true });
+  }
+  function reveal() {
+    menu.querySelector(`[data-option-index="${active}"]`)?.scrollIntoView({ block: "nearest", inline: "nearest" });
+  }
+  function open() {
+    if (trigger.disabled) return;
     closeCustomSelects(wrap);
-    wrap.classList.toggle("open", opening);
-    trigger.setAttribute("aria-expanded", String(opening));
+    const rect = trigger.getBoundingClientRect(), below = innerHeight - rect.bottom - 12, above = rect.top - 12;
+    const up = below < 180 && above > below;
+    menu.classList.toggle("opens-up", up);
+    menu.style.maxHeight = Math.max(80, Math.min(300, up ? above : below)) + "px";
+    wrap.classList.add("open");
+    trigger.setAttribute("aria-expanded", "true");
+    const indexes = available();
+    active = indexes.includes(select.selectedIndex) ? select.selectedIndex : indexes[0] ?? -1;
+    render(false);
+    reveal();
+  }
+  function choose(index) {
+    if (!available().includes(index)) return;
+    const changed = index !== select.selectedIndex;
+    select.selectedIndex = index;
+    close(true);
+    if (changed) select.dispatchEvent(new Event("change", { bubbles: true }));
+  }
+  selectControllers.set(select, { render, close });
+  trigger.onclick = event => {
+    event.stopPropagation();
+    wrap.classList.contains("open") ? close() : open();
   };
-  trigger.onkeydown = (event) => {
-    if (event.key === "Escape") {
-      wrap.classList.remove("open");
-      trigger.setAttribute("aria-expanded", "false");
+  trigger.onkeydown = event => {
+    if (event.isComposing || event.keyCode === 229) return;
+    const isOpen = wrap.classList.contains("open");
+    if (event.key === "Escape") { event.preventDefault(); close(true); return; }
+    if (event.key === "Tab") { close(); return; }
+    if (["Enter", " "].includes(event.key)) {
+      event.preventDefault(); isOpen ? choose(active) : open(); return;
+    }
+    if (["ArrowDown", "ArrowUp", "Home", "End"].includes(event.key)) {
+      event.preventDefault();
+      if (!isOpen) open();
+      const indexes = available(), current = indexes.indexOf(active);
+      if (event.key === "Home") active = indexes[0] ?? -1;
+      else if (event.key === "End") active = indexes.at(-1) ?? -1;
+      else if (isOpen) active = indexes[Math.max(0, Math.min(indexes.length - 1, current + (event.key === "ArrowDown" ? 1 : -1)))] ?? -1;
+      render(false); reveal(); return;
+    }
+    if (event.key.length === 1 && !event.ctrlKey && !event.metaKey && !event.altKey) {
+      event.preventDefault();
+      if (!isOpen) open();
+      const now = Date.now(); typed = now - typedAt < 700 ? typed + event.key : event.key; typedAt = now;
+      const prefix = [...typed].every(char => char === typed[0]) ? typed[0] : typed;
+      const indexes = available(), after = indexes.filter(index => index > active), before = indexes.filter(index => index <= active);
+      const match = [...after, ...before].find(index => select.options[index].textContent.toLocaleLowerCase().startsWith(prefix.toLocaleLowerCase()));
+      if (match !== undefined) { active = match; render(false); reveal(); }
     }
   };
-  select.addEventListener("change", () => refreshCustomSelect(select, false));
-  refreshCustomSelect(select, true);
+  trigger.onblur = () => close();
+  menu.onpointerdown = event => event.preventDefault();
+  menu.onclick = event => {
+    const option = event.target.closest("[data-option-index]");
+    if (option) { event.stopPropagation(); choose(Number(option.dataset.optionIndex)); }
+  };
+  select.addEventListener("change", () => render(false));
+  render();
   refreshIcons(wrap);
 }
 export function enhanceSelects(root = document) {

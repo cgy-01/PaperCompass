@@ -8,7 +8,7 @@ import {
 } from "./state.js";
 import { api, cancelApiChannel } from "./api.js";
 import { configureActions } from "./actions.js";
-import { initAccount, persistCollections } from "./account.js";
+import { initAccount, persistCollections, recheckAccount, renderAccountButton } from "./account.js";
 import { trackPage } from "./analytics.js";
 import { createRouter, routeHash } from "./router.js";
 import {
@@ -24,6 +24,7 @@ import {
 } from "./components/ui.js";
 import { setWelcomeMotionActive } from "./pages/welcome-motion.js";
 import { initTypography } from "./typography.js";
+import { bindSearch } from "./search.js";
 
 const navItems = [
   ["overview", "总览"],
@@ -53,7 +54,7 @@ export function navMarkup(mobile = false) {
   return navItems
     .map(
       ([id, label]) =>
-        `<button data-go="${id}" aria-label="${label}" class="${state.view === id ? "active" : ""}"><span class="icon-wrap nav-icon-wrap" aria-hidden="true"><i data-lucide="${navIconNames[id]}"></i></span>${mobile ? `<span class="nav-label">${mobileNavLabels[id]}</span>` : label}${!mobile && id === "library" ? `<small>${saved.size}</small>` : ""}</button>`,
+        `<button data-go="${id}" aria-label="${label}" ${state.view === id ? 'aria-current="page"' : ''} class="${state.view === id ? "active" : ""}"><span class="icon-wrap nav-icon-wrap" aria-hidden="true"><i data-lucide="${navIconNames[id]}"></i></span>${mobile ? `<span class="nav-label">${mobileNavLabels[id]}</span>` : label}${!mobile && id === "library" ? `<small>${saved.size}</small>` : ""}</button>`,
     )
     .join("");
 }
@@ -114,10 +115,17 @@ function ensureCatalog() {
   return catalogPromise;
 }
 const router = createRouter(async (route, { initial }) => {
+  const focusOrigin = document.activeElement;
+  const moveFocus = !initial && renderedView !== route.view && focusOrigin?.matches(":focus-visible") &&
+    focusOrigin.closest("nav,.topic-row,.venue-row,.detail-nav,.brand");
   if (!initial && renderedView !== "paper" && route.view === "paper")
     history.replaceState({ pcDetailOrigin: true }, "");
   if (renderedView !== route.view) cancelApiChannel(renderedView);
   Object.assign(state, route);
+  if (!["account", "login"].includes(route.view)) {
+    try { sessionStorage.setItem("pc-login-return", routeHash(route)); } catch {}
+  }
+  renderAccountButton();
   renderedView = route.view;
   document.body.classList.toggle("is-welcome", route.view === "welcome");
   setWelcomeMotionActive(route.view === "welcome");
@@ -131,7 +139,7 @@ const router = createRouter(async (route, { initial }) => {
   document.title =
     route.view === "welcome"
       ? "Paper Compass · 找到你的研究方向"
-      : "Paper Compass · AI 研究工作台";
+      : `${{ overview: "研究总览", discover: route.theme ? route.theme + " · 发现论文" : "发现论文", venues: "期刊与会议", topics: "研究主题", library: "我的文献库", docs: "使用文档", account: "我的账号", login: "登录", paper: "论文详情" }[route.view]} · Paper Compass`;
   const notice = $("#workspaceNotice");
   notice.hidden = true;
   try {
@@ -147,6 +155,11 @@ const router = createRouter(async (route, { initial }) => {
       syncFilters();
     }
     await render();
+    if (routeHash(route) !== routeHash(state)) return;
+    if (moveFocus || (!initial && route.view === "login")) {
+      const heading = document.getElementById(route.view)?.querySelector("h1");
+      if (heading) { heading.tabIndex = -1; heading.focus({ preventScroll: true }); }
+    }
   } catch (error) {
     if (routeHash(route) !== routeHash(state)) return;
     notice.textContent =
@@ -161,7 +174,7 @@ const router = createRouter(async (route, { initial }) => {
     notice.hidden = false;
   }
   appMounted = true;
-  trackPage(state);
+  trackPage(state.view === "login" ? { ...state, view: "account" } : state);
 });
 export function commitRoute(options) {
   return router.navigate(routeHash(state), options);
@@ -198,11 +211,12 @@ const pageLoaders = {
   docs: () => import("./pages/docs.js"),
   paper: () => import("./pages/paper.js"),
   account: () => import("./account.js"),
+  login: () => import("./account.js"),
 };
 const pageExports = {
   welcome: "renderWelcome", overview: "renderOverview", discover: "renderDiscover",
   venues: "renderVenues", topics: "renderTopics", library: "renderLibrary",
-  docs: "renderDocs", paper: "renderPaper", account: "renderAccount",
+  docs: "renderDocs", paper: "renderPaper", account: "renderAccount", login: "renderLogin",
 };
 const loadedPages = new Map();
 export async function render() {
@@ -236,6 +250,11 @@ export async function refreshCatalog() {
   }
 }
 async function init() {
+  $("#skipContent").onclick = event => {
+    event.preventDefault();
+    const heading = document.getElementById(state.view)?.querySelector("h1");
+    if (heading) { heading.tabIndex = -1; heading.focus(); }
+  };
   for (const [id, key] of [
     ["typeFilter", "type"],
     ["themeFilter", "theme"],
@@ -248,16 +267,19 @@ async function init() {
       state.page = 1;
       commitRoute();
     };
-  let searchTimer;
-  $("#globalSearch").oninput = (e) => {
-    clearTimeout(searchTimer);
-    searchTimer = setTimeout(() => {
-      state.query = e.target.value.trim();
+  bindSearch($("#globalSearch"), query => {
+      state.query = query;
       state.page = 1;
       state.view = "discover";
       commitRoute();
-    }, 250);
-  };
+  });
+  document.addEventListener("keydown", event => {
+    if (event.key === "/" && !event.ctrlKey && !event.metaKey && !event.altKey &&
+        state.view !== "login" &&
+        !event.target.closest("input,textarea,select,[contenteditable],[role=combobox]")) {
+      event.preventDefault(); $("#globalSearch").focus();
+    }
+  });
   $("#clearBtn").onclick = () => {
     Object.assign(state, {
       page: 1,
@@ -281,7 +303,7 @@ async function init() {
     if (navigator.connection?.saveData || loadedPages.has("overview")) return;
     void pageLoaders.overview().then(page => loadedPages.set("overview", page)).catch(() => {});
   };
-  document.querySelectorAll('a[href="#home"]').forEach(link => {
+  document.querySelectorAll('a[data-track="enter_workspace"]').forEach(link => {
     for (const event of ["pointerenter", "focusin", "pointerdown"])
       link.addEventListener(event, warmWorkspace, { once: true, passive: true });
   });
@@ -312,5 +334,7 @@ initTypography();
 init();
 initAccount().then(() => {
   // Account chrome updates itself. Do not rebuild an unrelated landing page.
-  if (appMounted && ["account", "library", "discover", "paper"].includes(state.view)) render();
+  if (appMounted && ["account", "login", "library", "discover", "paper"].includes(state.view)) render();
 });
+document.addEventListener("visibilitychange", () => void recheckAccount());
+window.addEventListener("focus", () => void recheckAccount());

@@ -18,6 +18,8 @@ export const state = {
   paperId: "",
   libraryMode: "saved",
   dataVersion: "",
+  authStatus: "",
+  authReturn: "#home",
 };
 export function updateCatalog(data) {
   topicCatalog = data.topics;
@@ -39,7 +41,8 @@ function storedSet(key) {
   }
 }
 export const saved = storedSet("pc-saved"),
-  read = storedSet("pc-read");
+  read = storedSet("pc-read"),
+  visited = new Set([...storedSet("pc-visited")].slice(-500));
 export const institutionCatalog = [
   { name: "中山大学", logo: "/api/docs/assets/img/institutions/sysu.png" },
   { name: "厦门大学", logo: "/api/docs/assets/img/institutions/xmu.jpg" },

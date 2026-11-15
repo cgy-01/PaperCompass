@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import base64
 import hashlib
+import ipaddress
 import json
 import logging
 import os
@@ -32,6 +33,15 @@ class Settings:
     events_enabled: bool = True
     retention_days: int = 90
     daily_limit: int = 100000
+    dev_login: bool = False
+
+    def __post_init__(self):
+        if self.dev_login:
+            parsed = urlsplit(self.public_url)
+            if (parsed.scheme != 'http' or parsed.hostname not in ('127.0.0.1', 'localhost', '::1')
+                    or parsed.username or parsed.password or parsed.path or parsed.query or parsed.fragment
+                    or self.client_id or self.client_secret):
+                raise ValueError('Development login requires an HTTP loopback origin and no GitHub credentials')
 
     @classmethod
     def from_env(cls):
@@ -45,13 +55,16 @@ class Settings:
         return cls(url, os.getenv('GITHUB_CLIENT_ID', ''), os.getenv('GITHUB_CLIENT_SECRET', ''),
                    os.getenv('PAPER_COMPASS_EVENTS_ENABLED', '1') == '1',
                    max(1, min(365, int(os.getenv('PAPER_COMPASS_EVENTS_RETENTION_DAYS', '90')))),
-                   max(100, min(1000000, int(os.getenv('PAPER_COMPASS_EVENTS_DAILY_LIMIT', '100000')))))
+                   max(100, min(1000000, int(os.getenv('PAPER_COMPASS_EVENTS_DAILY_LIMIT', '100000')))),
+                   os.getenv('PAPER_COMPASS_DEV_LOGIN', '0') == '1')
 
     @property
     def login_enabled(self):
-        return bool(self.public_url and self.client_id and self.client_secret)
+        return self.dev_login or bool(self.public_url and self.client_id and self.client_secret)
 
     def cookie_name(self, kind):
+        if self.dev_login:
+            return 'pc_dev_' + kind
         return ('__Host-' if self.public_url.startswith('https://') else '') + 'pc_' + kind
 
     def cookie(self, kind, value, age=30 * 86400):
@@ -106,7 +119,7 @@ class AccountAPI:
     def __init__(self, root: Path | None = None, settings: Settings | None = None):
         root = root or resolve_data_path()
         self.settings = settings or Settings.from_env()
-        self.users = UserStore(root / 'users' / 'users.db')
+        self.users = UserStore(root / 'users' / ('development.db' if self.settings.dev_login else 'users.db'))
         self.events = EventStore(root / 'analytics' / 'events.db', self.settings.retention_days, self.settings.daily_limit)
 
     def _profile(self, code, verifier):
@@ -149,6 +162,26 @@ class AccountAPI:
             handler.send_header('Content-Length', '0')
             handler.end_headers()
 
+        def auth_failure(reason, message, status, headers=(), return_to='#home'):
+            # Browser navigation returns to the application; API clients retain
+            # the existing JSON error/status contract. Never reflect provider text.
+            if 'text/html' in handler.headers.get('Accept', ''):
+                redirect((settings.public_url or '') + '/#welcome?' + urlencode({
+                    'auth': reason, 'return_to': return_to}), headers)
+            else:
+                reply({'error': message}, status, headers)
+
+        if settings.dev_login:
+            # Do not trust forwarded headers: a production reverse proxy must
+            # never turn a public request into a development login.
+            try:
+                local_peer = ipaddress.ip_address(handler.client_address[0]).is_loopback
+            except ValueError:
+                local_peer = False
+            if not local_peer or handler.headers.get('Host', '').lower() != urlsplit(settings.public_url).netloc.lower():
+                reply({'error': 'development login is only available on localhost'}, 403)
+                return True
+
         try:
             cookies = SimpleCookie(handler.headers.get('Cookie', ''))
         except CookieError:
@@ -158,14 +191,23 @@ class AccountAPI:
             return item.value if item else ''
         token = cookie_value('session')
         user = self.users.user(token)
+        development_headers = []
+        if settings.dev_login and method == 'GET' and path in ('/api/account', '/auth/github/login') and not user:
+            token = self.users.login({'id': -1, 'login': 'local-developer', 'name': '本地开发账号'})
+            user = self.users.user(token)
+            development_headers.append(settings.cookie('session', token))
+            LOGGER.info('Local development account session created')
         try:
             if method == 'GET' and path == '/auth/github/login':
-                if not settings.login_enabled:
-                    reply({'error': 'GitHub 登录暂不可用'}, 503)
-                    return True
                 return_to = params.get('return_to', ['#account'])[0]
                 if not return_to.startswith('#') or len(return_to) > 2048 or '\r' in return_to or '\n' in return_to:
                     return_to = '#account'
+                if user:
+                    redirect((settings.public_url or '') + '/' + quote(return_to, safe='#/?=&%:+,'), development_headers)
+                    return True
+                if not settings.login_enabled:
+                    auth_failure('unavailable', 'GitHub 登录暂不可用', 503, return_to=return_to)
+                    return True
                 state, binding, verifier = self.users.begin_login(return_to)
                 challenge = base64.urlsafe_b64encode(hashlib.sha256(verifier.encode()).digest()).rstrip(b'=').decode()
                 redirect('https://github.com/login/oauth/authorize?' + urlencode({
@@ -174,18 +216,22 @@ class AccountAPI:
                     [settings.cookie('oauth', binding, 600)])
                 return True
             if method == 'GET' and path == '/auth/github/callback':
+                if settings.dev_login:
+                    reply({'error': 'GitHub callback is disabled in development login mode'}, 404)
+                    return True
                 state, code = params.get('state', [''])[0], params.get('code', [''])[0]
                 login = self.users.consume_login(state, cookie_value('oauth')) if settings.login_enabled and state else None
                 clear = settings.cookie('oauth', '', 0)
                 if not login or not code or len(code) > 512 or params.get('error'):
-                    reply({'error': '登录请求已失效，请重新登录'}, 400, [clear])
+                    reason = 'cancelled' if login and params.get('error') == ['access_denied'] else 'expired'
+                    auth_failure(reason, '登录请求已失效，请重新登录', 400, [clear], login['return_to'] if login else '#home')
                     return True
                 try:
                     session = self.users.login(self._profile(code, login['verifier']))
                 except (requests.RequestException, ValueError, KeyError, TypeError):
                     # Never log provider responses, codes, tokens or client secrets.
                     LOGGER.warning('GitHub sign-in could not be completed')
-                    reply({'error': 'GitHub 登录失败，请稍后重试'}, 502, [clear])
+                    auth_failure('failed', 'GitHub 登录失败，请稍后重试', 502, [clear], login['return_to'])
                     return True
                 self.users.logout(token)
                 redirect(settings.public_url + '/' + quote(login['return_to'], safe='#/?=&%:+,'),
@@ -193,13 +239,13 @@ class AccountAPI:
                 return True
             if method == 'GET' and path == '/api/account':
                 visitor = cookie_value('visitor')
-                headers = []
+                headers = development_headers.copy()
                 if not re.fullmatch(r'[a-f0-9]{64}', visitor):
                     visitor = secrets.token_hex(32)
                     headers.append(settings.cookie('visitor', visitor))
                 reply({'user': user, 'csrfToken': digest('csrf:' + token) if user else '',
                        'loginEnabled': settings.login_enabled, 'eventsEnabled': settings.events_enabled,
-                       'retentionDays': settings.retention_days}, headers=headers)
+                       'retentionDays': settings.retention_days, 'devMode': settings.dev_login}, headers=headers)
                 return True
             if method == 'GET' and path in ('/api/account/favorites', '/api/account/reading'):
                 if not user:

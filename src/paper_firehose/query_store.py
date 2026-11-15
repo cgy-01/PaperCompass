@@ -7,6 +7,7 @@ import json
 import logging
 import math
 import os
+import re
 import sqlite3
 import tempfile
 import time
@@ -32,6 +33,15 @@ def public_id(identifier):
 
 def present_paper(paper, *, compact=False):
     result = {**paper, 'publicId': public_id(paper['id'])}
+    # Clean RSS transport metadata only at presentation time. Historical source
+    # records and the legacy/MCP API remain untouched.
+    summary = result.get('summary', '')
+    if isinstance(summary, str):
+        summary = re.sub(
+            r'^\s*(?:arxiv:\s*\S+\s+)?Announce\s+Type:\s*(?:new|replace|cross(?:-list)?)\s+Abstract:\s*',
+            '', summary, flags=re.I)
+        summary = re.sub(r'^\s*Abstract:\s*', '', summary, flags=re.I)
+        result['summary'] = summary.strip()
     if compact:
         result['summaryPreview'] = result.pop('summary', '')[:320]
         result.pop('insight', None)

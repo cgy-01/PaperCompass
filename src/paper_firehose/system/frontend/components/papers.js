@@ -1,4 +1,4 @@
-import { paperIndex, saved, state } from "../state.js";
+import { paperIndex, saved, read, visited, state } from "../state.js";
 import { esc, date, icon } from "./ui.js";
 import { render, openPaper } from "../actions.js";
 import { toggleFavorite } from "../account.js";
@@ -22,7 +22,7 @@ export function card(p) {
     .map((t) => `<span class="badge">${esc(t)}</span>`)
     .join(
       "",
-    )}</div><button class="save ${saved.has(p.id) ? "on" : ""}" title="${saved.has(p.id) ? "取消收藏" : "收藏"}" aria-label="${saved.has(p.id) ? "取消收藏" : "收藏"}">${icon("star")}</button></div><h3><a href="${paperHref(p)}">${esc(p.title)}</a></h3><div class="authors">${esc(p.authors)}</div><p class="abstract">${esc(p.summaryPreview || p.summary)}</p><div class="paper-foot"><span>${esc(p.source)} · ${date(p.published)}</span><span class="score">${p.score ? Math.round(p.score * 100) + "%" : "—"}</span></div></article>`;
+    )}</div><button class="save ${saved.has(p.id) ? "on" : ""}" title="${saved.has(p.id) ? "取消收藏" : "收藏"}" aria-label="${saved.has(p.id) ? "取消收藏" : "收藏"}" aria-pressed="${saved.has(p.id)}">${icon("star")}</button></div><h3><a href="${paperHref(p)}">${esc(p.title)}</a></h3><div class="authors">${esc(p.authors)}</div><p class="abstract">${esc(p.summaryPreview || p.summary)}</p><div class="paper-foot"><span>${esc(p.source)} · ${date(p.published)}</span><span class="paper-states">${read.has(p.id) ? '<span class="read-state">已读</span>' : visited.has(p.id) ? '<span class="read-state">已浏览</span>' : ''}<span class="score" title="根据研究主题关键词计算">主题匹配度 ${p.score ? Math.round(p.score * 100) + "%" : "—"}</span></span></div></article>`;
 }
 export function bindCards(root) {
   root.querySelectorAll(".save").forEach(
@@ -41,6 +41,7 @@ export function bindCards(root) {
             b.classList.toggle("on", enabled);
             b.title = label;
             b.setAttribute("aria-label", label);
+            b.setAttribute("aria-pressed", String(enabled));
           }
         } catch {
         } finally {

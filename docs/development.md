@@ -39,6 +39,14 @@ tests/                     测试
 
 ## 前端开发
 
+本地直接运行 `./start_frontend_dev.sh 9000`，打开 `http://127.0.0.1:9000`。脚本默认启用 `local-developer` 开发账号，自动建立本地会话，进入工作区无需 GitHub 配置。收藏与已读走现有真实接口，保存在 `.runtime-demo/users/development.db`；重启后保留，不写入正式 `users/users.db`。默认关闭本地行为上报，可显式设置 `PAPER_COMPASS_EVENTS_ENABLED=1` 调试。
+
+开发账号模式强制监听 loopback 地址，只接受本机连接与配置匹配的 Host，不支持通过 WSL IP 或局域网地址登录。WSL 的浏览器请使用 localhost 转发到 `127.0.0.1:9000`。如已导出其他 `PAPER_COMPASS_PUBLIC_URL`，先 `unset PAPER_COMPASS_PUBLIC_URL` 再启动。脚本仅在自己的子进程环境中忽略 GitHub 凭据，不修改父终端或服务器配置。
+
+生产服务使用 `paper-firehose serve`，`PAPER_COMPASS_DEV_LOGIN` 默认 0，继续配置正式 GitHub OAuth。如需本地验证真实授权，运行 `PAPER_COMPASS_DEV_LOGIN=0 ./start_frontend_dev.sh 9000` 并显式注入测试 OAuth 配置。仅上传源码不会开启服务器开发账号；正式域名或 GitHub 凭据与开发开关混用时会拒绝启用。
+
+welcome 页所有工作区入口使用原生 `/auth/github/login?return_to=<hash>` 链接。后端每次检查真实会话：有效时直达目标页，匿名时发起 GitHub OAuth。没有中间登录页；旧 `#login` 书签保留为直接授权跳转。页内滚动、外部 GitHub 仓库与邮件链接保持原行为。此处是网站入口交互，原有只读论文 API 与 MCP 的访问方式不变。
+
 `system/templates/dashboard_template.html` 只保留页面外壳。`system/frontend/app.js` 负责装配，`pages/` 按页面组织，`components/` 放公共组件，`state.js` 保存浏览器状态，`router.js` 管理 hash 路由，`api.js` 管理请求取消、超时与有界缓存，`styles/app.css` 保存样式。使用浏览器原生 ES modules，不新增构建框架或运行依赖。
 
 默认入口为产品介绍页 `#welcome`，主按钮进入工作区总览 `#home`；原有 `#discover`、`#venues`、`#topics`、`#library`、`#docs`、`#account` 与 `#paper/<SHA-256 哈希>` 仍可直接打开。介绍页主体不等待文献接口，数字和最近论文预览在后台加载，接口失败不会挡住介绍内容。筛选与页码写入 URL，浏览器前进后退恢复筛选和当前会话滚动位置。直接刷新详情会独立请求数据，不依赖列表缓存。标题是站内链接，点击卡片空白处同样进入详情，原文链接在详情页提供。
@@ -53,7 +61,7 @@ paper-firehose dashboard
 
 运行 `./start_frontend_dev.sh 9000` 启动开发预览。脚本先检查端口，并在健康检查通过后提示就绪。在 WSL 中默认监听 `0.0.0.0`，同时打印 WSL IP 链接；Windows 的 localhost 转发失效时使用该链接。IP 可能随 WSL 重启变化，以本次输出为准。此模式仅用于可信网络；可用 `PAPER_COMPASS_HOST=127.0.0.1 ./start_frontend_dev.sh 9000` 限制为回环监听。云服务器的 systemd 服务不受影响。
 
-前端单元测试：`node --test tests/frontend_routes.mjs tests/frontend_typography.mjs tests/frontend_api.mjs`。可选浏览器回归测试：将 `PAPER_COMPASS_BROWSER` 设置为本机 Chrome 可执行文件，再执行 `python -m pytest tests/test_frontend_browser.py -q`；需要 Node 22 或更新版本的原生 WebSocket，但不需要安装浏览器测试框架。测试使用临时数据库与随机本地端口。设置 `PAPER_COMPASS_VISUAL_FREEZE=1` 可把循环动画固定到相同帧用于视觉对比，不改变产品代码中的动效。
+前端单元测试：`node --test tests/frontend_routes.mjs tests/frontend_typography.mjs tests/frontend_api.mjs tests/frontend_experience.mjs`。可选浏览器回归测试：将 `PAPER_COMPASS_BROWSER` 设置为本机 Chrome 可执行文件，再执行 `python -m pytest tests/test_frontend_browser.py -q`；需要 Node 22 或更新版本的原生 WebSocket，但不需要安装浏览器测试框架。测试使用临时数据库与随机本地端口。设置 `PAPER_COMPASS_VISUAL_FREEZE=1` 可把循环动画固定到相同帧用于视觉对比，不改变产品代码中的动效。
 
 宣传页由 `pages/welcome.js` 和独立的 `styles/welcome.css` 增强；首屏、瀑布流等视觉结构参考 [Digest 模板预览](https://digest-zebno66.app.builtwithrocket.new/digest)，使用本项目的原生模块重新实现，不依赖 Rocket 或 Next.js。首屏论文统计和论文预览使用 bootstrap 中的真实数据；浮动终端与 Loss Curve 使用指定的演示日志，不会实际执行训练命令。中文排版与显示层间距由 `styles/typography.css` 和 `typography.js` 统一处理，不改写数据库字段、筛选值和代码。页内滚动不改变 `#welcome`，滚动监听只安装一次，进入工作区后隐藏宣传页浮层。
 

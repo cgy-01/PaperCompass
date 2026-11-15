@@ -53,6 +53,7 @@ output:
 | `PAPER_COMPASS_HOST` | 本地启动脚本监听地址，默认 127.0.0.1 |
 | `PAPER_COMPASS_PUBLIC_URL` | 账号服务的规范站点 Origin，生产必须为 HTTPS |
 | `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` | GitHub OAuth App 凭据，仅供后端使用 |
+| `PAPER_COMPASS_DEV_LOGIN` | 默认 0；本地开发账号开关，开发脚本默认开启。仅 HTTP loopback Origin、本机连接可用，使用独立开发用户库 |
 | `PAPER_COMPASS_EVENTS_ENABLED` | 行为事件总开关，默认 1；0 关闭接收 |
 | `PAPER_COMPASS_EVENTS_RETENTION_DAYS` | 行为明细保留天数，默认 90，范围 1～365 |
 | `PAPER_COMPASS_EVENTS_DAILY_LIMIT` | 每日事件接收上限，默认 100000 |

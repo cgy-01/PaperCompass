@@ -44,6 +44,7 @@ try {
     session;
   const pending = new Map(),
     errors = [];
+  let providerRequests = 0;
   socket.addEventListener("message", ({ data }) => {
     const msg = JSON.parse(data);
     if (msg.id) {
@@ -53,7 +54,16 @@ try {
     }
     if (msg.method === "Runtime.exceptionThrown")
       errors.push(msg.params.exceptionDetails);
-    if (msg.method === "Fetch.requestPaused")
+    if (msg.method === "Fetch.requestPaused") {
+      if (msg.params.request.url.startsWith('https://github.com/login/oauth/authorize?')) {
+        providerRequests++;
+        const state = new URL(msg.params.request.url).searchParams.get('state');
+        void call('Fetch.fulfillRequest', {
+          requestId: msg.params.requestId, responseCode: 302,
+          responseHeaders: [{name:'Location',value:process.argv[2] + '/auth/github/callback?code=browser-fixture&state=' + encodeURIComponent(state)}],
+        });
+        return;
+      }
       void call("Fetch.fulfillRequest", {
         requestId: msg.params.requestId,
         responseCode: 503,
@@ -62,6 +72,7 @@ try {
           JSON.stringify({ error: "test catalog temporarily unavailable" }),
         ).toString("base64"),
       });
+    }
   });
   async function call(method, params = {}, sessionId = session) {
     if (method === "Page.captureScreenshot" && process.env.PAPER_COMPASS_VISUAL_FREEZE) {
@@ -77,6 +88,12 @@ try {
       })()`, awaitPromise:true}, sessionId);
       if (frozen.exceptionDetails) throw new Error(JSON.stringify(frozen.exceptionDetails));
     }
+    if (method === 'Fetch.disable') {
+      method = 'Fetch.enable'; params = {patterns: []};
+    }
+    if (method === 'Fetch.enable') params = {...params, patterns: [
+      ...(params.patterns || []), {urlPattern:'https://github.com/login/oauth/authorize*'},
+    ]};
     return new Promise((resolve, reject) => {
       const id = ++serial;
       pending.set(id, { resolve, reject });
@@ -112,12 +129,53 @@ try {
   };
   async function until(expression) {
     for (let i = 0; i < 100; i++) {
-      if (await evaluate(expression)) return;
+      try {
+        if (await evaluate(expression)) return;
+      } catch (error) {
+        // Native authorization links reload the document. An old readiness
+        // expression may briefly run against a fresh, not-yet-parsed document.
+        const detail = error.message || JSON.stringify(error);
+        if (!/Cannot read properties of null|Execution context was destroyed|Cannot find context/.test(detail)) throw error;
+      }
       await new Promise((r) => setTimeout(r, 100));
     }
     throw new Error("Timed out: " + expression);
   }
   const base = process.argv[2];
+  if (process.env.PAPER_COMPASS_TEST_DEV_LOGIN) {
+    await call('Page.navigate', {url: base});
+    await until("document.querySelector('#accountSlot')?.textContent.includes('local-developer')");
+    const developer = await evaluate("fetch('/api/account').then(r=>r.json())");
+    assert.equal(developer.devMode, true);
+    assert.equal(developer.user.name, '本地开发账号');
+    await evaluate("document.querySelector('.welcome-primary').click()");
+    await until("location.hash==='#home' && document.querySelector('#stats b')?.textContent==='2'");
+    assert.equal(providerRequests,0);
+    await evaluate("location.hash='#discover'");
+    await until("document.querySelector('#paperGrid .paper .save:not(.on)')");
+    await evaluate("document.querySelector('#paperGrid .paper .save').click()");
+    await until("document.querySelector('#paperGrid .paper .save.on')");
+    await evaluate("document.querySelector('#paperGrid .paper h3 a').click()");
+    await until("document.querySelector('#detailRead')");
+    await evaluate("document.querySelector('#detailRead').click()");
+    await until("document.querySelector('#detailRead').getAttribute('aria-pressed')==='true'");
+    await call('Page.reload');
+    await until("document.querySelector('#detailRead')?.getAttribute('aria-pressed')==='true' && document.querySelector('#detailSave')?.getAttribute('aria-pressed')==='true'");
+    await evaluate("location.hash='#account'");
+    await until("document.querySelector('#accountSyncStatus')?.textContent.includes('已保存到本地开发账号')");
+    assert.equal(await evaluate("document.querySelector('.account-profile h2').textContent"),'本地开发账号');
+    assert.equal(await evaluate("document.querySelectorAll('.account-profile a[href^=\"https://github.com/\"]').length"),0);
+    await call('Network.deleteCookies', {name:'pc_dev_session',url:base});
+    await call('Page.reload');
+    await until("document.querySelector('#accountSyncStatus')?.textContent.includes('已保存到本地开发账号')");
+    assert.equal((await evaluate("fetch('/api/account').then(r=>r.json())")).user.id,developer.user.id);
+    await evaluate("location.hash='#library'");
+    await until("document.querySelectorAll('#libraryGrid .paper').length===1");
+    assert.ok(await evaluate("document.querySelector('#libraryScope').textContent.includes('本地开发账号')"));
+    assert.equal(providerRequests,0);
+    assert.deepEqual(errors,[]);
+    console.log('Developer account browser passed: automatic session, no GitHub, favorites, reading, persistence.');
+  } else {
   // The first screen must work even before the workspace and full icon library
   // arrive. Fail those downloads to model a slow/unavailable dependency chain.
   await call("Fetch.enable", {
@@ -125,6 +183,9 @@ try {
   });
   await call("Page.navigate", { url: base });
   await until("document.querySelector('.welcome-log-track') && document.querySelectorAll('#welcomeNav svg.lucide-arrow-up-right').length===2");
+  assert.equal(await evaluate("document.querySelector('.welcome-nav-enter').textContent.trim()"),'登录');
+  assert.equal(await evaluate("document.querySelector('.welcome-primary').textContent.trim()"),'进入工作区');
+  assert.equal(await evaluate("[...document.querySelectorAll('#welcome a')].filter(a=>a.getAttribute('href').startsWith('#') && a.getAttribute('href')!=='#welcome').length"),0);
   assert.equal(await evaluate("getComputedStyle(document.querySelector('.welcome-log-track')).animationDelay"), "0s");
   assert.equal(await evaluate("getComputedStyle(document.querySelector('.welcome-log-track')).animationPlayState"), "running");
   const initialLogTransform = await evaluate("getComputedStyle(document.querySelector('.welcome-log-track')).transform");
@@ -153,7 +214,7 @@ try {
   );
   await evaluate("document.querySelector('.welcome-primary').click()");
   await until(
-    "!document.querySelector('#workspaceNotice').hidden && document.querySelector('#workspaceNotice button')",
+    "document.querySelector('#workspaceNotice') && !document.querySelector('#workspaceNotice').hidden && document.querySelector('#workspaceNotice button')",
   );
   await call("Fetch.disable");
   await evaluate("document.querySelector('#workspaceNotice button').click()");
@@ -312,7 +373,7 @@ try {
     ),
   );
   await until(
-    "document.querySelector('#welcomeRecentCount').textContent==='近 30 天新增 · 0 篇'",
+    "document.querySelector('#welcomeRecentCount').textContent==='近 30 天发表 · 0 篇'",
   );
   await call("Emulation.setEmulatedMedia", {
     features: [{ name: "prefers-reduced-motion", value: "reduce" }],
@@ -550,12 +611,14 @@ try {
     "/tmp/paper-compass-welcome-research.png",
     Buffer.from(researchShot.data, "base64"),
   );
+  const beforeSignedEntry = providerRequests;
   await evaluate(
     "document.querySelector('#welcomeAreaList [data-track=\"research_area:ai_infra\"]').click()",
   );
   await until(
     "location.hash==='#discover?theme=AI+Infra' && document.querySelectorAll('#paperGrid .paper').length===30",
   );
+  assert.equal(providerRequests, beforeSignedEntry);
   assert.equal(
     await evaluate("document.querySelector('#themeFilter').value"),
     "AI Infra",
@@ -615,6 +678,7 @@ try {
       "!document.body.classList.contains('welcome-motion-active') && document.querySelector('#welcome').getAnimations({subtree:true}).every(a=>a.playState!=='running')",
     ),
   );
+  await call('Network.deleteCookies',{name:'pc_session',url:base});
   await evaluate("localStorage.setItem('pc-saved',JSON.stringify(['old']))");
   await call("Page.reload");
   await until("document.querySelector('#stats b')?.textContent==='37'");
@@ -692,6 +756,11 @@ try {
   await until("location.hash==='#discover'");
   await call("Page.navigate", { url: base + "/#library" });
   await until("document.querySelector('#libraryGrid .paper[data-id=old]')");
+  await evaluate("document.querySelector('#libraryGrid .paper[data-id=old] h3 a').click()");
+  await until("document.querySelector('#paperDetail h1') && JSON.parse(localStorage.getItem('pc-visited')||'[]').at(-1)==='old'");
+  await evaluate("location.hash='#library?mode=visited'");
+  await until("document.querySelector('#libraryGrid .paper')?.dataset.id==='old'");
+  assert.ok(await evaluate("document.querySelector('#libraryScope').textContent.includes('按浏览顺序排列')"));
   await call("Page.navigate", { url: base + "/#docs" });
   await until("document.querySelector('#docArticle h1')");
   assert.deepEqual(
@@ -701,17 +770,101 @@ try {
   })()`),
     ["16px", "27.2px", true],
   );
+  // Product experience: composition-safe search and recoverable filter states.
+  await call("Page.navigate", { url: base + "/#discover" });
+  await until("document.querySelectorAll('#paperGrid .paper').length===30");
+  await evaluate(`(()=>{
+    const input=document.querySelector('#globalSearch');
+    input.dispatchEvent(new CompositionEvent('compositionstart',{bubbles:true}));
+    input.value='qiang'; input.dispatchEvent(new InputEvent('input',{bubbles:true,isComposing:true}));
+    input.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',keyCode:229,isComposing:true,bubbles:true,cancelable:true}));
+  })()`);
+  await new Promise(resolve=>setTimeout(resolve,350));
+  assert.equal(await evaluate("location.hash"), "#discover");
+  await evaluate(`(()=>{
+    const input=document.querySelector('#globalSearch');input.value='infrastructure';
+    input.dispatchEvent(new CompositionEvent('compositionend',{bubbles:true}));
+    input.dispatchEvent(new InputEvent('input',{bubbles:true,isComposing:false}));
+  })()`);
+  await until("new URLSearchParams(location.hash.split('?')[1]).get('q')==='infrastructure' && document.querySelector('#paperGrid').getAttribute('aria-busy')==='false'");
+  await evaluate("document.querySelector('#globalSearch').dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true,cancelable:true}))");
+  await until("location.hash==='#discover' && document.querySelectorAll('#paperGrid .paper').length===30");
+  assert.equal(await evaluate("document.querySelector('#typeFilter').tabIndex"), -1);
+  await evaluate("document.querySelector('#typeFilter-picker-trigger').focus()");
+  const key=async value=>{await call('Input.dispatchKeyEvent',{type:'keyDown',key:value});await call('Input.dispatchKeyEvent',{type:'keyUp',key:value});};
+  await key('ArrowDown');
+  assert.equal(await evaluate("document.querySelector('#typeFilter-picker-trigger').getAttribute('aria-expanded')"), 'true');
+  await key('ArrowDown');await key('Escape');
+  assert.equal(await evaluate("document.querySelector('#typeFilter').value"), '');
+  assert.equal(await evaluate("document.activeElement.id"), 'typeFilter-picker-trigger');
+  await key('ArrowDown');await key('End');await key('Enter');
+  await until("document.querySelector('#typeFilter').value==='预印本' && document.querySelector('#paperGrid [data-relax=type]') && document.querySelector('#paperGrid').getAttribute('aria-busy')==='false'");
+  assert.equal(await evaluate("document.querySelectorAll('#paperGrid .paper').length"),0);
+  assert.ok(await evaluate("document.querySelector('#paperGrid [data-relax=type]')!==null"));
+  await evaluate("document.querySelector('#discoverScope [data-relax=type]').click()");
+  await until("document.querySelectorAll('#paperGrid .paper').length===30");
+  await evaluate("globalThis.pcRetainedPaper=document.querySelector('#paperGrid .paper')");
+  await call('Fetch.enable',{patterns:[{urlPattern:'*/api/v1/papers*'}]});
+  await evaluate("document.querySelector('#globalSearch').value='test-unavailable';document.querySelector('#paperSearch').requestSubmit()");
+  await until("document.querySelector('#discoverFeedback').textContent.includes('已保留上次结果')");
+  assert.ok(await evaluate("globalThis.pcRetainedPaper===document.querySelector('#paperGrid .paper')"));
+  assert.ok(await evaluate("!document.querySelector('#discoverFeedback').textContent.includes('503')"));
+  await call('Fetch.disable');
+  await evaluate("document.querySelector('#discoverFeedback [data-retry]').click()");
+  await until("document.querySelector('#paperGrid [data-relax=query]')");
+  await evaluate("document.querySelector('#paperGrid [data-relax=query]').click()");
+  await until("document.querySelectorAll('#paperGrid .paper').length===30");
+  assert.ok(await evaluate("document.querySelector('#paperGrid .save').getBoundingClientRect().width>=44"));
+  // A storage error must never show a favorite as successfully saved.
+  const favoriteBefore = await evaluate("document.querySelector('#paperGrid .save').getAttribute('aria-pressed')");
+  await evaluate(`(()=>{
+    globalThis.pcSetItem=Storage.prototype.setItem;
+    Storage.prototype.setItem=function(key,value){
+      if(key==='pc-saved') throw new DOMException('storage blocked','QuotaExceededError');
+      return globalThis.pcSetItem.call(this,key,value);
+    };
+    document.querySelector('#paperGrid .save').click();
+  })()`);
+  await until("document.querySelector('#accountNotice')?.textContent.includes('浏览器未能保存记录')");
+  assert.equal(await evaluate("document.querySelector('#paperGrid .save').getAttribute('aria-pressed')"),favoriteBefore);
+  await evaluate("Storage.prototype.setItem=globalThis.pcSetItem;delete globalThis.pcSetItem");
+  await evaluate("location.hash='#venues'");
+  await until("document.querySelector('.venue-series summary')");
+  await evaluate("document.querySelector('.venue-series summary').click()");
+  assert.equal(await evaluate("document.querySelector('.venue-series').open"),true);
+  assert.equal(await evaluate("document.querySelector('[data-source]').tagName"),'A');
+  assert.ok(await evaluate("document.querySelector('[data-source]').getAttribute('href').includes('source=ICLR+2026')"));
+  await evaluate("location.hash='#topics'");
+  await until("document.querySelector('#topicGrid .topic-row')");
+  assert.equal(await evaluate("document.querySelector('#topicGrid .topic-row').tagName"),'A');
+  await evaluate("document.querySelector('#skipContent').click()");
+  assert.equal(await evaluate("document.activeElement.tagName"),'H1');
   if (process.env.PAPER_COMPASS_TEST_LOGIN) {
-    await call("Network.setCookie", {
-      name: "pc_session",
-      value: process.env.PAPER_COMPASS_TEST_LOGIN,
-      url: base,
-      path: "/",
-    });
+    // Preserve a reading record from an older anonymous browser session.
+    await evaluate("localStorage.setItem('pc-read',JSON.stringify(['old']))");
+    // Exercise a real browser authorization round trip with only GitHub mocked.
+    await evaluate("location.hash='#discover?theme=AI+Infra&q=infrastructure'");
+    await until("document.querySelectorAll('#paperGrid .paper').length===30 && document.querySelector('#paperGrid').getAttribute('aria-busy')==='false'");
+    assert.equal(await evaluate("new URL(document.querySelector('#accountSlot a').href).pathname"),'/auth/github/login');
+    assert.equal(await evaluate("new URL(document.querySelector('#accountSlot a').href).searchParams.get('return_to')"),'#discover?theme=AI+Infra&q=infrastructure');
+    assert.equal(await evaluate("document.querySelector('#login')"),null);
+    await evaluate("document.querySelector('#accountSlot a').focus()");
+    await key('Enter');
+    await until("location.hash==='#discover?theme=AI+Infra&q=infrastructure' && document.querySelector('#accountSlot')?.textContent.includes('browser-researcher')");
     await call("Page.navigate", { url: base + "/?signed=1#account" });
     await until(
       "document.querySelector('#accountSlot')?.textContent.includes('browser-researcher') && document.querySelector('#importLocal')",
     );
+    assert.ok(await evaluate("document.querySelector('#accountSyncStatus').textContent.includes('已同步到账号')"));
+    const accountDesktop = await call('Page.captureScreenshot',{format:'png'});
+    await writeFile('/tmp/paper-compass-account-desktop.png',Buffer.from(accountDesktop.data,'base64'));
+    await call('Fetch.enable',{patterns:[{urlPattern:'*/api/account/favorites*'}]});
+    await evaluate("document.querySelector('#accountSync').click()");
+    await until("document.querySelector('#accountSyncStatus').textContent.includes('账号操作暂未完成')");
+    assert.ok(await evaluate("!document.querySelector('#accountSyncStatus').textContent.includes('已同步到账号') && document.querySelector('#importLocal').disabled"));
+    await call('Fetch.disable');
+    await evaluate("document.querySelector('#accountSync').click()");
+    await until("document.querySelector('#accountSyncStatus').textContent.includes('已同步到账号') && !document.querySelector('#importLocal').disabled");
     assert.deepEqual(
       await evaluate(
         "fetch('/api/account/favorites').then(r=>r.json()).then(d=>d.ids)",
@@ -723,6 +876,11 @@ try {
         "JSON.parse(localStorage.getItem('pc-saved')).includes('old')",
       ),
     );
+    await call('Fetch.enable',{patterns:[{urlPattern:'*/api/account/reading'}]});
+    await evaluate("document.querySelector('#importLocal').click()");
+    await until("document.querySelector('#importStatus')?.textContent.includes('已成功导入的记录已保留')");
+    assert.ok((await evaluate("fetch('/api/account/favorites').then(r=>r.json()).then(d=>d.ids)")).includes('old'));
+    await call('Fetch.disable');
     await evaluate("document.querySelector('#importLocal').click()");
     await until(
       "document.querySelector('#accountNotice')?.textContent==='本机文献记录已导入'",
@@ -755,28 +913,76 @@ try {
       "document.querySelector('#paperGrid .paper[data-id=new] h3 a').click()",
     );
     await until("document.querySelector('#paperDetail h1')");
+    await until("document.querySelector('#detailRead') && !document.querySelector('#detailRead').disabled");
+    assert.equal(await evaluate("fetch('/api/account/reading').then(r=>r.json()).then(d=>d.ids.includes('new'))"), false);
+    await evaluate("document.querySelector('#detailRead').click()");
     await until(
       "fetch('/api/account/reading').then(r=>r.json()).then(d=>d.ids.includes('new'))",
     );
+    await until("document.querySelector('#detailRead').getAttribute('aria-pressed')==='true'");
+    await call('Fetch.enable',{patterns:[{urlPattern:'*/api/account/reading'}]});
+    await evaluate("document.querySelector('#detailRead').click()");
+    await until("document.querySelector('#accountNotice')?.textContent.includes('账号操作暂未完成')");
+    assert.equal(await evaluate("document.querySelector('#detailRead').getAttribute('aria-pressed')"),'true');
+    assert.equal(await evaluate("document.querySelector('#detailReadStatus').textContent"),'已标记为已读');
+    await call('Fetch.disable');
+    // Expiring a browser session must not turn a failed write into a guest write.
+    await call('Network.deleteCookies',{name:'pc_session',url:base});
+    await evaluate("document.querySelector('#detailRead').click()");
+    await until("document.querySelector('#accountNotice')?.textContent.includes('登录已过期')");
+    assert.equal(await evaluate("document.querySelector('#detailRead').getAttribute('aria-pressed')"),'true');
+    assert.ok(await evaluate("document.querySelector('#accountSlot').textContent.includes('需登录')"));
+    const resumePaper = await evaluate('location.hash');
+    await evaluate("document.querySelector('#accountSlot a').click()");
+    await until("document.querySelector('#accountBody a[href^=\"/auth/github/login\"]')");
+    await call('Fetch.enable',{patterns:[{urlPattern:'https://github.com/login/oauth/authorize*'}]});
+    await evaluate("document.querySelector('#accountBody a[href^=\"/auth/github/login\"]').click()");
+    await until("location.hash===" + JSON.stringify(resumePaper) + " && document.querySelector('#detailRead')?.getAttribute('aria-pressed')==='true'");
+    await call('Fetch.disable');
     await evaluate("import('/assets/analytics.js').then(m=>m.flush())");
     await call("Page.navigate", { url: base + "/#account" });
     await until("document.querySelector('#analyticsPreference')");
+    assert.ok(await evaluate("document.querySelector('.account-library-links a[href=\"#library?mode=read\"]')!==null"));
+    await evaluate("document.querySelector('.account-privacy').open=true");
     await evaluate("document.querySelector('#analyticsPreference').click()");
     assert.equal(
       await evaluate("localStorage.getItem('pc-analytics-off')"),
       "1",
     );
     await evaluate("document.querySelector('#accountLogout').click()");
-    await until("document.querySelector('.account-login')");
+    await until("location.hash==='#welcome' && document.querySelector('.welcome-nav-enter')?.textContent.includes('登录')");
     assert.equal(
       await evaluate("fetch('/api/account').then(r=>r.json()).then(d=>d.user)"),
       null,
     );
+    assert.ok(await evaluate("JSON.parse(localStorage.getItem('pc-saved')).includes('old')"));
+    await evaluate("location.hash='#library'");
+    await until("document.querySelector('#libraryGrid .paper[data-id=old]')");
+    assert.ok(await evaluate("document.querySelector('#libraryScope').textContent.includes('本机文献库')"));
+    const beforeCancelled = providerRequests;
+    await evaluate("location.hash='#welcome?auth=cancelled&return_to=%23docs'");
+    await until("!document.querySelector('#welcomeAuthFeedback')?.hidden && document.querySelector('#welcomeAuthFeedback').textContent.includes('取消 GitHub 授权')");
+    assert.equal(await evaluate("new URL(document.querySelector('#welcomeAuthFeedback a').href).searchParams.get('return_to')"),'#docs');
+    assert.equal(providerRequests,beforeCancelled);
+    await evaluate("document.querySelector('#welcomeAuthFeedback button').click()");
+    await until("location.hash==='#welcome' && document.querySelector('#welcomeAuthFeedback').hidden");
+    await call('Network.setCookie',{name:'pc_session',value:process.env.PAPER_COMPASS_TEST_OTHER_LOGIN,url:base,path:'/'});
+    await call('Page.navigate',{url:base+'/?other-account=1#account'});
+    await until("document.querySelector('#accountSlot')?.textContent.includes('another-researcher') && document.querySelector('#accountSyncStatus')?.textContent.includes('已同步到账号')");
+    assert.deepEqual(await evaluate("fetch('/api/account/favorites').then(r=>r.json()).then(d=>d.ids)"),['fixture-0']);
+    assert.equal(await evaluate("document.querySelector('.account-library-links strong').textContent"),'1');
+    await evaluate("location.hash='#library'");
+    await until("document.querySelectorAll('#libraryGrid .paper').length===1");
+    assert.equal(await evaluate("document.querySelector('#libraryGrid .paper').dataset.id"),'fixture-0');
+    await evaluate("location.hash='#login'");
+    await until("location.hash==='#library' && document.querySelector('#libraryGrid .paper')?.dataset.id==='fixture-0'");
+    assert.equal(await evaluate("document.querySelector('#login')"),null);
   }
   assert.deepEqual(errors, []);
   console.log(
     "Browser passed: routing, details, back, blank click, save, old collections, mobile, docs.",
   );
+  }
 } finally {
   socket?.close();
   chrome.kill();

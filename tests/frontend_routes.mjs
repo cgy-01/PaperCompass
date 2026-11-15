@@ -35,3 +35,18 @@ test("detail routes contain only the public identifier", () => {
   assert.equal(route.paperId, id);
   assert.equal(routeHash(route), "#paper/" + id);
 });
+test("OAuth notices only accept fixed account status codes", () => {
+  for (const status of ['cancelled', 'expired', 'failed', 'unavailable']) {
+    const route = parseRoute('#account?auth=' + status);
+    assert.equal(route.authStatus, status);
+    assert.equal(routeHash(route), '#account?auth=' + status);
+  }
+  assert.equal(parseRoute('#account?auth=<script>').authStatus, '');
+  assert.equal(parseRoute('#discover?auth=failed').authStatus, '');
+});
+test("standalone login route preserves only fixed OAuth feedback", () => {
+  assert.equal(parseRoute('#login').view, 'login');
+  assert.equal(routeHash(parseRoute('#login')), '#login');
+  assert.equal(routeHash(parseRoute('#login?auth=cancelled')), '#login?auth=cancelled');
+  assert.equal(parseRoute('#login?auth=anything').authStatus, '');
+});

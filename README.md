@@ -53,6 +53,9 @@ paper-firehose status
 
 # 不采集网络数据也可以先启动空的工作台。
 paper-firehose build-query
+# 本地开发账号，无需 GitHub OAuth；正式部署不要设置为 1。
+export PAPER_COMPASS_DEV_LOGIN=1
+export PAPER_COMPASS_PUBLIC_URL=http://127.0.0.1:8765
 paper-firehose serve --host 127.0.0.1 --port 8765
 ```
 
@@ -68,7 +71,7 @@ paper-firehose update --scope arxiv
 
 RSS 完成后先发布，API 补漏完成后再发布。网站自动检测新版本，刷新页面即可读取更新。首次补漏查询近期记录，耗时取决于分类数量、来源响应与机器资源。
 
-本地启动不会自动安装定时任务。已有配置和查询库时也可运行 `./start_dashboard.sh`；该脚本现有环境查找行为见[开发说明](docs/development.md)。
+本地启动不会自动安装定时任务。已有配置和查询库时，推荐用 `./start_frontend_dev.sh 9000` 开发前端：自动使用独立开发账号并监听前端变更。`./start_dashboard.sh` 保留普通服务启动方式；脚本环境查找行为见[开发说明](docs/development.md)。
 
 ## 常用命令
 

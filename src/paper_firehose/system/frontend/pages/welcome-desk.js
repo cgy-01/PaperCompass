@@ -105,6 +105,6 @@ export function renderWelcomeDesk(recent30) {
   drawLossCurve();
   if (Number.isInteger(recent30) && recent30 >= 0) {
     $("#welcomeRecentCount").textContent =
-      `近 30 天新增 · ${recent30.toLocaleString()} 篇`;
+      `近 30 天发表 · ${recent30.toLocaleString()} 篇`;
   }
 }

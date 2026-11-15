@@ -8,6 +8,7 @@ const views = new Set([
   "docs",
   "paper",
   "account",
+  "login",
 ]);
 export function parseRoute(hash) {
   const [path, query = ""] = hash.replace(/^#\/?/, "").split("?");
@@ -32,9 +33,13 @@ export function parseRoute(hash) {
     query: params.get("q") || "",
     document: params.get("doc") || "mcp",
     venueType: params.get("kind") || "",
-    libraryMode: ["saved", "read", "unread"].includes(params.get("mode"))
+    libraryMode: ["saved", "read", "unread", "visited"].includes(params.get("mode"))
       ? params.get("mode")
       : "saved",
+    authStatus: ["welcome", "account", "login"].includes(name) && ["cancelled", "expired", "failed", "unavailable"].includes(params.get("auth"))
+      ? params.get("auth") : "",
+    authReturn: params.get("return_to")?.startsWith("#") && params.get("return_to").length <= 2048 && !/[\r\n]/.test(params.get("return_to"))
+      ? params.get("return_to") : "#home",
   };
 }
 export function routeHash(state) {
@@ -53,6 +58,10 @@ export function routeHash(state) {
   if (name === "venues" && state.venueType) params.set("kind", state.venueType);
   if (name === "library" && state.libraryMode !== "saved")
     params.set("mode", state.libraryMode);
+  if (["welcome", "account", "login"].includes(name) && state.authStatus) {
+    params.set("auth", state.authStatus);
+    if (name === "welcome") params.set("return_to", state.authReturn || "#home");
+  }
   return "#" + name + (params.size ? "?" + params : "");
 }
 export function createRouter(onRoute) {
