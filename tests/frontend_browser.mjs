@@ -55,6 +55,15 @@ try {
     if (msg.method === "Runtime.exceptionThrown")
       errors.push(msg.params.exceptionDetails);
     if (msg.method === "Fetch.requestPaused") {
+      if (msg.params.request.url.startsWith('https://avatars.githubusercontent.com/')) {
+        const failed = new URL(msg.params.request.url).searchParams.has('broken');
+        void call('Fetch.fulfillRequest', {
+          requestId: msg.params.requestId, responseCode: failed ? 404 : 200,
+          responseHeaders: [{name:'Content-Type',value:'image/png'}],
+          body: failed ? '' : 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aU1sAAAAASUVORK5CYII=',
+        });
+        return;
+      }
       if (msg.params.request.url.startsWith('https://github.com/login/oauth/authorize?')) {
         providerRequests++;
         const state = new URL(msg.params.request.url).searchParams.get('state');
@@ -93,6 +102,7 @@ try {
     }
     if (method === 'Fetch.enable') params = {...params, patterns: [
       ...(params.patterns || []), {urlPattern:'https://github.com/login/oauth/authorize*'},
+      {urlPattern:'https://avatars.githubusercontent.com/*'},
     ]};
     return new Promise((resolve, reject) => {
       const id = ++serial;
@@ -164,6 +174,7 @@ try {
     await evaluate("location.hash='#account'");
     await until("document.querySelector('#accountSyncStatus')?.textContent.includes('已保存到本地开发账号')");
     assert.equal(await evaluate("document.querySelector('.account-profile h2').textContent"),'本地开发账号');
+    assert.equal(await evaluate("document.querySelectorAll('.account-avatar img').length"),0);
     assert.equal(await evaluate("document.querySelectorAll('.account-profile a[href^=\"https://github.com/\"]').length"),0);
     await call('Network.deleteCookies', {name:'pc_dev_session',url:base});
     await call('Page.reload');
@@ -856,6 +867,24 @@ try {
       "document.querySelector('#accountSlot')?.textContent.includes('browser-researcher') && document.querySelector('#importLocal')",
     );
     assert.ok(await evaluate("document.querySelector('#accountSyncStatus').textContent.includes('已同步到账号')"));
+    await until("document.querySelectorAll('.account-avatar img.is-loaded').length===2");
+    assert.deepEqual(await evaluate(`['#accountSlot .account-avatar','.account-profile .account-avatar'].map(selector=>{
+      const avatar=document.querySelector(selector), image=avatar.querySelector('img');
+      return [avatar.offsetWidth,avatar.offsetHeight,image.alt,image.referrerPolicy,getComputedStyle(image).opacity];
+    })`), [[24,24,'','no-referrer','1'],[48,48,'','no-referrer','1']]);
+    assert.ok(await evaluate(`(async()=>{
+      const {avatar}=await import(new URL('components/avatar.js',document.querySelector('script[src$="/app.js"]').src));
+      return ['', 'javascript:alert(1)', 'https://example.com/avatar.png',
+        'https://avatars.githubusercontent.com.evil.test/u/42',
+        'http://avatars.githubusercontent.com/u/42',
+        'https://user:password@avatars.githubusercontent.com/u/42'].every(avatar_url=>!avatar({avatar_url}).includes('<img'));
+    })()`));
+    await call('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:1,mobile:true});
+    assert.equal(await evaluate("document.querySelector('#accountSlot .account-avatar').getBoundingClientRect().width"),24);
+    await call('Emulation.setDeviceMetricsOverride',{width:1440,height:1000,deviceScaleFactor:1,mobile:false});
+    await evaluate("document.querySelector('.account-profile .account-avatar img').src+='&broken=1'");
+    await until("!document.querySelector('.account-profile .account-avatar img')");
+    assert.ok(await evaluate("document.querySelector('.account-profile .account-avatar svg') && document.querySelector('.account-profile .account-avatar').offsetWidth===48"));
     const accountDesktop = await call('Page.captureScreenshot',{format:'png'});
     await writeFile('/tmp/paper-compass-account-desktop.png',Buffer.from(accountDesktop.data,'base64'));
     await call('Fetch.enable',{patterns:[{urlPattern:'*/api/account/favorites*'}]});
@@ -969,6 +998,7 @@ try {
     await call('Network.setCookie',{name:'pc_session',value:process.env.PAPER_COMPASS_TEST_OTHER_LOGIN,url:base,path:'/'});
     await call('Page.navigate',{url:base+'/?other-account=1#account'});
     await until("document.querySelector('#accountSlot')?.textContent.includes('another-researcher') && document.querySelector('#accountSyncStatus')?.textContent.includes('已同步到账号')");
+    assert.equal(await evaluate("document.querySelectorAll('.account-avatar img').length"),0);
     assert.deepEqual(await evaluate("fetch('/api/account/favorites').then(r=>r.json()).then(d=>d.ids)"),['fixture-0']);
     assert.equal(await evaluate("document.querySelector('.account-library-links strong').textContent"),'1');
     await evaluate("location.hash='#library'");

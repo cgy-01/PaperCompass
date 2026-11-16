@@ -2,6 +2,9 @@
 #accountBody { max-width: 1060px; padding-bottom: 24px; }
 #accountBody p { max-width: 36em; line-height: 1.7; }
 #accountBody h2, #accountBody h3 { font-weight: 500; }
+.account-avatar { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; flex-shrink: 0; overflow: hidden; border-radius: 50%; background: var(--green2); color: var(--green); }
+.account-avatar img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; }
+.account-avatar img.is-loaded { opacity: 1; }
 .account-emblem { display: inline-flex; align-items: center; justify-content: center; width: 48px; height: 48px; border-radius: 50%; background: var(--green2); color: var(--green); flex-shrink: 0; }
 #accountBody .account-login { min-height: 48px; justify-content: center; gap: 10px; border: 0; cursor: pointer; font: 400 15px/1.6 var(--font-sans); }
 #accountBody .account-login:hover { background: #0e5542; }
@@ -55,5 +58,5 @@
   .account-continue .account-login { width: 100%; }
   .account-signout { align-items: start; }
   .account-session-label { display: none; }
-  .account-entry > span:not(.icon-wrap) { display: none; }
+  .account-entry > span:not(.icon-wrap):not(.account-avatar) { display: none; }
 }

@@ -45,8 +45,11 @@ def test_browser_navigation(catalog_store, tmp_path, monkeypatch):
     # Only the external provider is simulated; browser state, PKCE, callback,
     # session cookies, collections and logout use the real HTTP handlers.
     monkeypatch.setattr(app.accounts, '_profile', lambda code, verifier: {
-        'id': 42, 'login': 'browser-researcher'})
-    session_token = app.accounts.users.login({'id': 42, 'login': 'browser-researcher'})
+        'id': 42, 'login': 'browser-researcher',
+        'avatar_url': 'https://avatars.githubusercontent.com/u/42?v=4'})
+    session_token = app.accounts.users.login({
+        'id': 42, 'login': 'browser-researcher',
+        'avatar_url': 'https://avatars.githubusercontent.com/u/42?v=4'})
     other_session = app.accounts.users.login({'id': 43, 'login': 'another-researcher'})
     other_id = app.accounts.users.user(other_session)['id']
     app.accounts.users.set_ids(other_id, 'favorites', ['fixture-0'])

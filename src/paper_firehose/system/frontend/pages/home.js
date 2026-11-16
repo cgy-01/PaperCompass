@@ -112,7 +112,7 @@ export function renderOverview() {
   $("#topPapers").innerHTML = (overview.latest || [])
     .map(
       (p) =>
-        `<div class="mini-paper"><a href="${paperHref(p)}">${esc(p.title)}</a><p>${esc(p.source)} · ${date(p.published || p.matched)} · 主题匹配度 ${p.score ? Math.round(p.score * 100) + "%" : "—"}</p></div>`,
+        `<div class="mini-paper"><a href="${paperHref(p)}">${esc(p.title)}</a><p>${esc(p.source)} · ${date(p.published || p.matched)}</p></div>`,
     )
     .join("");
   const palette = [

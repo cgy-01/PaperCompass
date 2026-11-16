@@ -2,6 +2,7 @@ import { saved, read, visited, state } from "./state.js";
 import { workspaceHref } from "./auth-navigation.js";
 import { routeHash } from "./router.js";
 import { $, esc, icon, refreshIcons } from "./components/ui.js";
+import { avatar, bindAvatars } from "./components/avatar.js";
 import { saveStores, render, commitRoute } from "./actions.js";
 import { setAnalytics, analyticsOptOut, analyticsDisabled } from "./analytics.js";
 
@@ -92,7 +93,8 @@ export function renderAccountButton() {
   const root = $("#accountSlot");
   if (!root) return;
   const label = account.user?.login || "登录";
-  root.innerHTML = `<a class="account-entry" href="${account.user ? '#account' : esc(workspaceHref(['welcome', 'login', 'account'].includes(state.view) ? '#home' : routeHash(state)))}" aria-label="${esc(account.user ? label + '，我的账号' : '登录，管理文献库')}">${icon(account.user ? "circle-user-round" : "user-round", true)}<span>${esc(label)}</span>${account.expired ? '<span class="account-session-label">需登录</span>' : ''}</a>`;
+  root.innerHTML = `<a class="account-entry" href="${account.user ? '#account' : esc(workspaceHref(['welcome', 'login', 'account'].includes(state.view) ? '#home' : routeHash(state)))}" aria-label="${esc(account.user ? label + '，我的账号' : '登录，管理文献库')}">${account.user ? avatar(account.user) : icon("user-round", true)}<span>${esc(label)}</span>${account.expired ? '<span class="account-session-label">需登录</span>' : ''}</a>`;
+  bindAvatars(root);
   refreshIcons(root);
 }
 export function initAccount({ force = false } = {}) {
@@ -262,7 +264,7 @@ export function renderAccount() {
     ? '<span class="account-provider">本地开发 · local-developer</span>'
     : `<a href="https://github.com/${encodeURIComponent(user.login)}" target="_blank" rel="noopener noreferrer">@${esc(user.login)} ${icon("arrow-up-right", true)}</a>`;
   root.innerHTML = `
-    <header class="account-profile"><span class="account-emblem">${icon("circle-user-round")}</span><div><h2>${esc(user.name || user.login)}</h2>${profileLink}</div></header>
+    <header class="account-profile">${avatar(user, true)}<div><h2>${esc(user.name || user.login)}</h2>${profileLink}</div></header>
     <div class="account-sync"><p id="accountSyncStatus" role="status">${icon(healthy ? "cloud-check" : "cloud-off", true)} ${account.loading ? '正在同步文献库…' : healthy ? savedLabel + ' · ' + new Date(account.syncedAt).toLocaleTimeString('zh-CN', {hour:'2-digit',minute:'2-digit'}) : esc(account.error || '暂时显示上次记录')}</p>${account.expired ? `<a class="account-login" href="${esc(loginHref())}">重新登录 ${icon("arrow-up-right", true)}</a>` : '<button type="button" class="text-btn" id="accountSync">重新同步</button>'}</div>
     <div class="account-library-links"><a href="#library"><strong>${saved.size}</strong><span>已收藏 ${icon("arrow-up-right", true)}</span></a><a href="#library?mode=unread"><strong>${[...saved].filter(id => !read.has(id)).length}</strong><span>待阅读 ${icon("arrow-up-right", true)}</span></a><a href="#library?mode=read"><strong>${read.size}</strong><span>已读 ${icon("arrow-up-right", true)}</span></a></div>
     <div class="account-continue"><a class="account-login" href="#library">打开我的文献库 ${icon("arrow-right", true)}</a><a class="text-btn" href="${esc(loginReturn())}">返回研究工作区</a><a class="text-btn" href="#library?mode=visited">最近浏览</a></div>
@@ -301,6 +303,7 @@ export function renderAccount() {
   });
   $("#analyticsPreference").onchange = event => analyticsOptOut(!event.target.checked);
   bindLoginLinks(root);
+  bindAvatars(root);
   refreshIcons(root);
 }
 // Recheck after returning from another tab/device interaction. No polling while
