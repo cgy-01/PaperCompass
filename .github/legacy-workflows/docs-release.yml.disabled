@@ -1,4 +1,4 @@
-name: Publish developer docs (manual)
+name: Archived Pages documentation pipeline (not an active workflow)
 
 on:
   workflow_dispatch:

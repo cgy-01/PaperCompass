@@ -1,35 +1,142 @@
-name: Tests
+name: CI
 
 on:
   push:
-    branches: [main, master]
+    branches: ['**']
   pull_request:
   workflow_dispatch:
+  workflow_call:
+    inputs:
+      revision:
+        type: string
+        default: ''
+      version:
+        type: string
+        default: ''
 
 permissions:
   contents: read
 
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  tests:
-    runs-on: ubuntu-latest
+  checks:
+    name: Source and frontend checks
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ inputs.revision || github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: '3.11'
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Validate workflow expressions and shell steps
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TOOL_DIR: ${{ runner.temp }}/actionlint
+        run: |
+          mkdir -p "$TOOL_DIR"
+          gh release download v1.7.7 --repo rhysd/actionlint --dir "$TOOL_DIR" \
+            --pattern actionlint_1.7.7_linux_amd64.tar.gz --pattern actionlint_1.7.7_checksums.txt
+          cd "$TOOL_DIR"
+          sha256sum --check --ignore-missing actionlint_1.7.7_checksums.txt
+          tar -xzf actionlint_1.7.7_linux_amd64.tar.gz actionlint
+          cd "$GITHUB_WORKSPACE"
+          "$TOOL_DIR/actionlint" -color
+      - name: Check tracked source and Python syntax
+        run: |
+          python scripts/check_source.py
+          git show --format= --check HEAD
+      - name: Install locked icon assets
+        run: npm ci --ignore-scripts
+      - name: Frontend unit tests
+        run: node --test tests/frontend_routes.mjs tests/frontend_typography.mjs tests/frontend_api.mjs tests/frontend_experience.mjs
+
+  verify:
+    name: Backend, browser and release smoke tests
+    needs: checks
+    if: github.event_name != 'push' || github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     env:
-      PAPER_FIREHOSE_DATA_DIR: ${{ runner.temp }}/paper-compass-tests
+      HF_HUB_OFFLINE: '1'
+      TRANSFORMERS_OFFLINE: '1'
+      PAPER_COMPASS_DEV_LOGIN: '0'
+      PAPER_COMPASS_EVENTS_ENABLED: '0'
+      PIP_DISABLE_PIP_VERSION_CHECK: '1'
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ inputs.revision || github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version: '3.11'
           cache: pip
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: npm
-      - name: Install declared dependencies
+      - name: Configure isolated data and require a real browser
+        run: |
+          echo "PAPER_FIREHOSE_DATA_DIR=$RUNNER_TEMP/paper-compass-tests" >> "$GITHUB_ENV"
+          echo "PAPER_COMPASS_REPORT_DIR=$RUNNER_TEMP/paper-compass-reports" >> "$GITHUB_ENV"
+          pc_browser=$(command -v google-chrome || command -v chromium || command -v chromium-browser)
+          test -x "$pc_browser"
+          "$pc_browser" --version
+          echo "PAPER_COMPASS_BROWSER=$pc_browser" >> "$GITHUB_ENV"
+      - name: Install declared dependencies without changing application versions
         run: |
           python -m pip install -e '.[dev]'
-          npm ci
-      - name: Test
+          python -m pip check
+          npm ci --ignore-scripts
+      - name: Backend and real-browser regression tests
+        run: python -m pytest tests -q --junitxml="$PAPER_COMPASS_REPORT_DIR/tests.xml"
+      - name: Build versioned application bundle
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: python scripts/build_release.py --output dist --version "$RELEASE_VERSION"
+      - name: Install and start the extracted bundle in isolation
+        run: python scripts/smoke_release.py dist
+      - name: Retain verified build for inspection or tag publication
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: verified-application-${{ github.run_id }}-${{ github.run_attempt }}
+          path: dist/
+          retention-days: 7
+          if-no-files-found: error
+      - name: Retain test report
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: test-report-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/paper-compass-reports/*.xml
+          retention-days: 7
+
+  result:
+    name: CI passed
+    needs: [checks, verify]
+    if: always()
+    runs-on: ubuntu-24.04
+    timeout-minutes: 2
+    steps:
+      - name: Require all applicable checks
+        env:
+          CHECKS: ${{ needs.checks.result }}
+          VERIFY: ${{ needs.verify.result }}
+          FULL_REQUIRED: ${{ github.event_name != 'push' || github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/') }}
         run: |
-          python -m pytest -q
-          node --test tests/frontend_routes.mjs tests/frontend_typography.mjs tests/frontend_api.mjs tests/frontend_experience.mjs
+          test "$CHECKS" = success
+          if [ "$FULL_REQUIRED" = true ]; then
+            test "$VERIFY" = success
+          else
+            test "$VERIFY" = skipped
+          fi

@@ -1,4 +1,4 @@
-name: Build and Deploy HTML
+name: Archived data and Pages pipeline (not an active workflow)
 
 on:
   workflow_dispatch:

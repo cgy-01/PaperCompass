@@ -1,4 +1,4 @@
-name: Build package (manual)
+name: Archived manual PyPI publication (not an active workflow)
 
 on:
   workflow_dispatch:

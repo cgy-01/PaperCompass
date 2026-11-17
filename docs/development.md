@@ -8,7 +8,7 @@
 source .venv/bin/activate
 python -m pip install -e '.[dev]'
 npm ci
-python -m pytest -q
+python -m pytest tests -q
 ```
 
 现有测试包含 CLI、数据库、分类、发布版本、采集模拟和 MCP。测试使用临时目录和模拟来源，不应指向生产运行目录。真实外部来源的可达性与限流需单独检查。
@@ -78,5 +78,7 @@ paper-firehose dashboard
 网站只展示 `DocumentationRepository.CATALOG` 显式登记的用户文档。增加管理员文档不等于将其加入网站导航。
 
 当前以源码安装为支持路径。独立 wheel 的用户文档和 Node 图标资源尚未作为完整分发流程验证，不应宣称 `pip install` 某个同名发行包即可得到当前产品。
+
+GitHub 上的日常提交只运行 CI，不自动发布版本或连接服务器。版本标签会触发源码应用包的完整验证与 GitHub Release 交付；服务器由维护者手动下载更新。详见 [GitHub CI 与版本交付](admin/github_ci_cd.md)。
 
 运行数据、依赖环境和生成的 `*.egg-info` 都不是源码。修改配置模板时，请同时说明已有实例如何手动更新，避免覆盖本地配置。
