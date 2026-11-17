@@ -149,7 +149,12 @@ try {
       }
       await new Promise((r) => setTimeout(r, 100));
     }
-    throw new Error("Timed out: " + expression);
+    const diagnostic = await evaluate(`JSON.stringify({hash:location.hash,scrollY,
+      viewport:{width:innerWidth,height:innerHeight},
+      workflowTop:document.querySelector('#welcomeWorkflow')?.getBoundingClientRect().top,
+      researchTop:document.querySelector('#welcomeResearch')?.getBoundingClientRect().top,
+      body:document.body.className})`);
+    throw new Error("Timed out: " + expression + "\n" + diagnostic);
   }
   const base = process.argv[2];
   if (process.env.PAPER_COMPASS_TEST_DEV_LOGIN) {
@@ -622,7 +627,6 @@ try {
     "/tmp/paper-compass-welcome-research.png",
     Buffer.from(researchShot.data, "base64"),
   );
-  const researchScroll = await evaluate("scrollY");
   const beforeSignedEntry = providerRequests;
   await evaluate(
     "document.querySelector('#welcomeAreaList [data-track=\"research_area:ai_infra\"]').click()",
@@ -639,9 +643,11 @@ try {
   await until(
     "location.hash==='#welcome' && document.body.classList.contains('is-welcome')",
   );
-  // The route class changes before its lazy render and scroll restoration finish.
-  // Exercise the next navigation only after the previous page is restored.
-  await until(`Math.abs(scrollY-${researchScroll})<10`);
+  // The route class changes before its render and animation-frame restoration.
+  // Let those frames finish before starting another independent smooth scroll.
+  await evaluate(
+    "new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)))",
+  );
   await evaluate(
     "document.querySelector('[data-welcome-scroll=welcomeWorkflow]').click()",
   );
