@@ -95,7 +95,8 @@ jobs:
           echo "PAPER_COMPASS_BROWSER=$pc_browser" >> "$GITHUB_ENV"
       - name: Install declared dependencies without changing application versions
         run: |
-          python -m pip install -e '.[dev]'
+          python -m pip install -r .github/requirements-build.txt
+          python -m pip install --no-build-isolation -e '.[dev]'
           python -m pip check
           npm ci --ignore-scripts
       - name: Backend and real-browser regression tests

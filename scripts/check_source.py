@@ -24,7 +24,9 @@ def unsafe_path(name: str) -> bool:
         return True
     if 'secrets' in path.parts and name not in {
             'secrets/README.md', 'src/paper_firehose/system/config/secrets/README.md',
-            'src/paper_firehose/system/config/secrets/mailing_lists.yaml'}:
+            'src/paper_firehose/system/config/secrets/mailing_lists.yaml',
+            'github_actions_config/secrets/README.md',
+            'github_actions_config/secrets/mailing_lists.yaml'}:
         return True
     lower = path.name.lower()
     return (lower.endswith(('.db', '.db-wal', '.db-shm', '.db-journal', '.db.gz',

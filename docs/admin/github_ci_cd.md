@@ -18,6 +18,7 @@ GitHub 负责检查代码、验证可运行的发布包、保存正式版本。�
 - 完整验证使用 Python 3.11、Node 22 和真实 Chrome；浏览器不存在会失败，不允许将整组浏览器测试静默跳过。
 - 测试数据位于 runner 的临时目录，外部抓取/OAuth/LLM 用测试替身；关闭 Hugging Face 在线模型下载。CI 不访问生产数据，也不发起真实付费推理。
 - 保持当前 Python 依赖声明，图标按 `package-lock.json` 执行 `npm ci --ignore-scripts`；不自动升级应用依赖。
+- 构建后端单独固定在 `.github/requirements-build.txt`，安装应用时禁用临时构建隔离，发布包冒烟检查使用相同构建工具。
 - 从干净 checkout 生成发布包，使用独立临时虚拟环境验证源码安装、空查询库启动、版本化资源、两份用户文档、只读 API 和 MCP 工具。虚拟环境复用 runner 中已安装的依赖，但必须从解压包导入应用，不能误用 checkout 的源码。
 - `CI passed` 是统一的最终检查名。可在 GitHub 分支规则中将它设置为必需检查；当前配置不强制所有日常提交必须走 PR，不自动改仓库的分支保护策略。
 
