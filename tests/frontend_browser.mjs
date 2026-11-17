@@ -622,6 +622,7 @@ try {
     "/tmp/paper-compass-welcome-research.png",
     Buffer.from(researchShot.data, "base64"),
   );
+  const researchScroll = await evaluate("scrollY");
   const beforeSignedEntry = providerRequests;
   await evaluate(
     "document.querySelector('#welcomeAreaList [data-track=\"research_area:ai_infra\"]').click()",
@@ -638,6 +639,9 @@ try {
   await until(
     "location.hash==='#welcome' && document.body.classList.contains('is-welcome')",
   );
+  // The route class changes before its lazy render and scroll restoration finish.
+  // Exercise the next navigation only after the previous page is restored.
+  await until(`Math.abs(scrollY-${researchScroll})<10`);
   await evaluate(
     "document.querySelector('[data-welcome-scroll=welcomeWorkflow]').click()",
   );
