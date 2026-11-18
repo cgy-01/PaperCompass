@@ -47,8 +47,10 @@ source .venv/bin/activate
 python -m pip install -e .
 npm ci
 
-# 独立保存运行数据；首次使用自动复制默认配置。
-export PAPER_FIREHOSE_DATA_DIR="$PWD/.runtime-demo"
+# 首次创建统一配置；已有 .env 时不要覆盖它。
+cp .env.example .env
+chmod 600 .env
+# CLI 自动读取 .env；默认独立保存到 .runtime-demo。
 paper-firehose status
 
 # 不采集网络数据也可以先启动空的工作台。
@@ -59,13 +61,12 @@ export PAPER_COMPASS_PUBLIC_URL=http://127.0.0.1:8765
 paper-firehose serve --host 127.0.0.1 --port 8765
 ```
 
-打开 <http://127.0.0.1:8765>。重新打开终端后，需要重新激活环境，并设置同一个数据目录。
+打开 <http://127.0.0.1:8765>。业务参数集中在根目录 `.env`，按模块分组，详细规则见[配置说明](docs/configuration.md)。重新打开终端后只需激活 Python 环境，不必重复导出数据目录或 API 参数。
 
 另开终端，在相同环境和数据目录下采集：
 
 ```bash
 source .venv/bin/activate
-export PAPER_FIREHOSE_DATA_DIR="$PWD/.runtime-demo"
 paper-firehose update --scope arxiv
 ```
 
@@ -82,6 +83,8 @@ RSS 完成后先发布，API 补漏完成后再发布。网站自动检测新版
 | `paper-firehose update --scope conferences` | 增量检查会议并补全元数据 |
 | `paper-firehose sync-conferences --family all` | 手动完整核对已配置会议目录 |
 | `paper-firehose build-query` | 从原始库生成并发布查询库，不抓取论文 |
+| `paper-firehose classify-papers --queued-only --publish` | API 模式下独立处理分类队列并批量发布，不抓取来源 |
+| `paper-firehose classification-status` | 查看分类状态、待复核建议与当天请求/估算费用 |
 | `paper-firehose serve` | 启动只读网站与 HTTP API |
 | `paper-firehose mcp` | 启动 MCP 服务，默认调用本机 Web API |
 | `paper-firehose --help` | 查看全部命令 |

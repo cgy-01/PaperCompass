@@ -18,7 +18,7 @@ from ..core.database import DatabaseManager
 from ..core.http_client import RetryableHTTPClient
 from ..core.paths import resolve_data_path
 from .dashboard import CURATED_TOPIC_KEYS, _topic_catalog
-from ..classification import PENDING_TOPIC, TopicClassifier
+from ..classification import PENDING_TOPIC, collection_classifier
 
 LOGGER = logging.getLogger(__name__)
 API_URL = 'https://export.arxiv.org/api/query'
@@ -92,7 +92,7 @@ def _api_entries(client, category, start, end):
 def _targets(manager):
     enabled = manager.get_enabled_feeds()
     targets = {}
-    classifier = TopicClassifier(_topic_catalog(manager))
+    classifier = collection_classifier(_topic_catalog(manager))
     available = set(manager.get_available_topics())
     for key in CURATED_TOPIC_KEYS:
         if key not in available:

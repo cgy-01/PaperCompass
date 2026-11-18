@@ -1,0 +1,53 @@
+{
+  "source": "tmp/semantic-small-all-20261118-7mam1hcs/matched_entries_history.db",
+  "original_backup": {
+    "total": 12325,
+    "usable_title_abstract": 1880,
+    "missing_or_invalid": 10445
+  },
+  "enriched_total": 12325,
+  "enriched_usable": 12270,
+  "missing_or_invalid": 55,
+  "demo_usable": 46,
+  "mean_text_characters": 1393.4917685411574,
+  "sample_count": 10,
+  "live_requests": 10,
+  "error": null,
+  "input_tokens": 19231,
+  "cache_hit_tokens": 13824,
+  "output_tokens": 864,
+  "sample_offpeak_cny": 0.00913948,
+  "sample_peak_cny": 0.01827896,
+  "decisions": {
+    "classified": 10
+  },
+  "accounting_before": {
+    "jobs": {},
+    "day": "2026-11-18",
+    "requests": 0,
+    "estimated_cny": 0.0,
+    "accounted_tokens": 0,
+    "unknown_usage_requests": 0,
+    "circuit_until": null,
+    "assignment_revision": 0
+  },
+  "accounting_after": {
+    "jobs": {},
+    "day": "2026-11-18",
+    "requests": 10,
+    "estimated_cny": 0.018284,
+    "accounted_tokens": 20095,
+    "unknown_usage_requests": 0,
+    "circuit_until": null,
+    "assignment_revision": 0
+  },
+  "elapsed_seconds": 11.34,
+  "seconds_mean": 1.1326,
+  "seconds_median": 1.1320000000000001,
+  "seconds_max": 1.417,
+  "estimated_target_hours_serial": 3.8602783333333335,
+  "estimated_target_offpeak_cny_measured": 11.214141960000001,
+  "estimated_target_peak_cny_measured": 22.428283920000002,
+  "estimated_target_offpeak_cny_no_provider_cache": 27.836948999999997,
+  "estimated_target_peak_cny_no_provider_cache": 55.673897999999994
+}

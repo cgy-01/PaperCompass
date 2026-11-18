@@ -2,6 +2,9 @@
 set -euo pipefail
 
 PROJECT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+ENV_EXPORTS="$(python3 "${PROJECT_DIR}/src/paper_firehose/core/environment.py" --shell)"
+eval "${ENV_EXPORTS}"
+unset ENV_EXPORTS
 DATA_DIR="${PAPER_FIREHOSE_DATA_DIR:-${PROJECT_DIR}/.runtime-demo}"
 PORT="${1:-9000}"
 HOST="${PAPER_COMPASS_HOST:-127.0.0.1}"
@@ -35,7 +38,8 @@ if [[ "${PAPER_COMPASS_DEV_LOGIN}" == "1" ]]; then
   HOST="127.0.0.1"
   export PAPER_COMPASS_PUBLIC_URL="http://127.0.0.1:${PORT}"
   export PAPER_COMPASS_EVENTS_ENABLED="${PAPER_COMPASS_EVENTS_ENABLED:-0}"
-  unset GITHUB_CLIENT_ID GITHUB_CLIENT_SECRET
+  # Explicit empties keep the Python loader from reintroducing .env credentials.
+  export GITHUB_CLIENT_ID= GITHUB_CLIENT_SECRET=
   echo "本地开发账号已启用：local-developer（收藏与已读使用独立开发用户库）"
 fi
 

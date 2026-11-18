@@ -16,7 +16,8 @@ import requests
 from ..core.config import ConfigManager
 from ..core.database import DatabaseManager
 from .dashboard import CURATED_TOPIC_KEYS, _topic_catalog
-from ..classification import TopicClassifier
+from ..classification import PENDING_TOPIC, collection_classifier
+from ..api_classification import api_enabled
 
 logger = logging.getLogger(__name__)
 API_URL = "https://api.openalex.org/works"
@@ -185,7 +186,7 @@ def run(config_path: str, topic: str | None = None, *, days: int = 1095,
         if 'classification' in custom:
             entry['classification'] = custom['classification']
         catalog.append(entry)
-    classifier = TopicClassifier(catalog)
+    classifier = collection_classifier(catalog)
     api_key = os.getenv("OPENALEX_API_KEY", "").strip()
     since = (date.today() - timedelta(days=days)).isoformat()
     db = DatabaseManager(config)
@@ -222,10 +223,10 @@ def run(config_path: str, topic: str | None = None, *, days: int = 1095,
                         for work in payload.get("results", []):
                             matched = {match.topic['key'] for match in classifier.classify(
                                 work.get('title') or '', _abstract(work.get('abstract_inverted_index')))}
-                            if key not in matched:
+                            if not api_enabled() and key not in matched:
                                 totals["skipped"] += 1
                                 continue
-                            totals[_upsert(conn, work, key)] += 1
+                            totals[_upsert(conn, work, PENDING_TOPIC if api_enabled() else key)] += 1
                         conn.commit()
                         cursor = payload.get('meta', {}).get('next_cursor')
                         if not paginate or not payload.get('results') or not cursor:

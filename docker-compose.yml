@@ -8,9 +8,8 @@ services:
         INSTALL_SRC: pypi
         # PACKAGE_SPEC: "paper_firehose==0.1.0"  # optionally pin
     image: paper-firehose:latest
+    env_file: .env
     environment:
-      OPENAI_API_KEY: ${OPENAI_API_KEY}
-      MAILTO: ${MAILTO:-you@example.com}
       PAPER_FIREHOSE_DATA_DIR: /data
     volumes:
       # Share host home data dir with container
@@ -24,9 +23,8 @@ services:
     image: paper-firehose:latest
     depends_on:
       - firehose
+    env_file: .env
     environment:
-      OPENAI_API_KEY: ${OPENAI_API_KEY}
-      MAILTO: ${MAILTO:-you@example.com}
       PAPER_FIREHOSE_DATA_DIR: /data
     volumes:
       - ${HOME}/.paper_firehose:/data

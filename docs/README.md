@@ -18,6 +18,10 @@
 | [MCP 部署说明](mcp_setup.md) | 服务器管理员 | 否 |
 | [自动更新、查询库与部署](admin/automatic_updates.md) | 服务器管理员 | 否 |
 | [论文主题分类与增量升级](admin/topic_classification.md) | 项目维护者 | 否 |
+| [外部大模型 API 论文分类](admin/api_classification.md) | 项目维护者 | 否 |
+| [新增论文 API 分类规则、谷时与预算归档](reports/2026-11-19-api-classification-policy/README.md) | 项目维护者 | 否 |
+| [服务器近期论文新增量统计](reports/2026-11-19-server-paper-growth/README.md) | 项目维护者 | 否 |
+| [DeepSeek 分类 Token、耗时与费用实测](reports/2026-11-18-deepseek-classification-benchmark/README.md) | 项目维护者 | 否 |
 | [语义多标签分类优化计划](admin/classification_optimization_plan.md) | 项目维护者 | 否 |
 | [账号与使用情况统计](admin/accounts_analytics.md) | 服务器管理员 | 否 |
 | [源码发布检查](admin/source_release.md) | 项目维护者 | 否 |

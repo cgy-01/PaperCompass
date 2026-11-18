@@ -1,0 +1,390 @@
+{
+  "server_time": "2026-11-19T01:05:55.088451+08:00",
+  "raw_database": "/opt/paper-compass/.runtime-demo/matched_entries_history.db",
+  "lookback_days": 30,
+  "timezone": "Asia/Shanghai",
+  "raw_total": 69702,
+  "matched_date_missing": 0,
+  "raw_by_first_seen_beijing": [
+    {
+      "day": "2026-11-12",
+      "total": 3713,
+      "arxiv": 3671,
+      "conference": 0,
+      "journal": 42
+    },
+    {
+      "day": "2026-11-14",
+      "total": 1086,
+      "arxiv": 1086,
+      "conference": 0,
+      "journal": 0
+    },
+    {
+      "day": "2026-11-16",
+      "total": 494,
+      "arxiv": 494,
+      "conference": 0,
+      "journal": 0
+    },
+    {
+      "day": "2026-11-17",
+      "total": 1146,
+      "arxiv": 1146,
+      "conference": 0,
+      "journal": 0
+    },
+    {
+      "day": "2026-11-18",
+      "total": 779,
+      "arxiv": 779,
+      "conference": 0,
+      "journal": 0
+    }
+  ],
+  "published_manifest": {
+    "database": "query-ac8ec13dd4484147a19383da8f2aec70.db",
+    "published_at": "2026-11-18T06:54:27.768319+00:00"
+  },
+  "visible_total": 68826,
+  "visible_by_first_seen_beijing": [
+    {
+      "day": "2026-11-12",
+      "total": 3661,
+      "arxiv": 3661,
+      "conference": 0,
+      "journal": 0
+    },
+    {
+      "day": "2026-11-14",
+      "total": 1086,
+      "arxiv": 1086,
+      "conference": 0,
+      "journal": 0
+    },
+    {
+      "day": "2026-11-16",
+      "total": 494,
+      "arxiv": 494,
+      "conference": 0,
+      "journal": 0
+    },
+    {
+      "day": "2026-11-17",
+      "total": 1145,
+      "arxiv": 1145,
+      "conference": 0,
+      "journal": 0
+    },
+    {
+      "day": "2026-11-18",
+      "total": 779,
+      "arxiv": 779,
+      "conference": 0,
+      "journal": 0
+    }
+  ],
+  "raw_by_publication_date": [
+    {
+      "day": "2026-10-20",
+      "total": 5,
+      "arxiv": 5
+    },
+    {
+      "day": "2026-10-21",
+      "total": 7,
+      "arxiv": 6
+    },
+    {
+      "day": "2026-10-22",
+      "total": 13,
+      "arxiv": 12
+    },
+    {
+      "day": "2026-10-23",
+      "total": 10,
+      "arxiv": 7
+    },
+    {
+      "day": "2026-10-24",
+      "total": 5,
+      "arxiv": 5
+    },
+    {
+      "day": "2026-10-25",
+      "total": 4,
+      "arxiv": 4
+    },
+    {
+      "day": "2026-10-26",
+      "total": 9,
+      "arxiv": 8
+    },
+    {
+      "day": "2026-10-27",
+      "total": 13,
+      "arxiv": 12
+    },
+    {
+      "day": "2026-10-28",
+      "total": 8,
+      "arxiv": 4
+    },
+    {
+      "day": "2026-10-29",
+      "total": 14,
+      "arxiv": 12
+    },
+    {
+      "day": "2026-10-30",
+      "total": 20,
+      "arxiv": 18
+    },
+    {
+      "day": "2026-10-31",
+      "total": 13,
+      "arxiv": 11
+    },
+    {
+      "day": "2026-11-01",
+      "total": 12,
+      "arxiv": 6
+    },
+    {
+      "day": "2026-11-02",
+      "total": 27,
+      "arxiv": 26
+    },
+    {
+      "day": "2026-11-03",
+      "total": 22,
+      "arxiv": 21
+    },
+    {
+      "day": "2026-11-04",
+      "total": 32,
+      "arxiv": 24
+    },
+    {
+      "day": "2026-11-05",
+      "total": 378,
+      "arxiv": 375
+    },
+    {
+      "day": "2026-11-06",
+      "total": 420,
+      "arxiv": 420
+    },
+    {
+      "day": "2026-11-07",
+      "total": 255,
+      "arxiv": 255
+    },
+    {
+      "day": "2026-11-08",
+      "total": 199,
+      "arxiv": 199
+    },
+    {
+      "day": "2026-11-09",
+      "total": 346,
+      "arxiv": 343
+    },
+    {
+      "day": "2026-11-10",
+      "total": 1,
+      "arxiv": 0
+    },
+    {
+      "day": "2026-11-11",
+      "total": 811,
+      "arxiv": 811
+    },
+    {
+      "day": "2026-11-12",
+      "total": 1,
+      "arxiv": 1
+    },
+    {
+      "day": "2026-11-13",
+      "total": 1079,
+      "arxiv": 1079
+    },
+    {
+      "day": "2026-11-14",
+      "total": 138,
+      "arxiv": 138
+    },
+    {
+      "day": "2026-11-15",
+      "total": 203,
+      "arxiv": 203
+    },
+    {
+      "day": "2026-11-16",
+      "total": 879,
+      "arxiv": 879
+    },
+    {
+      "day": "2026-11-18",
+      "total": 778,
+      "arxiv": 778
+    }
+  ],
+  "recent_date_format_check": [
+    {
+      "matched_date": "2026-11-18T06:52:10.480319+00:00",
+      "total": 1
+    },
+    {
+      "matched_date": "2026-11-18T06:02:32.081904+00:00",
+      "total": 1
+    },
+    {
+      "matched_date": "2026-11-18T06:02:32.081127+00:00",
+      "total": 1
+    },
+    {
+      "matched_date": "2026-11-18T06:02:32.080167+00:00",
+      "total": 1
+    },
+    {
+      "matched_date": "2026-11-18T06:02:32.078654+00:00",
+      "total": 1
+    }
+  ],
+  "recent_sources": [
+    {
+      "feed_name": "arXiv cs.AI — Artificial Intelligence",
+      "total": 2288
+    },
+    {
+      "feed_name": "arXiv cs.LG — Machine Learning",
+      "total": 1612
+    },
+    {
+      "feed_name": "arXiv cs.CL — Computation and Language",
+      "total": 1222
+    },
+    {
+      "feed_name": "arXiv cs.CV — Computer Vision and Pattern Recognition",
+      "total": 875
+    },
+    {
+      "feed_name": "arXiv cs.RO — Robotics",
+      "total": 597
+    },
+    {
+      "feed_name": "arXiv cs.DC — Distributed, Parallel, and Cluster Computing",
+      "total": 106
+    },
+    {
+      "feed_name": "arXiv cs.CR — Cryptography and Security",
+      "total": 93
+    },
+    {
+      "feed_name": "arXiv cs.AR — Hardware Architecture",
+      "total": 63
+    },
+    {
+      "feed_name": "arXiv cs.IR — Information Retrieval",
+      "total": 60
+    },
+    {
+      "feed_name": "arXiv cs.SY — Systems and Control",
+      "total": 45
+    },
+    {
+      "feed_name": "arXiv cs.MA — Multiagent Systems",
+      "total": 41
+    },
+    {
+      "feed_name": "arXiv cs.SD — Sound",
+      "total": 37
+    }
+  ],
+  "raw_summary_complete_days": {
+    "7": {
+      "start": "2026-11-12",
+      "end": "2026-11-18",
+      "total": 7218,
+      "daily_mean": 1031.142857142857,
+      "daily_median": 779,
+      "daily_max": 3713,
+      "daily_min": 0,
+      "arxiv_total": 7176,
+      "active_days": 5,
+      "active_day_mean": 1443.6
+    },
+    "14": {
+      "start": "2026-11-05",
+      "end": "2026-11-18",
+      "total": 7218,
+      "daily_mean": 515.5714285714286,
+      "daily_median": 0,
+      "daily_max": 3713,
+      "daily_min": 0,
+      "arxiv_total": 7176,
+      "active_days": 5,
+      "active_day_mean": 1443.6
+    },
+    "30": {
+      "start": "2026-10-20",
+      "end": "2026-11-18",
+      "total": 7218,
+      "daily_mean": 240.6,
+      "daily_median": 0,
+      "daily_max": 3713,
+      "daily_min": 0,
+      "arxiv_total": 7176,
+      "active_days": 5,
+      "active_day_mean": 1443.6
+    }
+  },
+  "raw_today_partial": {
+    "day": "2026-11-19",
+    "total": 0
+  },
+  "visible_summary_complete_days": {
+    "7": {
+      "start": "2026-11-12",
+      "end": "2026-11-18",
+      "total": 7165,
+      "daily_mean": 1023.5714285714286,
+      "daily_median": 779,
+      "daily_max": 3661,
+      "daily_min": 0,
+      "arxiv_total": 7165,
+      "active_days": 5,
+      "active_day_mean": 1433
+    },
+    "14": {
+      "start": "2026-11-05",
+      "end": "2026-11-18",
+      "total": 7165,
+      "daily_mean": 511.7857142857143,
+      "daily_median": 0,
+      "daily_max": 3661,
+      "daily_min": 0,
+      "arxiv_total": 7165,
+      "active_days": 5,
+      "active_day_mean": 1433
+    },
+    "30": {
+      "start": "2026-10-20",
+      "end": "2026-11-18",
+      "total": 7165,
+      "daily_mean": 238.83333333333334,
+      "daily_median": 0,
+      "daily_max": 3661,
+      "daily_min": 0,
+      "arxiv_total": 7165,
+      "active_days": 5,
+      "active_day_mean": 1433
+    }
+  },
+  "visible_today_partial": {
+    "day": "2026-11-19",
+    "total": 0
+  }
+}

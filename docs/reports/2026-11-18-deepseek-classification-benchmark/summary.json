@@ -1,0 +1,115 @@
+{
+  "measurement_date_beijing": "2026-11-18",
+  "archived_date_beijing": "2026-11-19",
+  "start_beijing": "2026-11-18T23:55:23.874718+08:00",
+  "end_beijing": "2026-11-18T23:55:35.194417+08:00",
+  "samples": 10,
+  "live_requests": 10,
+  "local_cache_hits": 0,
+  "retry_requests": 0,
+  "successful_requests": 10,
+  "input_tokens": 19231,
+  "input_cache_hit_tokens": 13824,
+  "input_cache_miss_tokens": 5407,
+  "output_tokens": 864,
+  "total_tokens": 20095,
+  "input_cache_hit_ratio": "0.7188393739275128698455618533",
+  "mean_input_tokens": "1923.1",
+  "mean_output_tokens": "86.4",
+  "mean_total_tokens": "2009.5",
+  "paper_processing_seconds_sum": "11.326",
+  "paper_processing_seconds_mean": "1.1326",
+  "paper_processing_seconds_median": 1.1320000000000001,
+  "paper_processing_seconds_min": 0.939,
+  "paper_processing_seconds_max": 1.417,
+  "api_stage_seconds_sum": "11.273039",
+  "api_stage_seconds_mean": "1.1273039",
+  "sample_batch_elapsed_seconds": 11.34,
+  "sample_offpeak_price_calculation_cny": "0.00913948",
+  "sample_peak_price_calculation_cny": "0.01827896",
+  "internal_conservative_accounted_cny": "0.018284",
+  "internal_rounding_delta_cny": "0.00000504",
+  "provider_payment_statement_verified": false,
+  "dataset_counts": {
+    "original": {
+      "total": 12325,
+      "usable_title_abstract": 1880,
+      "missing_or_invalid": 10445
+    },
+    "enriched_total": 12325,
+    "enriched_usable": 12270,
+    "missing": 55,
+    "demo_usable_excluded_by_normal_queue": 46,
+    "normal_queue_usable": 12224
+  },
+  "full_corpus_measured": false,
+  "projections": [
+    {
+      "target_records": 10000,
+      "observed_cache_mix_offpeak_cny": "9.13948000",
+      "observed_cache_mix_peak_cny": "18.27896000",
+      "no_provider_cache_offpeak_cny": "22.687",
+      "no_provider_cache_peak_cny": "45.374",
+      "paper_processing_hours": "3.146111111111111111111111111",
+      "api_stage_hours": "3.131399722222222222222222222",
+      "projected_input_tokens": "19231000",
+      "projected_output_tokens": "864000",
+      "daily_200_batches_lower_bound_days": 50,
+      "daily_500_requests_lower_bound_days": 20
+    },
+    {
+      "target_records": 12224,
+      "observed_cache_mix_offpeak_cny": "11.172100352",
+      "observed_cache_mix_peak_cny": "22.344200704",
+      "no_provider_cache_offpeak_cny": "27.7325888",
+      "no_provider_cache_peak_cny": "55.4651776",
+      "paper_processing_hours": "3.845806222222222222222222222",
+      "api_stage_hours": "3.827823020444444444444444444",
+      "projected_input_tokens": "23507974.4",
+      "projected_output_tokens": "1056153.6",
+      "daily_200_batches_lower_bound_days": 62,
+      "daily_500_requests_lower_bound_days": 25
+    },
+    {
+      "target_records": 12270,
+      "observed_cache_mix_offpeak_cny": "11.21414196",
+      "observed_cache_mix_peak_cny": "22.42828392",
+      "no_provider_cache_offpeak_cny": "27.836949",
+      "no_provider_cache_peak_cny": "55.673898",
+      "paper_processing_hours": "3.860278333333333333333333333",
+      "api_stage_hours": "3.842227459166666666666666667",
+      "projected_input_tokens": "23596437",
+      "projected_output_tokens": "1060128",
+      "daily_200_batches_lower_bound_days": 62,
+      "daily_500_requests_lower_bound_days": 25
+    },
+    {
+      "target_records": 12325,
+      "observed_cache_mix_offpeak_cny": "11.26440910",
+      "observed_cache_mix_peak_cny": "22.52881820",
+      "no_provider_cache_offpeak_cny": "27.9617275",
+      "no_provider_cache_peak_cny": "55.9234550",
+      "paper_processing_hours": "3.877581944444444444444444444",
+      "api_stage_hours": "3.859450157638888888888888889",
+      "projected_input_tokens": "23702207.5",
+      "projected_output_tokens": "1064880",
+      "daily_200_batches_lower_bound_days": 62,
+      "daily_500_requests_lower_bound_days": 25
+    }
+  ],
+  "official_rates_cny_per_million_tokens": {
+    "verified_on": "2026-11-19",
+    "source": "https://api-docs.deepseek.com/zh-cn/quick_start/pricing/",
+    "offpeak": {
+      "uncached_input": "1",
+      "cached_input": "0.02",
+      "output": "4"
+    },
+    "peak": {
+      "uncached_input": "2",
+      "cached_input": "0.04",
+      "output": "8"
+    }
+  },
+  "resource_smoke_is_simulated_not_live_api": true
+}

@@ -1,0 +1,10 @@
+[Unit]
+Description=Check secondary conference sources at 06:30 Beijing time
+
+[Timer]
+OnCalendar=*-*-* 06:30:00 Asia/Shanghai
+Persistent=true
+Unit=paper-compass-conferences.service
+
+[Install]
+WantedBy=timers.target

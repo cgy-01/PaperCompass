@@ -6,8 +6,10 @@ import pytest
 
 
 @pytest.mark.parametrize('paginate,expected', [(False, 1), (True, 2)])
-def test_optional_cursor_pagination_preserves_default(tmp_path, monkeypatch, paginate, expected):
+@pytest.mark.parametrize('strategy', ['keywords', 'api'])
+def test_optional_cursor_pagination_preserves_default(tmp_path, monkeypatch, paginate, expected, strategy):
     from paper_firehose.commands import openalex
+    monkeypatch.setenv('PAPER_COMPASS_CLASSIFIER', strategy)
     manager = Mock()
     manager.get_available_topics.return_value = ['llm']
     manager.load_topic_config.return_value = {'ranking': {'query': 'LLM'}, 'filter': {'pattern': 'LLM'}}
@@ -16,14 +18,16 @@ def test_optional_cursor_pagination_preserves_default(tmp_path, monkeypatch, pag
     db = Mock()
     db.get_connection.return_value = conn
     monkeypatch.setattr(openalex, 'DatabaseManager', Mock(return_value=db))
+    prefix = 'LLM' if strategy == 'keywords' else 'No matching keywords'
     request = Mock(side_effect=[
-        {'results': [{'title': 'LLM one'}], 'meta': {'next_cursor': 'next'}},
-        {'results': [{'title': 'LLM two'}], 'meta': {}},
+        {'results': [{'title': prefix + ' one'}], 'meta': {'next_cursor': 'next'}},
+        {'results': [{'title': prefix + ' two'}], 'meta': {}},
     ])
     monkeypatch.setattr(openalex, '_request', request)
     monkeypatch.setattr(openalex, '_upsert', Mock(return_value='inserted'))
     assert openalex.run('unused', paginate=paginate)['inserted'] == expected
     assert request.call_count == expected
+    assert openalex._upsert.call_args.args[2] == ('_classification_pending' if strategy == 'api' else 'llm')
     conn.close()
 
 

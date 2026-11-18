@@ -1,0 +1,10 @@
+[Unit]
+Description=Monitor arXiv daily at 14:00 Beijing time
+
+[Timer]
+OnCalendar=*-*-* 14:00:00 Asia/Shanghai
+Persistent=true
+Unit=paper-compass-update.service
+
+[Install]
+WantedBy=timers.target

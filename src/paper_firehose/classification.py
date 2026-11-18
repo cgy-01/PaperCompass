@@ -166,3 +166,17 @@ class TopicClassifier:
         # Prefer the more specific concept on equal weights ("large language
         # models" over its "language models" substring), then a stable key.
         return sorted(matches, key=lambda match: (-match.score, -match.specificity, match.topic['key']))
+
+
+class _PendingClassifier:
+    """In API mode collect source candidates without a keyword gate or API call."""
+    def classify(self, title, abstract=''):
+        return []
+
+    def is_candidate(self, title, abstract=''):
+        return True
+
+
+def collection_classifier(catalog):
+    from .api_classification import api_enabled
+    return _PendingClassifier() if api_enabled() else TopicClassifier(catalog)

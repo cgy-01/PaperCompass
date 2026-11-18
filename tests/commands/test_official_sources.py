@@ -6,8 +6,10 @@ import pytest
 
 
 @pytest.mark.parametrize('interrupt', [False, True])
-def test_sync_commits_batches_and_reports_progress(tmp_path, monkeypatch, caplog, interrupt):
+@pytest.mark.parametrize('strategy', ['keywords', 'api'])
+def test_sync_commits_batches_and_reports_progress(tmp_path, monkeypatch, caplog, interrupt, strategy):
     from paper_firehose.commands import official_sources as source
+    monkeypatch.setenv('PAPER_COMPASS_CLASSIFIER', strategy)
     manager = Mock()
     manager.get_available_topics.return_value = ['llm']
     manager.load_topic_config.return_value = {'filter': {'pattern': 'LLM'}}
@@ -39,6 +41,7 @@ def test_sync_commits_batches_and_reports_progress(tmp_path, monkeypatch, caplog
     with sqlite3.connect(database) as check:
         assert check.execute('SELECT count(*) FROM processed').fetchone()[0] == (200 if interrupt else 201)
     assert '200/201' in caplog.text
+    assert set(calls) == ({'ccf_a_all'} if strategy == 'api' else {'llm'})
     manager.load_topic_config.assert_called_once_with('llm')
     conn.close()
 

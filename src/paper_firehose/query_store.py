@@ -20,6 +20,7 @@ from pathlib import Path
 
 from .commands import dashboard
 from .classification import CLASSIFIER_VERSION
+from .api_classification import AssignmentReader, VERSION as API_CLASSIFIER_VERSION, api_enabled, digest
 from .core.config import ConfigManager
 from .core.paths import resolve_data_file, resolve_data_path
 
@@ -30,6 +31,11 @@ FORMAT_VERSION = 1
 def public_id(identifier):
     """Stable URL identity, independent of publication versions and raw ID format."""
     return hashlib.sha256(('paper-compass:' + identifier).encode('utf-8')).hexdigest()
+
+
+def source_fingerprint(row):
+    """Keep legacy raw fingerprints stable; append API decisions separately."""
+    return hashlib.sha256(json.dumps(dict(row), sort_keys=True).encode()).hexdigest()
 
 
 def present_paper(paper, *, compact=False):
@@ -117,7 +123,10 @@ def build(config_path, *, updated_at=None):
         name = 'query-' + uuid.uuid4().hex + '.db'
         destination = root / name
         published = False
+        assignments = None
+        historical_snapshot = None
         try:
+            assignments = AssignmentReader() if api_enabled() else None
             with tempfile.TemporaryDirectory(prefix='build-', dir=root) as scratch:
                 snapshot_path = Path(scratch) / 'source.db'
                 with closing(read_connection(source)) as raw, closing(sqlite3.connect(snapshot_path)) as snapshot:
@@ -128,6 +137,8 @@ def build(config_path, *, updated_at=None):
                 except FileNotFoundError:
                     previous = None
                 if previous:
+                    if assignments and assignments.has_scope:
+                        historical_snapshot = read_connection(previous)
                     with closing(read_connection(previous)) as old, closing(sqlite3.connect(candidate)) as new:
                         old.backup(new)
                 with closing(sqlite3.connect(candidate)) as conn, closing(read_connection(snapshot_path)) as snapshot:
@@ -156,14 +167,41 @@ def build(config_path, *, updated_at=None):
                     conn.execute('CREATE TEMP TABLE seen (id TEXT PRIMARY KEY)')
                     stats = {'scanned': 0, 'changed': 0, 'visible_updated': 0}
                     positions = {}
+                    decisions = {}
 
                     def changed_rows():
                         for row in snapshot.execute('SELECT rowid AS source_rowid, * FROM matched_entries'):
                             key = row['entry_id']
                             stats['scanned'] += 1
                             conn.execute('INSERT INTO seen VALUES (?)', (key,))
-                            fingerprint = hashlib.sha256(json.dumps(dict(row), sort_keys=True).encode()).hexdigest()
+                            fingerprint = source_fingerprint(row)
                             old = conn.execute('SELECT fingerprint FROM fingerprints WHERE id=?', (key,)).fetchone()
+                            historical = assignments and assignments.has_scope and assignments.is_historical(key)
+                            decision = None
+                            if historical:
+                                if historical_snapshot is None:
+                                    raise ValueError('Historical labels require an existing query snapshot; '
+                                                     'build-query in keywords mode before enabling API classification')
+                                # Metadata refreshes must not clear or reinterpret
+                                # labels assigned before API classification began.
+                                previous_paper = historical_snapshot.execute('SELECT payload FROM papers WHERE id=?', (key,)).fetchone()
+                                if previous_paper:
+                                    payload = json.loads(previous_paper[0])
+                                    decision = {'historical_topics': [dict(key=k, name=n) for k, n in
+                                                zip(payload['topicKeys'], payload['topics'])]}
+                                else:
+                                    decision = {'historical_hidden': True}
+                                if old and old[0].split(':', 1)[0] == fingerprint:
+                                    fingerprint = old[0]
+                            elif assignments:
+                                decision = assignments.get(row)
+                            if decision and not historical:
+                                fingerprint += ':' + digest(decision)
+                            elif assignments and not historical and (not old or old[0] != fingerprint):
+                                # Mark only new/changed API rows, preserving legacy
+                                # history. Manual keyword fallback must also revisit
+                                # pending rows, not only successful API decisions.
+                                fingerprint += ':api-pending'
                             if old and old[0] == fingerprint:
                                 continue
                             stats['changed'] += 1
@@ -171,10 +209,13 @@ def build(config_path, *, updated_at=None):
                             conn.execute('DELETE FROM paper_topics WHERE paper_id=?', (key,))
                             conn.execute('INSERT OR REPLACE INTO fingerprints VALUES (?,?)', (key, fingerprint))
                             positions[key] = (row['published_date'] if row['published_date'] is not None else row['matched_date'], row['source_rowid'])
+                            decisions[key] = decision
                             yield row
                             positions.pop(key, None)
+                            decisions.pop(key, None)
 
-                    for paper in dashboard._iter_entries(_Snapshot(snapshot), None, catalog, rows=changed_rows()):
+                    for paper in dashboard._iter_entries(_Snapshot(snapshot), None, catalog, rows=changed_rows(),
+                                                         topic_resolver=lambda row: decisions.get(row['entry_id'])):
                         key = paper['id']
                         base_date, rowid = positions[key]
                         complete = bool(paper['authors'] != '作者未知' and paper['summary'] != '暂无摘要。'
@@ -209,7 +250,9 @@ def build(config_path, *, updated_at=None):
                     # Classifier implementation upgrades apply to new/changed
                     # records only. Do not invalidate historical fingerprints.
                     for key, value in {'signature': signature, 'catalog': public_catalog,
-                                       'classifier': {'version': CLASSIFIER_VERSION, 'scope': 'new_or_changed'},
+                                       'classifier': {'version': API_CLASSIFIER_VERSION if assignments else CLASSIFIER_VERSION,
+                                                      'scope': 'future_only' if assignments and assignments.has_scope else 'new_or_changed'},
+                                       'classification_revision': assignments.revision if assignments else 0,
                                        'updated_at': updated_at}.items():
                         conn.execute('INSERT OR REPLACE INTO metadata VALUES (?,?)', (key, json.dumps(value)))
                     # Signature is stored as plain text to allow direct equality checks.
@@ -254,6 +297,10 @@ def build(config_path, *, updated_at=None):
                 LOGGER.warning('Unable to prune expired query versions', exc_info=True)
             return stats
         finally:
+            if historical_snapshot:
+                historical_snapshot.close()
+            if assignments:
+                assignments.close()
             if not published:
                 destination.unlink(missing_ok=True)
 

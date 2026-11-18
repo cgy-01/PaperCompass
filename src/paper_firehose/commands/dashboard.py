@@ -15,6 +15,7 @@ from ..core.database import DatabaseManager
 from ..core.paths import get_system_path, resolve_data_path
 from ..frontend_assets import publish as publish_assets
 from ..classification import PENDING_TOPIC, TopicClassifier
+from ..api_classification import api_enabled
 
 
 THEME_GROUPS = {
@@ -120,8 +121,10 @@ def _read_entries(db: DatabaseManager, days: int | None, catalog: list[dict[str,
     return list(_iter_entries(db, days, catalog))
 
 
-def _iter_entries(db: DatabaseManager, days: int | None, catalog: list[dict[str, Any]], *, rows=None):
-    classifier = TopicClassifier(catalog)
+def _iter_entries(db: DatabaseManager, days: int | None, catalog: list[dict[str, Any]], *, rows=None,
+                  topic_resolver=None):
+    api_mode = api_enabled()
+    classifier = None if api_mode else TopicClassifier(catalog)
     sql = """SELECT entry_id, feed_name, topics, title, link, summary, authors,
                     abstract, doi, published_date, matched_date, llm_summary,
                     paper_qa_summary, rank_score, venue_name, venue_type,
@@ -147,7 +150,16 @@ def _iter_entries(db: DatabaseManager, days: int | None, catalog: list[dict[str,
             # Official adapters intentionally store the abstract in both legacy
             # columns. Count it once so min_matches remains a real relevance guard.
             searchable = abstract if abstract.strip() == summary.strip() else f"{summary} {abstract}"
-            matched_topics = [match.topic for match in classifier.classify(title, searchable)]
+            if api_mode:
+                decision = topic_resolver(item) if topic_resolver else None
+                if decision and decision.get('historical_hidden'):
+                    continue
+                if decision and 'historical_topics' in decision:
+                    matched_topics = decision['historical_topics']
+                else:
+                    matched_topics = [topic for topic in catalog if decision and topic['key'] == decision['topic_key']]
+            else:
+                matched_topics = [match.topic for match in classifier.classify(title, searchable)]
             topic_names = [topic["name"] for topic in matched_topics]
             topic_keys = [topic["key"] for topic in matched_topics]
             external_id = str(item.get("external_id") or "")
@@ -158,7 +170,7 @@ def _iter_entries(db: DatabaseManager, days: int | None, catalog: list[dict[str,
             # internal pending marker as a research topic or forcing a label.
             pending_arxiv = (str(item.get('feed_name') or '').lower().startswith('arxiv')
                              and PENDING_TOPIC in {part.strip() for part in (item.get('topics') or '').split(',')})
-            if catalog and not matched_topics and not is_official_conference and not pending_arxiv:
+            if catalog and not matched_topics and not is_official_conference and not pending_arxiv and not api_mode:
                 continue
             # Untagged official proceedings stay browseable by venue, but an
             # internal absence of a topic must not become a user-facing tag.

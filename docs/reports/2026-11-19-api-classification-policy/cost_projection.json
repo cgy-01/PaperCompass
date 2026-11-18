@@ -1,0 +1,50 @@
+{
+  "basis": "../2026-11-18-deepseek-classification-benchmark/README.md",
+  "source_sample_papers": 10,
+  "new_paid_calls_for_this_report": 0,
+  "average_tokens": {
+    "input": "1923.1",
+    "input_cache_hit": "1382.4",
+    "input_cache_miss": "540.7",
+    "output": "86.4",
+    "total": "2009.5"
+  },
+  "average_processing_seconds": "1.1326",
+  "per_paper_cached_scenario_cny": "0.000913948",
+  "per_paper_no_input_cache_scenario_cny": "0.0022687",
+  "daily_budget_cny": "3",
+  "theoretical_budget_capacity_cached": 3282,
+  "theoretical_budget_capacity_no_input_cache": 1322,
+  "before_conservative_reservation_and_failures": true,
+  "projection_is_not_observed_throughput": true,
+  "projections": [
+    {
+      "papers": 876,
+      "cached_scenario_cny": "0.800618448",
+      "no_input_cache_scenario_cny": "1.9873812",
+      "continuous_processing_seconds": "992.1576",
+      "no_input_cache_exceeds_3cny": false
+    },
+    {
+      "papers": 1146,
+      "cached_scenario_cny": "1.047384408",
+      "no_input_cache_scenario_cny": "2.5999302",
+      "continuous_processing_seconds": "1297.9596",
+      "no_input_cache_exceeds_3cny": false
+    },
+    {
+      "papers": 2000,
+      "cached_scenario_cny": "1.827896000",
+      "no_input_cache_scenario_cny": "4.5374000",
+      "continuous_processing_seconds": "2265.2000",
+      "no_input_cache_exceeds_3cny": true
+    },
+    {
+      "papers": 3000,
+      "cached_scenario_cny": "2.741844000",
+      "no_input_cache_scenario_cny": "6.8061000",
+      "continuous_processing_seconds": "3397.8000",
+      "no_input_cache_exceeds_3cny": true
+    }
+  ]
+}

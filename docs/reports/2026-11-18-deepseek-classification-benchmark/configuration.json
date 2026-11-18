@@ -1,0 +1,52 @@
+{
+  "requested_model_alias": "deepseek-flash",
+  "base_url": "https://api.deepseek.com",
+  "reasoning_effort": "none",
+  "temperature": 0,
+  "max_output_tokens": 512,
+  "read_timeout_seconds": 60,
+  "connect_timeout_seconds": 10,
+  "response_format": {
+    "type": "json_object"
+  },
+  "papers_per_request": 1,
+  "concurrency": 1,
+  "classification_version": "api-single-topic-v2",
+  "policy_hash": "c495a9d0d37de6f274d4af7ee0284ed8a417c8ad1641890e3850f0263923596d",
+  "prompt_hash_json_string_sha256": "284468a2a1eeafb8f51ab510b69052e6e3d731a5e2d4b46fd868443bab543b87",
+  "prompt_file_utf8_sha256": "37e80527f2b6d32678969442519d9a0154251fd6706069b265325c6aca8d0474",
+  "daily_budget_cny": 1,
+  "daily_request_limit": 500,
+  "daily_token_limit": 1000000,
+  "scheduled_batch_limit": 200,
+  "scheduled_classifier_beijing": "18:10",
+  "measurement_host": "local WSL execution environment; not the cloud server",
+  "target_server_cpu_cores": 2,
+  "target_server_ram_gib": 2,
+  "python_version": "3.11.15",
+  "platform": "Linux-6.18.58.1-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+  "source_git_head": "acd2ced3264aeb3986217e7da966c7817016b5ba",
+  "source_is_uncommitted_working_tree": true,
+  "implementation_fingerprints": [
+    {
+      "path": "src/paper_firehose/api_classification.py",
+      "sha256": "2cd00567cb5c383c7904c2d64837e00c6b7d1ff38772ace2262f624be7a43f38"
+    },
+    {
+      "path": "src/paper_firehose/classification_store.py",
+      "sha256": "eb0f5b338f4cdbf5bdbd33371ca3c96b2b72161e74fdb5654745898b00e92975"
+    },
+    {
+      "path": "src/paper_firehose/commands/classify_papers.py",
+      "sha256": "c06dff2adebb36e881031fd0ddaa31b472be90e2dfeb40e79471b9b4e725783b"
+    },
+    {
+      "path": "src/paper_firehose/system/prompts/paper_topic_classification.txt",
+      "sha256": "adc7132e7de823ac40ea176007c6212c8371f7c3cfe94af7be1cf68aec0ab00e"
+    },
+    {
+      "path": "src/paper_firehose/core/environment.py",
+      "sha256": "5db607e101a54024577c978e947aa92e21ff19b2012f79725455fce9304bfbaa"
+    }
+  ]
+}

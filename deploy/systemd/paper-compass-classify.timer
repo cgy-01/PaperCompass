@@ -1,0 +1,10 @@
+[Unit]
+Description=Classify queued papers daily at 18:10 Beijing time
+
+[Timer]
+OnCalendar=*-*-* 18:10:00 Asia/Shanghai
+Persistent=true
+Unit=paper-compass-classify.service
+
+[Install]
+WantedBy=timers.target

@@ -4,6 +4,8 @@
 
 ## 当前方案
 
+现有规则策略保留为兼容默认值与手动备选。另有显式启用的 API 单主题策略，配置、JSON 样本测试、增量分类与回滚见[外部大模型 API 论文分类](api_classification.md)。以下内容描述 `PAPER_COMPASS_CLASSIFIER=keywords` 的行为。
+
 每日 arXiv 任务、官方会议同步、可选 OpenAlex 检索和查询库发布，统一调用 `TopicClassifier`。它是本地、可解释的证据规则分类器，不是 LLM 或向量语义分类器；不访问模型接口、不下载模型、不增加运行依赖。
 
 arXiv 分类只决定采集范围。每篇已获取论文都检查全部已配置的重点主题，例如 cs.CV 中的 Agent 论文可以归入 Agent。未配置的来源仍不会被自动采集，采集时间窗口保持不变。

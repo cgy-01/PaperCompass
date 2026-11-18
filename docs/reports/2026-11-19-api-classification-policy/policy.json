@@ -1,0 +1,160 @@
+{
+  "archived_at_utc": "2026-11-18T17:50:19.319711+00:00",
+  "archived_at_beijing": "2026-11-19T01:50:19.319711+08:00",
+  "source_git_head": "acd2ced3264aeb3986217e7da966c7817016b5ba",
+  "source_is_uncommitted_working_tree": true,
+  "scope": "local implementation and configuration; not a server deployment audit",
+  "policy_id": "2026-11-19-api-classification-off-peak-3cny",
+  "classification_version": "api-single-topic-v2",
+  "timezone": "Asia/Shanghai",
+  "classification": {
+    "input": [
+      "title",
+      "full_abstract_or_summary_fallback"
+    ],
+    "pdf_download": false,
+    "topic_count": 14,
+    "topics": {
+      "llm": "大模型（LLM）",
+      "agents": "AI Agent",
+      "ai_infra": "AI Infra",
+      "reasoning_post_training": "推理与后训练",
+      "multimodal_generative": "多模态与生成模型",
+      "ai_safety_alignment": "AI 安全与对齐",
+      "data_evaluation": "数据与评测",
+      "embodied_robotics": "具身智能与机器人",
+      "reinforcement_learning": "强化学习与决策",
+      "ai_for_science": "AI for Science",
+      "vision_graphics": "视觉与图形",
+      "ml_foundations": "机器学习基础",
+      "language_speech_retrieval": "语言、语音与检索",
+      "systems_architecture": "系统与计算架构"
+    },
+    "max_accepted_topics_per_new_paper": 1,
+    "historical_multitopic_labels_preserved": true,
+    "decisions": [
+      "classified",
+      "needs_review",
+      "out_of_scope"
+    ],
+    "text_limit_characters": 60000,
+    "response_limit_bytes": 1000000,
+    "reason_max_characters": 500,
+    "evidence_max_characters": 2000,
+    "evidence_must_be_contiguous_input_excerpt": true,
+    "evidence_40_word_target_is_prompt_only": true
+  },
+  "daily_schedules_beijing": {
+    "conferences": "06:30",
+    "arxiv": "14:00",
+    "classification": "18:10"
+  },
+  "classification_timer_persistent": true,
+  "automatic_runs_per_day": 1,
+  "classification_start_skips_if_collector_active": true,
+  "full_run_cross_service_mutex": false,
+  "window": {
+    "weekday_peak_intervals": [
+      [
+        "09:00",
+        "12:00"
+      ],
+      [
+        "14:00",
+        "18:00"
+      ]
+    ],
+    "weekend_off_peak_all_day": true,
+    "weekday_holidays_use_conservative_weekday_intervals": true,
+    "per_paid_request_guard": true,
+    "closing_margin_seconds": 75.0,
+    "in_flight_request_force_cancelled_at_boundary": false,
+    "resume_at_creates_timer": false,
+    "cached_local_predictions_allowed_during_peak": true
+  },
+  "budget": {
+    "cny_per_beijing_day": "3",
+    "unspent_budget_rolls_over": false,
+    "request_and_token_count_caps_default": -1,
+    "batch_count_limit_default": 0,
+    "pre_request_reservation_required": true,
+    "unknown_usage_keeps_reservation": true,
+    "shared_across_cli_json_and_database_jobs_in_same_runtime": true,
+    "shared_across_different_runtime_directories": false,
+    "bill_day_based_on_request_registration": true,
+    "provider_invoice_guaranteed": false
+  },
+  "worker": {
+    "queue_batch_size": 100,
+    "concurrency": 1,
+    "same_id_attempts_per_run_max": 1,
+    "job_order": [
+      "next_attempt",
+      "last_attempt",
+      "paper_id"
+    ],
+    "strict_fifo": false,
+    "max_automatic_failed_attempts_per_text": 3,
+    "retry_delays_seconds": [
+      300,
+      600
+    ],
+    "lease_seconds": 120.0,
+    "fatal_circuit_seconds": 3600,
+    "consecutive_transient_errors_to_trip": 3,
+    "transient_circuit_seconds": 900,
+    "max_paid_http_attempts_per_job_processing": 1
+  },
+  "historical_scope": {
+    "baseline": "raw IDs present before first API collection",
+    "historical_metadata_changes_trigger_api": false,
+    "override_requires_all_papers": true,
+    "unfinished_manual_history_jobs_resumed_by_default_worker": false,
+    "existing_query_snapshot_required_for_historical_labels": true
+  },
+  "storage": {
+    "raw_schema_modified_by_classifier": false,
+    "classification_db": "classification/api.db",
+    "classification_db_journal_mode": "WAL",
+    "classification_db_cache_kib": 4096,
+    "assignment_reader_cache_kib": 2048,
+    "worker_status": "classification/status.json",
+    "classifier_tables": [
+      "tracked_papers",
+      "jobs",
+      "predictions",
+      "assignments",
+      "requests",
+      "state"
+    ],
+    "query_publication": "immutable SQLite snapshots plus atomic current.json replacement",
+    "accepted_assignment_revision_gates_worker_publication": true,
+    "max_worker_publications_per_run": 1,
+    "query_build_still_copies_and_scans_source": true
+  },
+  "service_limits": {
+    "cpu_quota": "50%",
+    "memory_high": "256M",
+    "memory_max": "384M",
+    "timeout": "6h",
+    "restart": "no",
+    "nice": 15,
+    "io_class": "best-effort",
+    "io_priority": 7
+  },
+  "validation": {
+    "backend_passed": 644,
+    "backend_warnings": 2,
+    "browser_suite_run": false,
+    "targeted_passed": 154,
+    "suites_overlap": true,
+    "new_paid_calls_during_archiving": 0,
+    "uses_preceding_test_run_logs": true
+  },
+  "deployment": {
+    "local_code_and_config_updated": true,
+    "server_updated_this_iteration": false,
+    "server_effective_classification_config_verified_this_iteration": false,
+    "automatic_server_deployment_enabled": false
+  }
+}

@@ -19,7 +19,7 @@
 - Homepage URL：`https://papercompass.cn`
 - Authorization callback URL：`https://papercompass.cn/auth/github/callback`
 
-为 Web systemd 服务添加 `EnvironmentFile`，文件放在仓库与静态目录以外，权限设为 600：
+统一在项目根目录 `/opt/paper-compass/.env` 的账号分区配置，不再另建 `accounts.env`。文件不得位于 `html/` 等静态服务目录；归运行用户所有，权限为 600：
 
 ```ini
 PAPER_COMPASS_PUBLIC_URL=https://papercompass.cn
@@ -35,10 +35,10 @@ PAPER_COMPASS_EVENTS_DAILY_LIMIT=100000
 
 ```ini
 [Service]
-EnvironmentFile=/etc/paper-compass/accounts.env
+EnvironmentFile=/opt/paper-compass/.env
 ```
 
-更新环境后执行 `systemctl daemon-reload` 和 `systemctl restart paper-compass`。不要把实际密钥填写进源码、公开文档或前端。项目不会自动加载 `.env`。
+应用会在启动时自动加载根目录 `.env`。现有服务也可按上述方式引用同一文件；若以前配置了 `/etc/paper-compass/accounts.env` 等 drop-in，迁移值后应移除旧引用，避免覆盖新配置。文件归属可设置为 `papercompass:papercompass`，权限为 600。更新服务定义后执行 `systemctl daemon-reload`，修改账号配置后执行 `systemctl restart paper-compass`。不要把实际密钥填写进源码模板、公开文档或前端。
 
 未配置完整凭据时，点击入口后返回 welcome 页面并提示登录尚未开放。论文服务与匿名本机文献库仍可使用。匿名行为记录默认开启，可通过环境变量关闭。生产环境必须填写 HTTPS 公共地址，并保持 `PAPER_COMPASS_DEV_LOGIN=0`。本地开发直接使用 `start_frontend_dev.sh` 自动开发账号，无需创建本地 OAuth App，详见[开发说明](../development.md)。
 

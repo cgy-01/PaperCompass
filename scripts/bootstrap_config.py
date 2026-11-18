@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import argparse
 import os
+import runpy
 import shutil
 import sys
 from pathlib import Path
@@ -46,6 +47,8 @@ def resolve_data_dir(user_override: Path | None) -> Path:
 
 
 def main() -> int:
+    root = Path(__file__).resolve().parents[1]
+    runpy.run_path(str(root / 'src/paper_firehose/core/environment.py'))['load_environment']()
     args = parse_args()
     data_dir = resolve_data_dir(args.data_dir)
     repo_root = Path(__file__).resolve().parents[1]

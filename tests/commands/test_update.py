@@ -21,6 +21,7 @@ def pipeline(tmp_path, monkeypatch):
     for module in (update.arxiv, update.openalex, update.official_sources):
         monkeypatch.setattr(module, 'run', Mock(return_value={'inserted': 1}))
     monkeypatch.setattr(update.query_store, 'build', Mock(return_value={'changed': 1}))
+    monkeypatch.setattr(update.classify_papers, 'prepare_scope', Mock(return_value={'historical_count': 100, 'created': True}))
     return tmp_path, database
 
 
@@ -123,3 +124,54 @@ def test_conferences_scope_does_not_refetch_arxiv(pipeline):
     assert update.run('config.yaml', scope='conferences')['ok']
     update.arxiv.run.assert_not_called()
     assert (directory / 'update-status-conferences.json').exists()
+
+
+def test_api_mode_enqueues_before_publication_without_making_requests(pipeline, monkeypatch):
+    monkeypatch.setenv('PAPER_COMPASS_CLASSIFIER', 'api')
+    queue = Mock(return_value={'ok': True, 'queued': 1})
+    remote = Mock(side_effect=AssertionError('collector attempted API classification'))
+    monkeypatch.setattr(update.classify_papers, 'queue', queue)
+    monkeypatch.setattr(update.classify_papers, 'run', remote)
+    report = update.run('config.yaml', scope='arxiv')
+    assert report['ok']
+    assert queue.call_count == 2
+    assert report['stages']['classification_queue_rss']['ok']
+    assert report['stages']['classification_queue']['ok']
+    assert update.query_store.build.call_count == 2
+    remote.assert_not_called()
+
+
+def test_api_history_boundary_is_frozen_before_first_collector(pipeline, monkeypatch):
+    monkeypatch.setenv('PAPER_COMPASS_CLASSIFIER', 'api')
+    events = []
+    def prepare(_):
+        events.append('baseline')
+        return {'historical_count': 100, 'created': True}
+    def collect(*args, **kwargs):
+        assert events == ['baseline'] or events[-1] == 'collect'
+        events.append('collect')
+        return {}
+    monkeypatch.setattr(update.classify_papers, 'prepare_scope', prepare)
+    monkeypatch.setattr(update.classify_papers, 'queue', Mock(return_value={'ok': True}))
+    monkeypatch.setattr(update.arxiv, 'run', collect)
+    assert update.run('config.yaml', scope='arxiv')['ok']
+    assert events == ['baseline', 'collect', 'collect']
+
+
+def test_baseline_failure_stops_before_collecting(pipeline, monkeypatch):
+    monkeypatch.setenv('PAPER_COMPASS_CLASSIFIER', 'api')
+    monkeypatch.setattr(update.classify_papers, 'prepare_scope', Mock(side_effect=OSError('disk full')))
+    with pytest.raises(OSError, match='disk full'):
+        update.run('config.yaml', scope='arxiv')
+    update.arxiv.run.assert_not_called()
+
+
+def test_enqueue_failure_still_publishes_searchable_candidates(pipeline, monkeypatch):
+    monkeypatch.setenv('PAPER_COMPASS_CLASSIFIER', 'api')
+    monkeypatch.setattr(update.classify_papers, 'queue', Mock(side_effect=ValueError('private config detail')))
+    report = update.run('config.yaml', scope='arxiv')
+    assert not report['ok']
+    assert not report['stages']['classification_queue']['ok']
+    assert report['stages']['publication']['ok']
+    assert update.query_store.build.call_count == 2
+    assert 'private config detail' not in json.dumps(report)

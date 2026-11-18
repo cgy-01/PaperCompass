@@ -1,0 +1,33 @@
+{
+  "verified_at_utc": "2026-11-18T17:50:19.319711+00:00",
+  "source_url": "https://api-docs.deepseek.com/zh-cn/quick_start/pricing/",
+  "requested_model_alias": "deepseek-flash",
+  "official_version_at_verification": "DeepSeek-V4.1-Flash-1017",
+  "actual_response_model_version_observed_in_this_archive": false,
+  "currency": "CNY",
+  "unit": "per 1000000 tokens",
+  "off_peak": {
+    "uncached_input": "1",
+    "cached_input": "0.02",
+    "output": "4"
+  },
+  "peak": {
+    "uncached_input": "2",
+    "cached_input": "0.04",
+    "output": "8"
+  },
+  "timezone": "Asia/Shanghai",
+  "official_weekday_peak_windows": [
+    [
+      "09:00",
+      "12:00"
+    ],
+    [
+      "14:00",
+      "18:00"
+    ]
+  ],
+  "official_weekends_and_china_statutory_holidays_off_peak": true,
+  "application_uses_weekday_peaks_even_on_statutory_holidays": true,
+  "pricing_snapshot_not_live_billing_guarantee": true
+}

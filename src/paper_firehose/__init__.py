@@ -1,5 +1,10 @@
 from __future__ import annotations
 
+from .core.environment import load_environment
+
+# Paths/config defaults are computed during imports; load the one .env first.
+load_environment()
+
 import logging
 import os
 from importlib.metadata import version as _get_version, PackageNotFoundError

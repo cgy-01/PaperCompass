@@ -49,7 +49,7 @@ Type=simple
 User=papercompass
 Group=papercompass
 WorkingDirectory=/opt/paper-compass
-Environment=PAPER_COMPASS_API_URL=http://127.0.0.1:8765
+EnvironmentFile=-/opt/paper-compass/.env
 ExecStart=/opt/paper-compass/.venv/bin/paper-firehose mcp --transport streamable-http --host 127.0.0.1 --port 8766 --allowed-host papercompass.cn --allowed-host www.papercompass.cn
 Restart=on-failure
 RestartSec=5

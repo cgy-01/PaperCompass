@@ -1,0 +1,28 @@
+[Unit]
+Description=Paper Compass daily paper ingestion
+Wants=network-online.target
+After=network-online.target
+StartLimitIntervalSec=1h
+StartLimitBurst=3
+
+[Service]
+Type=oneshot
+User=papercompass
+Group=papercompass
+WorkingDirectory=/opt/paper-compass
+# Legacy fallback when .env is absent; the single env file overrides this.
+Environment=PAPER_FIREHOSE_DATA_DIR=/opt/paper-compass/.runtime-demo
+EnvironmentFile=-/opt/paper-compass/.env
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/opt/paper-compass/.venv/bin/paper-firehose --config /opt/paper-compass/.runtime-demo/config/config.yaml update --scope arxiv
+TimeoutStartSec=2h
+Restart=on-failure
+RestartSec=5min
+Nice=10
+CPUQuota=100%
+IOSchedulingClass=best-effort
+IOSchedulingPriority=7
+MemoryHigh=650M
+MemoryMax=900M
+NoNewPrivileges=true
+PrivateTmp=true

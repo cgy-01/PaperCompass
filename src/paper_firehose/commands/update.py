@@ -13,6 +13,8 @@ from ..core.config import ConfigManager
 from ..core.database import DatabaseManager
 from ..core.paths import resolve_data_path
 from .. import query_store
+from ..api_classification import api_enabled
+from . import classify_papers
 
 LOGGER = logging.getLogger(__name__)
 
@@ -45,6 +47,17 @@ def _save_status(report):
 
 
 def _publish(config_path, report, name):
+    if api_enabled():
+        stage = 'classification_queue' + name.removeprefix('publication')
+        LOGGER.info('Update stage started: %s', stage)
+        try:
+            result = classify_papers.queue(config_path)
+            report['stages'][stage] = {'ok': result['ok'], 'result': result}
+        except Exception as exc:
+            # Do not include provider exception bodies or credentials in reports.
+            LOGGER.error('Classification enqueue failed (%s); publishing searchable candidates', type(exc).__name__)
+            report['stages'][stage] = {'ok': False, 'error': 'Enqueue failed; pending markers allow later reconciliation'}
+        _save_status(report)
     LOGGER.info('Update stage started: %s', name)
     try:
         result = query_store.build(config_path, updated_at=datetime.now(timezone.utc).isoformat())
@@ -76,6 +89,10 @@ def run(config_path: str, *, include_openalex: bool = False, scope: str = 'all')
                 raise RuntimeError('Database backup incomplete; refusing to collect papers')
         finally:
             db.close_all_connections()
+        if api_enabled():
+            baseline = classify_papers.prepare_scope(config_path)
+            LOGGER.info('API classification scope ready: historical=%d created=%s',
+                        baseline['historical_count'], baseline['created'])
         available = set(manager.get_available_topics())
         topics = [key for key in CURATED_TOPIC_KEYS if key in available]
         if not topics:

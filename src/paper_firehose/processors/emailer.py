@@ -386,7 +386,11 @@ class SMTPSender:
         self._config_dir = Path(config_dir).expanduser().resolve() if config_dir else None
 
     def _load_password(self) -> str:
-        """Fetch SMTP password via inline config, password file, or environment fallback."""
+        """Prefer the unified environment, then legacy inline/password-file settings."""
+        # Prefer the unified setting; retain old YAML/files for compatibility.
+        configured = os.environ.get('SMTP_PASSWORD', '')
+        if configured:
+            return configured
         if self.password:
             return self.password
         if self.password_file:
@@ -396,9 +400,7 @@ class SMTPSender:
             if os.path.exists(candidate):
                 with open(candidate, 'r', encoding='utf-8') as f:
                     return f.read().strip()
-        # Last resort: env var based on username
-        env_name = 'SMTP_PASSWORD'
-        return os.environ.get(env_name, '')
+        return ''
 
     def send(self, *, subject: str, from_addr: str, to_addrs: List[str], html_body: str, text_body: Optional[str] = None) -> None:
         """Send a multipart email with HTML alternative using SMTP over SSL."""

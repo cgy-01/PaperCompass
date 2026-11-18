@@ -1,0 +1,29 @@
+[Unit]
+Description=Paper Compass bounded API classification worker
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=papercompass
+Group=papercompass
+WorkingDirectory=/opt/paper-compass
+Environment=PAPER_FIREHOSE_DATA_DIR=/opt/paper-compass/.runtime-demo
+EnvironmentFile=-/opt/paper-compass/.env
+Environment=PYTHONUNBUFFERED=1
+# Do not enable model traffic until explicitly configured. Avoid starting a
+# heavy publication while a collector is already active/starting on a 2 GiB VM.
+ExecCondition=/opt/paper-compass/.venv/bin/paper-firehose classification-status --enabled
+ExecCondition=/bin/sh -c '! systemctl show -p ActiveState --value paper-compass-update.service paper-compass-conferences.service | grep -Eq "^(active|activating|deactivating)$"'
+ExecStart=/opt/paper-compass/.venv/bin/paper-firehose --config /opt/paper-compass/.runtime-demo/config/config.yaml classify-papers --queued-only --publish
+TimeoutStartSec=6h
+Restart=no
+Nice=15
+CPUQuota=50%
+IOSchedulingClass=best-effort
+IOSchedulingPriority=7
+MemoryHigh=256M
+MemoryMax=384M
+NoNewPrivileges=true
+PrivateTmp=true
+

@@ -19,7 +19,7 @@ from ..core.config import ConfigManager
 from ..core.database import DatabaseManager
 from ..core.paths import resolve_data_path
 from .dashboard import _topic_catalog
-from ..classification import TopicClassifier
+from ..classification import TopicClassifier, collection_classifier
 from .openalex import _upsert
 
 logger = logging.getLogger(__name__)
@@ -189,7 +189,7 @@ def run(config_path: str, family: str = "all", *, enrich_metadata: bool = True,
     elif family == "latest": sources=[item for item in sources if item[1] in {"CVPR 2026","NeurIPS 2025","ACL 2026","MLSys 2026","ICLR 2026"}]
     selected_venues=[item[1] for item in sources]
     catalog = _topic_catalog(manager)
-    classifier = TopicClassifier(catalog)
+    classifier = collection_classifier(catalog)
     totals['failed'] = 0
     totals.update({'sources_deferred': 0, 'sources_unchanged': 0, 'items_unchanged': 0})
     now = datetime.now(timezone.utc)

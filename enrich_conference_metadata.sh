@@ -2,6 +2,9 @@
 set -euo pipefail
 
 PROJECT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+ENV_EXPORTS="$(python3 "${PROJECT_DIR}/src/paper_firehose/core/environment.py" --shell)"
+eval "${ENV_EXPORTS}"
+unset ENV_EXPORTS
 DATA_DIR="${PAPER_FIREHOSE_DATA_DIR:-${PROJECT_DIR}/.runtime-demo}"
 CLI_BIN="/home/cgy/miniconda3/envs/paper-compass/bin/paper-firehose"
 CONFIG_PATH="${DATA_DIR}/config/config.yaml"

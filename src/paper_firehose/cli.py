@@ -28,6 +28,7 @@ from .commands import rank as rank_cmd
 from .commands import status as status_cmd
 from .commands import topic_cmd
 from .commands import update as update_cmd
+from .commands import classify_papers as classify_papers_cmd
 from .core.config import ConfigManager, DEFAULT_CONFIG_PATH
 from .core.exit_codes import ERR_CONFIG, ERR_RUNTIME, ERR_USAGE
 from .core.paths import get_data_dir
@@ -123,6 +124,75 @@ def build_query(ctx: click.Context) -> None:
         raise click.ClickException(str(exc)) from exc
 
 
+@cli.command('classify-papers')
+@click.option('--input', 'input_path', type=click.Path(exists=True, dir_okay=False), help='Classify a JSON title/abstract array.')
+@click.option('--output', 'output_path', type=click.Path(dir_okay=False), help='New JSON result file; existing files are never replaced.')
+@click.option('--limit', default=0, envvar='PAPER_COMPASS_CLASSIFICATION_LIMIT', type=click.IntRange(min=0), show_default=True, help='Maximum papers processed; 0 drains eligible new jobs (budget still applies).')
+@click.option('--all-papers', is_flag=True, help='Explicitly queue historical records too (may incur substantial API costs).')
+@click.option('--queued-only', is_flag=True, help='Process the durable queue without scanning all source papers.')
+@click.option('--publish', is_flag=True, help='Batch-publish changed accepted decisions after processing (API mode only).')
+@click.option('--retry-failed', is_flag=True, help='Explicitly retry failed/invalid jobs; normal retries use backoff.')
+@click.pass_context
+def classify_papers(ctx, input_path, output_path, limit, all_papers, queued_only, publish, retry_failed):
+    """Classify via an external API; never modify the original paper database."""
+    if bool(input_path) != bool(output_path) or (input_path and (all_papers or queued_only or publish or retry_failed)) or (queued_only and all_papers):
+        raise click.UsageError('Use --input with --output, or classify the database without either option')
+    if publish:
+        from .api_classification import api_enabled
+        if not api_enabled():
+            raise click.UsageError('--publish requires PAPER_COMPASS_CLASSIFIER=api')
+    try:
+        result = (classify_papers_cmd.classify_json(input_path, output_path, limit=limit) if input_path else
+                  classify_papers_cmd.run(ctx.obj['config_path'], limit=limit, all_papers=all_papers,
+                                          queued_only=queued_only, publish=publish, retry_failed=retry_failed))
+        click.echo(json.dumps(result, ensure_ascii=False))
+    except Exception as exc:
+        raise click.ClickException(str(exc)) from exc
+    if not result['ok']:
+        raise click.ClickException('Some papers remain pending; successful results were cached for retry')
+
+
+@cli.command('classification-baseline')
+@click.pass_context
+def classification_baseline(ctx):
+    """Freeze existing paper IDs as historical, without API calls or source writes."""
+    try:
+        click.echo(json.dumps(classify_papers_cmd.prepare_scope(ctx.obj['config_path']), ensure_ascii=False))
+    except Exception as exc:
+        raise click.ClickException(str(exc)) from exc
+
+
+@cli.command('classification-status')
+@click.option('--enabled', is_flag=True, help='Exit 0 only when API mode is enabled; used by the worker service.')
+@click.option('--reset-circuit', is_flag=True, help='Explicitly clear a provider circuit breaker after fixing credentials.')
+@click.pass_context
+def classification_status(ctx, enabled, reset_circuit):
+    """Show queue states, review proposals and per-request estimated daily costs."""
+    if enabled:
+        from .api_classification import api_enabled
+        ctx.exit(0 if api_enabled() else 1)
+    try:
+        click.echo(json.dumps(classify_papers_cmd.status(reset_circuit=reset_circuit), ensure_ascii=False))
+    except Exception as exc:
+        raise click.ClickException(str(exc)) from exc
+
+
+@cli.command('review-classification')
+@click.option('--paper', required=True, help='Hashed paper ID from classification-status.')
+@click.option('--topic', default=None, help='One of the 14 topic keys.')
+@click.option('--out-of-scope', is_flag=True)
+@click.option('--note', required=True, help='Human review justification.')
+@click.option('--evidence', default=None, help='Exact excerpt if the model provided no evidence.')
+@click.pass_context
+def review_classification(ctx, paper, topic, out_of_scope, note, evidence):
+    """Accept a reviewed topic/out-of-scope decision; publication is separate."""
+    try:
+        click.echo(json.dumps(classify_papers_cmd.review(ctx.obj['config_path'], paper, topic=topic,
+                              out_of_scope=out_of_scope, note=note, evidence=evidence), ensure_ascii=False))
+    except Exception as exc:
+        raise click.ClickException(str(exc)) from exc
+
+
 @cli.command("update")
 @click.option('--openalex', 'include_openalex', is_flag=True, help='Also collect OpenAlex journals (API key required for pagination).')
 @click.option('--scope', type=click.Choice(['all', 'arxiv', 'conferences']), default='all', show_default=True)
@@ -182,7 +252,7 @@ def enrich_conferences(ctx: click.Context, venue: str | None, workers: int, limi
 
 
 @cli.command("serve")
-@click.option("--host", default="127.0.0.1", show_default=True, help="Bind address")
+@click.option("--host", default="127.0.0.1", envvar='PAPER_COMPASS_HOST', show_default=True, help="Bind address")
 @click.option("--port", default=8765, type=click.IntRange(1, 65535), show_default=True)
 @click.pass_context
 def serve(ctx: click.Context, host: str, port: int) -> None:

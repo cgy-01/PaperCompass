@@ -1,0 +1,48 @@
+{
+  "archived_at_utc": "2026-11-18T17:50:19.319711+00:00",
+  "archived_at_beijing": "2026-11-19T01:50:19.319711+08:00",
+  "source_git_head": "acd2ced3264aeb3986217e7da966c7817016b5ba",
+  "source_is_uncommitted_working_tree": true,
+  "scope": "local implementation and configuration; not a server deployment audit",
+  "environment_allowlist": {
+    "PAPER_COMPASS_CLASSIFIER": "api",
+    "PAPER_COMPASS_CLASSIFICATION_BASE_URL": "https://api.deepseek.com",
+    "PAPER_COMPASS_CLASSIFICATION_MODEL": "deepseek-flash",
+    "PAPER_COMPASS_CLASSIFICATION_REASONING_EFFORT": "none",
+    "PAPER_COMPASS_CLASSIFICATION_TIMEOUT": "60",
+    "PAPER_COMPASS_CLASSIFICATION_MAX_TOKENS": "512",
+    "PAPER_COMPASS_CLASSIFICATION_LIMIT": "0",
+    "PAPER_COMPASS_CLASSIFICATION_DAILY_BUDGET_CNY": "3",
+    "PAPER_COMPASS_CLASSIFICATION_DAILY_REQUEST_LIMIT": "-1",
+    "PAPER_COMPASS_CLASSIFICATION_DAILY_TOKEN_LIMIT": "-1",
+    "PAPER_COMPASS_CLASSIFICATION_PRICE_INPUT": "1",
+    "PAPER_COMPASS_CLASSIFICATION_PRICE_CACHED_INPUT": "0.02",
+    "PAPER_COMPASS_CLASSIFICATION_PRICE_OUTPUT": "4"
+  },
+  "api_key_recorded": false,
+  "effective_mode": "api",
+  "shipped_example_mode": "keywords",
+  "classification_version": "api-single-topic-v2",
+  "model_alias": "deepseek-flash",
+  "read_timeout_seconds": 60.0,
+  "connect_timeout_seconds": 10,
+  "max_output_tokens": 512,
+  "temperature": 0,
+  "reasoning_effort": "none",
+  "response_format": {
+    "type": "json_object"
+  },
+  "papers_per_request": 1,
+  "concurrency": 1,
+  "daily_budget_cny": "3",
+  "daily_request_limit": -1,
+  "daily_token_limit": -1,
+  "price_cny_per_million_tokens": {
+    "input": "1",
+    "cached_input": "0.02",
+    "output": "4"
+  },
+  "policy_hash": "c495a9d0d37de6f274d4af7ee0284ed8a417c8ad1641890e3850f0263923596d",
+  "prompt_hash_json_string_sha256": "284468a2a1eeafb8f51ab510b69052e6e3d731a5e2d4b46fd868443bab543b87",
+  "prompt_file_utf8_sha256": "37e80527f2b6d32678969442519d9a0154251fd6706069b265325c6aca8d0474"
+}

@@ -57,6 +57,18 @@ def test_stable_id_not_title_deduplication(environment):
         assert conn.execute('SELECT count(*) FROM matched_entries').fetchone()[0] == 2
 
 
+def test_api_mode_keeps_candidates_without_keyword_prefilter(environment, monkeypatch):
+    client, db, _, _ = environment
+    monkeypatch.setenv('PAPER_COMPASS_CLASSIFIER', 'api')
+    paper = entry(title='A contribution with no configured keywords')
+    paper['summary'] = 'We introduce a new approach for a research problem.'
+    client.get_with_retry.return_value = response([paper])
+    result = arxiv.run('unused', catch_up=False)
+    assert result['inserted'] == 1 and result['inserted_pending'] == 1
+    with db.get_connection('history') as conn:
+        assert conn.execute('SELECT topics FROM matched_entries').fetchone()[0] == '_classification_pending'
+
+
 def test_version_updates_keep_legacy_id_date_and_score(environment):
     client, db, _, _ = environment
     with db.get_connection('history') as conn:

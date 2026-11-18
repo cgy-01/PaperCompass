@@ -30,7 +30,7 @@ src/paper_firehose/
   system/config/           默认配置模板
   system/templates/        前端与其他 HTML 模板
   system/frontend/         页面、路由、请求层、公共组件与样式
-deploy/systemd/            采集任务部署示例
+deploy/systemd/            采集与独立分类任务部署示例
 docs/                      用户、管理员和开发者文档
 tests/                     测试
 ```
@@ -38,6 +38,8 @@ tests/                     测试
 `paper_firehose` 是保留的内部包名，不需要为修改产品文案而重命名它。不要重命名现有论文 ID、数据库表和公开 API 字段。
 
 ## 前端开发
+
+业务配置统一放在根目录 `.env`，脚本和 CLI 自动加载。首次可复制 `.env.example` 并设置 600 权限；已有文件不要覆盖。不需要为 GitHub、分类或开发账号另建 env 文件。变量优先级和字面值格式见[配置说明](configuration.md)。
 
 本地直接运行 `./start_frontend_dev.sh 9000`，打开 `http://127.0.0.1:9000`。脚本默认启用 `local-developer` 开发账号，自动建立本地会话，进入工作区无需 GitHub 配置。收藏与已读走现有真实接口，保存在 `.runtime-demo/users/development.db`；重启后保留，不写入正式 `users/users.db`。默认关闭本地行为上报，可显式设置 `PAPER_COMPASS_EVENTS_ENABLED=1` 调试。
 

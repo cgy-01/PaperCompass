@@ -1,0 +1,14 @@
+{
+  "validated_at_utc": "2026-11-18T17:52:39.797464+00:00",
+  "json_valid": true,
+  "local_links_checked": 39,
+  "source_fingerprints_checked": 26,
+  "schedule_copies_checked": 6,
+  "effective_prompt_matches": true,
+  "effective_config_matches": true,
+  "archive_secret_scan_passed": true,
+  "public_docs_catalog_unchanged": true,
+  "existing_checksums_verified": true,
+  "business_source_modified_for_this_archival_task": false,
+  "new_paid_calls": 0
+}

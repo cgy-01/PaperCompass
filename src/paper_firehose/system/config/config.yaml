@@ -359,5 +359,6 @@ email:
     host: "mail.foobar.com" # for gmail: smtp.gmail.com
     port: 465
     username: "_mainaccount@foobar.com" # for gmail: your full gmail address
-    # Prefer file-based secret storage. Put the password in this file
+    # Configure SMTP_PASSWORD in project-root .env. This legacy file remains
+    # supported only when the unified setting is absent.
     password_file: "secrets/email_password.env"

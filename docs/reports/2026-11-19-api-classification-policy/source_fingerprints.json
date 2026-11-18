@@ -1,0 +1,139 @@
+{
+  "archived_at_utc": "2026-11-18T17:50:19.319711+00:00",
+  "archived_at_beijing": "2026-11-19T01:50:19.319711+08:00",
+  "source_git_head": "acd2ced3264aeb3986217e7da966c7817016b5ba",
+  "source_is_uncommitted_working_tree": true,
+  "scope": "local implementation and configuration; not a server deployment audit",
+  "files": [
+    {
+      "path": "src/paper_firehose/api_classification.py",
+      "sha256": "9f7aa8804738449cae23bb5e6816df5d9ec81192797492b887c9395f5f4adb63",
+      "bytes": 16180
+    },
+    {
+      "path": "src/paper_firehose/classification_store.py",
+      "sha256": "93b57532e31db7bdedb2664c1e6cf3e496e16b593538b9bd630cd992696c844d",
+      "bytes": 19223
+    },
+    {
+      "path": "src/paper_firehose/classification.py",
+      "sha256": "9be75600ec0c21779ef3c3789fd1a246fd164cdf487c2b045074d6977ab0994c",
+      "bytes": 8742
+    },
+    {
+      "path": "src/paper_firehose/commands/classify_papers.py",
+      "sha256": "83da210397466b7d0ce00e830d16a763fbb28438b5a776ea8d9d4e2a839d417a",
+      "bytes": 19481
+    },
+    {
+      "path": "src/paper_firehose/commands/update.py",
+      "sha256": "70b16823806846562991ae1cccfa692747edd4eac6b0d89d10c83d03655b7ca3",
+      "bytes": 6539
+    },
+    {
+      "path": "src/paper_firehose/commands/arxiv.py",
+      "sha256": "9d8647d07f8f0e8ab7e18c22a287b38bd429f7d32add297399f3ffaf6ae26d2d",
+      "bytes": 12697
+    },
+    {
+      "path": "src/paper_firehose/commands/official_sources.py",
+      "sha256": "f97279c80927434c13b43fad5ae95fb23e4cd7d1a3c44b25d75c07208229a3ee",
+      "bytes": 17633
+    },
+    {
+      "path": "src/paper_firehose/commands/openalex.py",
+      "sha256": "34ebca22059f9f9c2bae52b859696eb2ef50603f97fe9b975e68fcc5f1f2ba4c",
+      "bytes": 11592
+    },
+    {
+      "path": "src/paper_firehose/commands/dashboard.py",
+      "sha256": "53938e4038f5c99503ce32920e92f3a87a6efe74ffebe94e8541d7ab068ca0c8",
+      "bytes": 11056
+    },
+    {
+      "path": "src/paper_firehose/query_store.py",
+      "sha256": "0d1576197dd493a2a501ea9365f36d6efef61c575bf475cee8c3a1e8e19244bc",
+      "bytes": 26329
+    },
+    {
+      "path": "src/paper_firehose/core/environment.py",
+      "sha256": "5db607e101a54024577c978e947aa92e21ff19b2012f79725455fce9304bfbaa",
+      "bytes": 4471
+    },
+    {
+      "path": "src/paper_firehose/cli.py",
+      "sha256": "b2f205fcff4371f9b33fddb53799224b927f0fed222cff118f3efea03eee9dab",
+      "bytes": 31493
+    },
+    {
+      "path": "src/paper_firehose/system/prompts/paper_topic_classification.txt",
+      "sha256": "adc7132e7de823ac40ea176007c6212c8371f7c3cfe94af7be1cf68aec0ab00e",
+      "bytes": 8025
+    },
+    {
+      "path": "src/paper_firehose/system/config/topic_classification.yaml",
+      "sha256": "1afc2a4dc0cdab29591c146b40871fd0404cbdd0ba2008dcf044365794b8845e",
+      "bytes": 7317
+    },
+    {
+      "path": ".env.example",
+      "sha256": "340be63e58d6bd07f98992811791357f4befb348b45e166019dde9805e537379",
+      "bytes": 2464
+    },
+    {
+      "path": "tests/conftest.py",
+      "sha256": "c971857ad9235ae8d1473960b74e68893938abf7c6f508e38bf8675871cd87fe",
+      "bytes": 458
+    },
+    {
+      "path": "tests/test_api_classification.py",
+      "sha256": "7c82fd1e7e26a8ab1d6049dacceea3e760dcdfeed94eb3ebc40fc7e13cdb4af5",
+      "bytes": 48245
+    },
+    {
+      "path": "tests/test_environment.py",
+      "sha256": "9febe9c8c2b37ab187a820fee100fa969d002ccb6a51d573ca196355289f5155",
+      "bytes": 6749
+    },
+    {
+      "path": "tests/commands/test_update.py",
+      "sha256": "46f15969ad65a6dba4f0ac602dbff9f9c873bf2fc81a7ffd923a741059017492",
+      "bytes": 7664
+    },
+    {
+      "path": "docs/admin/api_classification.md",
+      "sha256": "b3e4719f1df6c93b12bbaecd89c2cd9130b9305602ce853f0740bfc2b66ca188",
+      "bytes": 16673
+    },
+    {
+      "path": "deploy/systemd/paper-compass-classify.service",
+      "sha256": "d008306ec1022e3a9eec1dd9ce7f67a6e952809cd1bd6d35b178f8869cc762ad",
+      "bytes": 1113
+    },
+    {
+      "path": "deploy/systemd/paper-compass-classify.timer",
+      "sha256": "fe5d6b2c5b29d3ea4d371a15d80b34aa48cc570331c4e0b0b304d1c9b0cea0f2",
+      "bytes": 205
+    },
+    {
+      "path": "deploy/systemd/paper-compass-update.service",
+      "sha256": "3f72554931d12f4a239c8346ecda5b3fa3dacb21e25bc450a729fa8b9fce583b",
+      "bytes": 800
+    },
+    {
+      "path": "deploy/systemd/paper-compass-update.timer",
+      "sha256": "66f6dba4b864d0aa819e294ce0c46e8e42373032e1226ca3072331f0e22d15d9",
+      "bytes": 194
+    },
+    {
+      "path": "deploy/systemd/paper-compass-conferences.service",
+      "sha256": "eebc6102c3426a56bce9814cac031480081938d0252729453ec9a6855bf715f8",
+      "bytes": 752
+    },
+    {
+      "path": "deploy/systemd/paper-compass-conferences.timer",
+      "sha256": "aa085dc5605d17ebf99404500c429e4f47e6dd19ed3cd4fc26dad150816d2e34",
+      "bytes": 214
+    }
+  ]
+}

@@ -20,7 +20,7 @@ _TEMPLATE_CONFIG = _TEMPLATE_DIR / "config.yaml"
 _TEMPLATE_TOPICS_DIR = _TEMPLATE_DIR / "topics"
 _TEMPLATE_SECRETS_DIR = _TEMPLATE_DIR / "secrets"
 
-_DEFAULT_EMAIL_SECRET = "# Placeholder SMTP password file. Replace with real credentials.\n"
+_DEFAULT_EMAIL_SECRET = "# Legacy placeholder only. Configure SMTP_PASSWORD in project-root .env.\n"
 
 _DEFAULT_CONFIG_TEMPLATE = """# Auto-generated default configuration for paper-firehose
 database:

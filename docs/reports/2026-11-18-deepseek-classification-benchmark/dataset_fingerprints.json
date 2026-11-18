@@ -1,0 +1,14 @@
+[
+  {
+    "path": "tmp/semantic-small-all-20261118-7mam1hcs/matched_entries_history.db",
+    "size_bytes": 176058368,
+    "mtime_ns": 1794968794467547061,
+    "sha256": "2a5a4a7eb2272d79b736a5b3be5f532d019244bda68c1f8dc8bb86416be08de0"
+  },
+  {
+    "path": ".runtime-demo/matched_entries_history.before-complete-conferences.db",
+    "size_bytes": 35479552,
+    "mtime_ns": 1790404286299630592,
+    "sha256": "c7124747e0f0b9136936a3a17dd954a67300b33aee5b1ae7f30d74d3feef4658"
+  }
+]

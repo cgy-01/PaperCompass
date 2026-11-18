@@ -1,0 +1,99 @@
+import json
+import logging
+import math
+import sqlite3
+import statistics
+import time
+from collections import Counter
+from contextlib import closing
+from datetime import datetime, timezone
+from pathlib import Path
+
+from paper_firehose.api_classification import APIClassifier, ResultStore, Settings, paper_text, validate_text, validate_stored
+
+logging.getLogger().setLevel(logging.WARNING)
+root = Path('tmp/api-cost-estimate') / datetime.now(timezone.utc).strftime('%Y%m%d-%H%M%S')
+root.mkdir(parents=True)
+source = Path('tmp/semantic-small-all-20261118-7mam1hcs/matched_entries_history.db')
+raw_original = Path('.runtime-demo/matched_entries_history.before-complete-conferences.db')
+rows, missing, demo = [], 0, 0
+original_stats = {}
+with closing(sqlite3.connect(raw_original.resolve().as_uri()+'?mode=ro',uri=True)) as conn:
+    conn.row_factory=sqlite3.Row
+    total=valid=0
+    for row in conn.execute('SELECT title,abstract,summary FROM matched_entries'):
+        total+=1
+        try: validate_text(paper_text(dict(row))); valid+=1
+        except ValueError: pass
+    original_stats={'total':total,'usable_title_abstract':valid,'missing_or_invalid':total-valid}
+with closing(sqlite3.connect(source.resolve().as_uri()+'?mode=ro',uri=True)) as conn:
+    conn.row_factory=sqlite3.Row
+    for row in conn.execute('SELECT entry_id,title,abstract,summary,topics FROM matched_entries'):
+        paper=paper_text(dict(row))
+        try: validate_text(paper)
+        except ValueError: missing+=1; continue
+        if row['topics']=='demo_topic': demo+=1
+        rows.append(paper)
+rows.sort(key=lambda p: (len(p['title'])+len(p['abstract']),p['title']))
+# One central observation per text-length decile, avoiding short-abstract bias.
+samples=[rows[min(len(rows)-1,math.floor(len(rows)*(i+0.5)/10))] for i in range(10)]
+(root/'input.json').write_text(json.dumps(samples,ensure_ascii=False,indent=2))
+settings=Settings.from_env()
+results=[]
+started=time.monotonic()
+error=None
+with closing(ResultStore()) as store:
+    before=store.status()
+    client=APIClassifier(settings,store)
+    for index,paper in enumerate(samples,1):
+        if time.monotonic()-started>180: break
+        stamp=time.monotonic()
+        try:
+            key=settings.cache_key(paper)
+            cached=store.cached(key)
+            if cached:
+                result=validate_stored(cached,paper)
+            else:
+                result=client.classify(paper)
+                store.save(key,result)
+            elapsed=time.monotonic()-stamp
+            item={'sample':index,'seconds':round(elapsed,3),'cached':bool(cached),
+                  'text_characters':len(paper['title'])+len(paper['abstract']),**result}
+            results.append(item)
+            print(json.dumps({'sample':index,'seconds':round(elapsed,2),'cached':bool(cached),
+                              'decision':result['decision'],'usage':result['usage']},ensure_ascii=False),flush=True)
+        except Exception as exc:
+            error={'type':type(exc).__name__,'message':str(exc)}
+            print(json.dumps({'sample':index,'error':error},ensure_ascii=False),flush=True)
+            break
+    after=store.status()
+(root/'results.json').write_text(json.dumps(results,ensure_ascii=False,indent=2))
+live=[r for r in results if not r['cached']]
+usages=[r['usage'] for r in live]
+inputs=sum(u.get('prompt_tokens',0) for u in usages)
+hits=sum(u.get('prompt_cache_hit_tokens',0) for u in usages)
+outputs=sum(u.get('completion_tokens',0) for u in usages)
+off=((inputs-hits)+hits*.02+outputs*4)/1000000
+summary={'source':str(source),'original_backup':original_stats,'enriched_total':len(rows)+missing,
+         'enriched_usable':len(rows),'missing_or_invalid':missing,'demo_usable':demo,
+         'mean_text_characters':statistics.mean(len(p['title'])+len(p['abstract']) for p in rows),
+         'sample_count':len(results),'live_requests':len(live),'error':error,
+         'input_tokens':inputs,'cache_hit_tokens':hits,'output_tokens':outputs,
+         'sample_offpeak_cny':off,'sample_peak_cny':off*2,
+         'decisions':dict(Counter(r['decision'] for r in results)),
+         'accounting_before':before,'accounting_after':after,
+         'elapsed_seconds':round(time.monotonic()-started,2)}
+if live:
+    n=len(live); target=len(rows)
+    # Measured mixture, hypothetical no provider cache and perfect system-prefix cache.
+    cold=(inputs+outputs*4)/n/1000000
+    summary.update({'seconds_mean':statistics.mean(r['seconds'] for r in live),
+                    'seconds_median':statistics.median(r['seconds'] for r in live),
+                    'seconds_max':max(r['seconds'] for r in live),
+                    'estimated_target_hours_serial':target*statistics.mean(r['seconds'] for r in live)/3600,
+                    'estimated_target_offpeak_cny_measured':target*off/n,
+                    'estimated_target_peak_cny_measured':target*off*2/n,
+                    'estimated_target_offpeak_cny_no_provider_cache':target*cold,
+                    'estimated_target_peak_cny_no_provider_cache':target*cold*2})
+(root/'report.json').write_text(json.dumps(summary,ensure_ascii=False,indent=2))
+print(json.dumps({'report':str(root/'report.json'),**summary},ensure_ascii=False),flush=True)
