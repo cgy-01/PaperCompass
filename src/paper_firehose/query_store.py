@@ -19,6 +19,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from .commands import dashboard
+from .classification import CLASSIFIER_VERSION
 from .core.config import ConfigManager
 from .core.paths import resolve_data_file, resolve_data_path
 
@@ -199,13 +200,16 @@ def build(config_path, *, updated_at=None):
                     conn.create_function('paper_public_id', 1, public_id, deterministic=True)
                     conn.execute('DELETE FROM public_paper_ids WHERE paper_id NOT IN (SELECT id FROM papers)')
                     conn.execute('INSERT OR IGNORE INTO public_paper_ids SELECT paper_public_id(id),id FROM papers')
-                    public_catalog = [{k: v for k, v in topic.items() if k != 'pattern'} for topic in catalog]
+                    public_catalog = [{k: v for k, v in topic.items() if k not in {'pattern', 'classification'}} for topic in catalog]
                     previous_time = conn.execute("SELECT value FROM metadata WHERE key='updated_at'").fetchone()
                     if updated_at is None:
                         updated_at = (json.loads(previous_time[0]) if previous_time else
                                       datetime.fromtimestamp(source.stat().st_mtime, timezone.utc).isoformat())
                     conn.execute("DELETE FROM metadata WHERE key='bootstrap'")
+                    # Classifier implementation upgrades apply to new/changed
+                    # records only. Do not invalidate historical fingerprints.
                     for key, value in {'signature': signature, 'catalog': public_catalog,
+                                       'classifier': {'version': CLASSIFIER_VERSION, 'scope': 'new_or_changed'},
                                        'updated_at': updated_at}.items():
                         conn.execute('INSERT OR REPLACE INTO metadata VALUES (?,?)', (key, json.dumps(value)))
                     # Signature is stored as plain text to allow direct equality checks.

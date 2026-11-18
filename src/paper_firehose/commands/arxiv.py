@@ -17,7 +17,8 @@ from ..core.config import ConfigManager
 from ..core.database import DatabaseManager
 from ..core.http_client import RetryableHTTPClient
 from ..core.paths import resolve_data_path
-from .dashboard import CURATED_TOPIC_KEYS
+from .dashboard import CURATED_TOPIC_KEYS, _topic_catalog
+from ..classification import PENDING_TOPIC, TopicClassifier
 
 LOGGER = logging.getLogger(__name__)
 API_URL = 'https://export.arxiv.org/api/query'
@@ -91,13 +92,12 @@ def _api_entries(client, category, start, end):
 def _targets(manager):
     enabled = manager.get_enabled_feeds()
     targets = {}
+    classifier = TopicClassifier(_topic_catalog(manager))
     available = set(manager.get_available_topics())
     for key in CURATED_TOPIC_KEYS:
         if key not in available:
             continue
         config = manager.load_topic_config(key)
-        rule = (key, re.compile(config['filter']['pattern'], re.I),
-                int(config['filter'].get('min_matches', 1)))
         for feed in config.get('feeds', []):
             settings = enabled.get(feed, {})
             url = settings.get('url', '')
@@ -107,9 +107,10 @@ def _targets(manager):
             category = parsed.path.rstrip('/').rsplit('/', 1)[-1]
             if not re.fullmatch(r'[A-Za-z][A-Za-z0-9.-]*', category):
                 continue
-            target = targets.setdefault(category, {'url': url, 'name': settings.get('name', feed), 'rules': []})
-            if rule not in target['rules']:
-                target['rules'].append(rule)
+            # Sources determine what to fetch, never which research directions
+            # a paper is allowed to belong to (e.g. an Agent paper in cs.CV).
+            targets.setdefault(category, {'url': url, 'name': settings.get('name', feed),
+                                          'classifier': classifier})
     return targets
 
 
@@ -134,13 +135,16 @@ def _ingest(conn, entry, target, existing, versions, stats):
     authors = ', '.join(author.get('name', '') for author in entry.get('authors', []) if author.get('name')) or entry.get('author', '')
     if not title or not summary or not authors:
         raise ValueError('Incomplete arXiv title, abstract or authors: ' + base)
-    topics = {key for key, pattern, minimum in target['rules']
-              if pattern.search(title) or len(pattern.findall(summary)) >= minimum}
-    if not topics and not old:
+    topics = {match.topic['key'] for match in target['classifier'].classify(title, summary)}
+    pending = not topics and target['classifier'].is_candidate(title, summary)
+    if not topics and not old and not pending:
         stats['irrelevant'] += 1
         return
     if old:
-        topics.update(part.strip() for part in (old['topics'] or '').split(',') if part.strip())
+        topics.update(part.strip() for part in (old['topics'] or '').split(',')
+                      if part.strip() and part.strip() != PENDING_TOPIC)
+    if pending:
+        topics.add(PENDING_TOPIC)
     published = entry.get('published') or entry.get('updated')
     if not published:
         raise ValueError('Missing arXiv publication date: ' + base)
@@ -172,6 +176,8 @@ def _ingest(conn, entry, target, existing, versions, stats):
             published, datetime.now(timezone.utc).isoformat()))
         existing[base] = {'entry_id': key, **values}
         stats['inserted'] += 1
+        if pending:
+            stats['inserted_pending'] += 1
     versions[base] = max(version, known_version)
 
 
@@ -191,7 +197,8 @@ def run(config_path, *, catch_up=True, rss=True):
     except FileNotFoundError:
         state = {'sources': {}, 'versions': {}}
     db = DatabaseManager(manager.load_config())
-    stats = {'inserted': 0, 'updated': 0, 'unchanged': 0, 'irrelevant': 0, 'failed': 0, 'sources': {}}
+    stats = {'inserted': 0, 'inserted_pending': 0, 'updated': 0, 'unchanged': 0,
+             'irrelevant': 0, 'failed': 0, 'sources': {}}
     try:
         with db.get_connection('history') as conn:
             existing = {}
@@ -210,7 +217,7 @@ def run(config_path, *, catch_up=True, rss=True):
                     for channel in (['rss'] if rss else []) + (['api'] if catch_up else []):
                         try:
                             now = datetime.now(timezone.utc)
-                            before = {key: stats[key] for key in ['inserted', 'updated', 'unchanged', 'irrelevant']}
+                            before = {key: stats[key] for key in ['inserted', 'inserted_pending', 'updated', 'unchanged', 'irrelevant']}
                             details = {}
                             if channel == 'rss':
                                 response = client.get_with_retry(target['url'], return_none_on_404=False)

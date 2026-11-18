@@ -14,6 +14,10 @@ if [[ ! "${PORT}" =~ ^[0-9]+$ ]] || (( PORT < 1 || PORT > 65535 )); then
   exit 1
 fi
 
+PORT_MODE=default
+if (( $# > 0 )); then PORT_MODE=explicit; fi
+PORT="$(python3 "${PROJECT_DIR}/scripts/local_port.py" "${PORT}" "${PORT_MODE}")"
+
 # Prefer this project's Miniconda environment, falling back to a local venv.
 if [[ -x "/home/cgy/miniconda3/envs/paper-compass/bin/python" ]]; then
   PYTHON_BIN="/home/cgy/miniconda3/envs/paper-compass/bin/python"

@@ -17,6 +17,8 @@
 |---|---|---|
 | [MCP 部署说明](mcp_setup.md) | 服务器管理员 | 否 |
 | [自动更新、查询库与部署](admin/automatic_updates.md) | 服务器管理员 | 否 |
+| [论文主题分类与增量升级](admin/topic_classification.md) | 项目维护者 | 否 |
+| [语义多标签分类优化计划](admin/classification_optimization_plan.md) | 项目维护者 | 否 |
 | [账号与使用情况统计](admin/accounts_analytics.md) | 服务器管理员 | 否 |
 | [源码发布检查](admin/source_release.md) | 项目维护者 | 否 |
 | [GitHub Actions 配置](github_actions_setup.rst) | 项目维护者 | 否 |

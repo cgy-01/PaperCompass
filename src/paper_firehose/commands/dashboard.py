@@ -14,6 +14,7 @@ from ..core.config import ConfigManager
 from ..core.database import DatabaseManager
 from ..core.paths import get_system_path, resolve_data_path
 from ..frontend_assets import publish as publish_assets
+from ..classification import PENDING_TOPIC, TopicClassifier
 
 
 THEME_GROUPS = {
@@ -110,6 +111,8 @@ def _topic_catalog(manager: ConfigManager) -> list[dict[str, Any]]:
             "pattern": config.get("filter", {}).get("pattern", ""),
             "min_matches": int(config.get("filter", {}).get("min_matches", 1)),
         })
+        if 'classification' in config:
+            catalog[-1]['classification'] = config['classification']
     return catalog
 
 
@@ -118,14 +121,7 @@ def _read_entries(db: DatabaseManager, days: int | None, catalog: list[dict[str,
 
 
 def _iter_entries(db: DatabaseManager, days: int | None, catalog: list[dict[str, Any]], *, rows=None):
-    compiled_topics: list[tuple[dict[str, Any], re.Pattern[str]]] = []
-    for topic in catalog:
-        if not topic["pattern"]:
-            continue
-        try:
-            compiled_topics.append((topic, re.compile(topic["pattern"], re.IGNORECASE)))
-        except re.error:
-            continue
+    classifier = TopicClassifier(catalog)
     sql = """SELECT entry_id, feed_name, topics, title, link, summary, authors,
                     abstract, doi, published_date, matched_date, llm_summary,
                     paper_qa_summary, rank_score, venue_name, venue_type,
@@ -151,21 +147,18 @@ def _iter_entries(db: DatabaseManager, days: int | None, catalog: list[dict[str,
             # Official adapters intentionally store the abstract in both legacy
             # columns. Count it once so min_matches remains a real relevance guard.
             searchable = abstract if abstract.strip() == summary.strip() else f"{summary} {abstract}"
-            matched_topics = []
-            for topic, pattern in compiled_topics:
-                title_hit = pattern.search(title)
-                body_hits = pattern.findall(searchable)
-                if title_hit or len(body_hits) >= topic["min_matches"]:
-                    matched_topics.append(topic)
+            matched_topics = [match.topic for match in classifier.classify(title, searchable)]
             topic_names = [topic["name"] for topic in matched_topics]
             topic_keys = [topic["key"] for topic in matched_topics]
             external_id = str(item.get("external_id") or "")
             is_official_conference = venue_type == "会议" and external_id and not external_id.startswith("https://openalex.org/")
             if venue_type == "期刊" and not _is_core_journal(source_name):
                 continue
-            # Official conference proceedings are complete venue collections;
-            # preprints and journals still require a selected AI-topic match.
-            if catalog and not matched_topics and not is_official_conference:
+            # Keep uncertain arXiv candidates searchable, without exposing the
+            # internal pending marker as a research topic or forcing a label.
+            pending_arxiv = (str(item.get('feed_name') or '').lower().startswith('arxiv')
+                             and PENDING_TOPIC in {part.strip() for part in (item.get('topics') or '').split(',')})
+            if catalog and not matched_topics and not is_official_conference and not pending_arxiv:
                 continue
             # Untagged official proceedings stay browseable by venue, but an
             # internal absence of a topic must not become a user-facing tag.

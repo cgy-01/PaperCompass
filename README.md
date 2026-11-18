@@ -37,7 +37,7 @@ OpenAlex（可选）─┘                         │
 
 ## 从源码本地运行
 
-推荐 Linux 或 WSL、Python 3.11 和 Node.js/npm。自动采集使用 Linux 文件锁，定时部署使用 systemd。当前以**从源码安装**为支持路径；内部包名和命令名称保持为 `paper_firehose` / `paper-firehose`。
+要求 Python 3.11 及以上，推荐使用 Linux 或 WSL、Python 3.11 和 Node.js/npm。自动采集使用 Linux 文件锁，定时部署使用 systemd。当前以**从源码安装**为支持路径；内部包名和命令名称保持为 `paper_firehose` / `paper-firehose`。
 
 ```bash
 git clone https://github.com/cgy-01/PaperCompass.git paper-compass

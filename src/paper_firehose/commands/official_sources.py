@@ -18,7 +18,8 @@ import requests
 from ..core.config import ConfigManager
 from ..core.database import DatabaseManager
 from ..core.paths import resolve_data_path
-from .dashboard import CURATED_TOPIC_KEYS
+from .dashboard import _topic_catalog
+from ..classification import TopicClassifier
 from .openalex import _upsert
 
 logger = logging.getLogger(__name__)
@@ -104,11 +105,7 @@ def _work(item: dict[str,Any], venue: str, published: str) -> dict[str,Any]:
 
 
 def _topics(manager: ConfigManager, title: str) -> list[str]:
-    found=[]
-    for key in CURATED_TOPIC_KEYS:
-        cfg=manager.load_topic_config(key)
-        if re.search(cfg["filter"]["pattern"],title,re.I): found.append(key)
-    return found
+    return [match.topic['key'] for match in TopicClassifier(_topic_catalog(manager)).classify(title)]
 
 
 def _fetch_html(url: str, mode: str, *, validators=None, response_metadata=None) -> list[dict[str,str]] | None:
@@ -191,13 +188,12 @@ def run(config_path: str, family: str = "all", *, enrich_metadata: bool = True,
     elif family == "iclr2026": sources=[item for item in sources if item[1] == "ICLR 2026"]
     elif family == "latest": sources=[item for item in sources if item[1] in {"CVPR 2026","NeurIPS 2025","ACL 2026","MLSys 2026","ICLR 2026"}]
     selected_venues=[item[1] for item in sources]
-    available = set(manager.get_available_topics())
-    patterns = [(key, re.compile(manager.load_topic_config(key)['filter']['pattern'], re.I))
-                for key in CURATED_TOPIC_KEYS if key in available]
+    catalog = _topic_catalog(manager)
+    classifier = TopicClassifier(catalog)
     totals['failed'] = 0
     totals.update({'sources_deferred': 0, 'sources_unchanged': 0, 'items_unchanged': 0})
     now = datetime.now(timezone.utc)
-    rules = _fingerprint([(key, pattern.pattern) for key, pattern in patterns])
+    rules = _fingerprint([(topic['key'], topic['pattern']) for topic in catalog])
     state_root = resolve_data_path('conference-sync') if incremental else None
     if state_root:
         state_root.mkdir(parents=True, exist_ok=True)
@@ -263,7 +259,7 @@ def run(config_path: str, family: str = "all", *, enrich_metadata: bool = True,
                             logger.info('Official source progress %s: %d/%d; unchanged=%d',
                                         venue, index, len(items), totals['items_unchanged'])
                         continue
-                    keys = [key for key, pattern in patterns if pattern.search(item['title'])]
+                    keys = [match.topic['key'] for match in classifier.classify(item['title'], item.get('abstract', ''))]
                     # Conference completeness comes before topic classification.
                     # Untagged papers remain browseable by venue and can receive
                     # curated AI labels later without being fetched again.

@@ -15,7 +15,8 @@ import requests
 
 from ..core.config import ConfigManager
 from ..core.database import DatabaseManager
-from .dashboard import CURATED_TOPIC_KEYS
+from .dashboard import CURATED_TOPIC_KEYS, _topic_catalog
+from ..classification import TopicClassifier
 
 logger = logging.getLogger(__name__)
 API_URL = "https://api.openalex.org/works"
@@ -174,6 +175,17 @@ def run(config_path: str, topic: str | None = None, *, days: int = 1095,
     config = manager.load_config()
     available = set(manager.get_available_topics())
     topics = [topic] if topic else [key for key in CURATED_TOPIC_KEYS if key in available]
+    catalog = _topic_catalog(manager)
+    if topic and not any(item['key'] == topic for item in catalog):
+        # The manual --topic command also supports topics outside the curated
+        # website menu. Keep that existing CLI contract intact.
+        custom = manager.load_topic_config(topic)
+        entry = {'key': topic, 'pattern': custom['filter']['pattern'],
+                 'min_matches': custom['filter'].get('min_matches', 1)}
+        if 'classification' in custom:
+            entry['classification'] = custom['classification']
+        catalog.append(entry)
+    classifier = TopicClassifier(catalog)
     api_key = os.getenv("OPENALEX_API_KEY", "").strip()
     since = (date.today() - timedelta(days=days)).isoformat()
     db = DatabaseManager(config)
@@ -183,7 +195,6 @@ def run(config_path: str, topic: str | None = None, *, days: int = 1095,
             for key in topics:
                 topic_config = manager.load_topic_config(key)
                 query = (topic_config.get("ranking") or {}).get("query") or topic_config.get("name", key)
-                topic_regex = re.compile(topic_config["filter"]["pattern"], re.IGNORECASE)
                 # Query each formal source class independently. A combined
                 # query sorted by date is easily monopolized by journals,
                 # making the conference filter in the UI appear empty.
@@ -209,8 +220,9 @@ def run(config_path: str, topic: str | None = None, *, days: int = 1095,
                             logger.warning('OpenAlex query failed for %s', key)
                             break
                         for work in payload.get("results", []):
-                            blob = f"{work.get('title') or ''} {_abstract(work.get('abstract_inverted_index'))}"
-                            if not topic_regex.search(blob):
+                            matched = {match.topic['key'] for match in classifier.classify(
+                                work.get('title') or '', _abstract(work.get('abstract_inverted_index')))}
+                            if key not in matched:
                                 totals["skipped"] += 1
                                 continue
                             totals[_upsert(conn, work, key)] += 1

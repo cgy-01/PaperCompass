@@ -73,6 +73,8 @@ paper-firehose dashboard
 
 本地辅助脚本保留现有行为：`start_dashboard.sh` 优先选择原开发环境 `/home/cgy/miniconda3/envs/paper-compass`，否则选择仓库 `.venv`；`start_frontend_dev.sh` 使用相同约定，且依赖 Linux `stat`。其他环境建议直接使用已激活环境中的 `paper-firehose serve`，不必修改脚本或创建同名个人路径。
 
+在 WSL 中，两份启动脚本会检测 Windows 的 TCP 保留端口。默认端口落入保留范围时自动选择可用替代端口，以终端打印的地址为准；显式指定的保留端口会报错并提示换端口，不会悄悄更改。Linux 内绑定成功并不代表 Windows 能转发该端口，此检查不修改系统保留范围、防火墙或 WSL 配置。
+
 ## 文档与打包
 
 网站只展示 `DocumentationRepository.CATALOG` 显式登记的用户文档。增加管理员文档不等于将其加入网站导航。

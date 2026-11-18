@@ -32,6 +32,26 @@ def test_reconstructs_abstract_and_classifies_source():
     assert _source({"primary_location": {"source": {"display_name": "ICML", "type": "conference"}}}) == ("ICML", "会议")
 
 
+def test_explicit_custom_topic_outside_website_menu_is_still_supported(monkeypatch):
+    from paper_firehose.commands import openalex
+    manager = Mock()
+    manager.get_available_topics.return_value = ['custom']
+    manager.load_topic_config.return_value = {'name': 'Custom', 'filter': {'pattern': r'\bcustom\b'}}
+    monkeypatch.setattr(openalex, 'ConfigManager', Mock(return_value=manager))
+    conn = sqlite3.connect(':memory:')
+    database = Mock()
+    database.get_connection.return_value = conn
+    monkeypatch.setattr(openalex, 'DatabaseManager', Mock(return_value=database))
+    monkeypatch.setattr(openalex, '_request', lambda _: {'results': [{'title': 'Custom research'}]})
+    upsert = Mock(return_value='inserted')
+    monkeypatch.setattr(openalex, '_upsert', upsert)
+    try:
+        assert openalex.run('unused', topic='custom')['inserted'] == 1
+        assert upsert.call_args.args[2] == 'custom'
+    finally:
+        conn.close()
+
+
 def test_upsert_adds_formal_venue_to_existing_preprint():
     conn = sqlite3.connect(":memory:")
     conn.row_factory = sqlite3.Row

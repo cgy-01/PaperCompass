@@ -20,6 +20,10 @@ if [[ ! "${PORT}" =~ ^[0-9]+$ ]] || (( PORT < 1 || PORT > 65535 )); then
   exit 1
 fi
 
+PORT_MODE=default
+if (( $# > 0 )); then PORT_MODE=explicit; fi
+PORT="$(python3 "${PROJECT_DIR}/scripts/local_port.py" "${PORT}" "${PORT_MODE}")"
+
 # This script is for local development. Production systemd runs `serve`
 # directly and never enables the development account implicitly.
 export PAPER_COMPASS_DEV_LOGIN="${PAPER_COMPASS_DEV_LOGIN:-1}"

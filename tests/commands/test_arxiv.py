@@ -140,3 +140,50 @@ def test_rss_rfc822_date_is_normalized_for_time_sorting(environment):
     assert arxiv.run('unused', catch_up=False)['inserted'] == 1
     with db.get_connection('history') as conn:
         assert conn.execute('SELECT published_date FROM matched_entries').fetchone()[0] == '2026-11-12T00:00:00+00:00'
+
+
+def test_cs_cv_paper_can_be_classified_as_agent_without_subscribing_agent_to_cv(environment):
+    """A paper's arXiv category must not disable cross-disciplinary topics."""
+    client, db, _, manager = environment
+    manager.get_available_topics.return_value = ['agents', 'vision_graphics']
+    manager.get_enabled_feeds.return_value = {
+        'cv': {'url': 'https://rss.arxiv.org/rss/cs.CV', 'name': 'arXiv cs.CV'}}
+    manager.load_topic_config.side_effect = lambda key: {
+        'agents': {'feeds': [], 'filter': {'pattern': r'\bagentic\b'}},
+        'vision_graphics': {'feeds': ['cv'], 'filter': {'pattern': r'\bimage segmentation\b'}},
+    }[key]
+    paper = entry(title='Marathoner: Ultra-Long-Horizon Autonomous Intelligence')
+    paper['summary'] = 'We propose an autonomous agentic model for long-horizon execution.'
+    client.get_with_retry.return_value = response([paper])
+    result = arxiv.run('unused', catch_up=False)
+    assert result['inserted'] == 1
+    assert set(result['sources']) == {'cs.CV'}
+    with db.get_connection('history') as conn:
+        assert conn.execute('SELECT topics FROM matched_entries').fetchone()[0] == 'agents'
+
+
+def test_invalid_topic_rule_fails_before_fetching_or_writing(environment):
+    client, db, _, manager = environment
+    manager.load_topic_config.return_value = {'feeds': ['ai'], 'filter': {'pattern': '['}}
+    with pytest.raises(ValueError, match='llm'):
+        arxiv.run('unused')
+    client.get_with_retry.assert_not_called()
+    with db.get_connection('history') as conn:
+        assert conn.execute('SELECT count(*) FROM matched_entries').fetchone()[0] == 0
+
+
+def test_uncertain_candidate_is_saved_and_new_evidence_resolves_pending(environment):
+    from paper_firehose.classification import PENDING_TOPIC
+    client, db, _, _ = environment
+    paper = entry(title='A candidate method')
+    paper['summary'] = 'We use an LLM as a baseline.'
+    client.get_with_retry.return_value = response([paper])
+    result = arxiv.run('unused', catch_up=False)
+    assert result['inserted'] == result['inserted_pending'] == 1
+    with db.get_connection('history') as conn:
+        assert conn.execute('SELECT topics FROM matched_entries').fetchone()[0] == PENDING_TOPIC
+    revised = entry(version=2, title='LLM architecture research')
+    client.get_with_retry.return_value = response([revised])
+    assert arxiv.run('unused', catch_up=False)['updated'] == 1
+    with db.get_connection('history') as conn:
+        assert conn.execute('SELECT topics FROM matched_entries').fetchone()[0] == 'llm'

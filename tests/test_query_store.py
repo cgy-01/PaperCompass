@@ -77,6 +77,75 @@ def test_rules_change_reclassifies_unchanged_papers(catalog_store):
     assert store.PublishedRepository().bootstrap()['overview']['classified'] == 0
 
 
+def test_classifier_upgrade_preserves_history_and_only_classifies_new_records(catalog_store, monkeypatch):
+    raw, _ = catalog_store
+    store.build('unused')
+    original = store.PublishedRepository().query({})['items']
+    # Emulate a new classifier implementation, keeping the user's catalog and
+    # the raw historical records unchanged. It must not trigger a full rebuild.
+    monkeypatch.setattr(store, 'CLASSIFIER_VERSION', 'evidence-next')
+    classifier = Mock()
+    classifier.classify.return_value = []
+    monkeypatch.setattr(store.dashboard, 'TopicClassifier', Mock(return_value=classifier))
+    with sqlite3.connect(raw) as conn:
+        row = list(conn.execute("SELECT * FROM matched_entries WHERE entry_id='new'").fetchone())
+        row[0], row[3], row[16] = 'future', 'Future paper', 'https://official.test/future'
+        conn.execute('INSERT INTO matched_entries VALUES (' + ','.join('?' for _ in row) + ')', row)
+    before = hashlib.sha256(raw.read_bytes()).hexdigest()
+    assert store.build('unused')['changed'] == 1
+    assert classifier.classify.call_count == 1
+    repository = store.PublishedRepository()
+    assert repository.query({'ids': ['future']})['items'][0]['topics'] == []
+    for paper in original:
+        assert repository.query({'ids': [paper['id']]})['items'][0] == paper
+    assert hashlib.sha256(raw.read_bytes()).hexdigest() == before
+
+
+def test_publication_uses_evidence_order_and_deduplicates_abstract(catalog_store):
+    raw, catalog = catalog_store
+    catalog.insert(0, {'key': 'llm', 'name': 'LLM', 'pattern': r'\bLLM\b', 'min_matches': 2})
+    with sqlite3.connect(raw) as conn:
+        conn.execute("UPDATE matched_entries SET title='LLM infrastructure', "
+                     "abstract='An abstract about infrastructure', summary='An abstract about infrastructure' "
+                     "WHERE entry_id='new'")
+        conn.execute("UPDATE matched_entries SET title='Paper old', abstract='LLM', summary='LLM' WHERE entry_id='old'")
+    store.build('unused')
+    repository = store.PublishedRepository()
+    new = repository.query({'ids': ['new']})['items'][0]
+    assert new['theme'] == 'AI Infra'  # title + abstract outweigh the LLM title mention
+    assert new['topics'] == ['AI Infra', 'LLM']
+    assert repository.query({'ids': ['old']})['items'][0]['topics'] == []
+
+
+def test_invalid_classifier_rule_keeps_previously_published_snapshot(catalog_store):
+    _, catalog = catalog_store
+    store.build('unused')
+    previous = store.current_path()
+    catalog[0]['pattern'] = '['
+    with pytest.raises(ValueError, match='ai_infra'):
+        store.build('unused')
+    assert store.current_path() == previous
+    assert store.PublishedRepository().query({})['total'] == 2
+
+
+def test_pending_arxiv_candidate_is_searchable_without_public_topic_marker(catalog_store):
+    from paper_firehose.classification import PENDING_TOPIC
+    raw, _ = catalog_store
+    with sqlite3.connect(raw) as conn:
+        conn.execute("UPDATE matched_entries SET feed_name='arXiv cs.CV', topics=?, "
+                     "title='Candidate paper', summary='We use infrastructure as a baseline.', "
+                     "abstract='We use infrastructure as a baseline.', venue_name='', venue_type='', external_id='' "
+                     "WHERE entry_id='new'", (PENDING_TOPIC,))
+    store.build('unused')
+    paper = store.PublishedRepository().query({'ids': ['new']})['items'][0]
+    assert paper['title'] == 'Candidate paper'
+    assert paper['topics'] == paper['topicKeys'] == []
+    assert paper['theme'] == ''
+    assert PENDING_TOPIC not in json.dumps(paper)
+    assert store.PublishedRepository().query({'q': ['Candidate paper']})['total'] == 1
+    assert store.PublishedRepository().bootstrap()['overview']['classified'] == 1
+
+
 def test_suspicious_drop_is_not_published(catalog_store):
     raw, _ = catalog_store
     store.build('unused')

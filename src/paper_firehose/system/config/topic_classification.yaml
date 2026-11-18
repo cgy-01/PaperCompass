@@ -1,0 +1,45 @@
+# Built-in topic evidence profiles. No external model or network call.
+# Applied to unchanged built-in filter patterns; custom patterns remain supported.
+# Context is a necessary condition, never evidence by itself.
+llm:
+  anchors: '\b(large[- ](?:language|multimodal|vision[- ]language) models?|foundation language models?|LLMs?|LMMs?|LVLMs?|GPT[- ]?[345](?:\.\d+)?|Llama[- ]?\d*|Qwen(?:2(?:\.5)?|3)?|Mistral|Mixtral|Claude|Gemini|DeepSeek|PaLM|ChatGPT)\b'
+agents:
+  anchors: '\b(AI agents?|LLM[- ](?:based )?agents?|language agents?|autonomous agents?|agentic|multi[- ]agent|tool (?:use|calling)|function calling|computer use|web agents?|embodied agents?|agent (?:memory|planning)|agents?)\b'
+  context: '\b(LLMs?|language models?|AI|agentic|autonomous|multi[- ]agent|tool|computer use|planning|embodied)\b'
+ai_infra:
+  anchors: '\b(AI infrastructure|ML systems?|machine learning systems?|LLM serving|model serving|inference (?:system|engine)|training system|distributed training|parallel training|tensor parallel|pipeline parallel|data parallel|GPU cluster|KV cache|accelerator|throughput|latency|memory management|scheduler|scheduling|communication optimization)\b'
+  context: '\b(LLMs?|large language|machine learning|deep learning|neural|model (?:training|inference|serving)|GPU|CUDA|tensor|AI|KV cache|distributed training|tensor parallel|pipeline parallel)\b'
+  ambiguous: 'accelerator|throughput|latency|memory management|scheduler|scheduling'
+reasoning_post_training:
+  anchors: '\b(reasoning|chain[- ]of[- ]thought|test[- ]time (?:compute|scaling)|inference[- ]time scaling|post[- ]training|RLHF|RLAIF|DPO|preference optimization|reward model|process supervision|verifier|self[- ]correction|distillation)\b'
+  context: '\b(LLMs?|large language|language models?|foundation models?|neural|model|agentic|chain[- ]of[- ]thought|RLHF|RLAIF|DPO)\b'
+  ambiguous: 'reasoning|verifier|distillation'
+multimodal_generative:
+  anchors: '\b(multimodal|vision[- ]language|VLMs?|text[- ]to[- ](?:image|video)|(?:image|video|audio|3D) generation|speech generation|diffusion models?|flow matching|generative models?|visual generation)\b'
+ai_safety_alignment:
+  anchors: '\b(AI safety|(?:AI|value|human|model|test[- ]time) alignment|aligned model|jailbreak|red[- ]team(?:ing)?|prompt injection|guardrail|harmlessness|toxicity|misuse|model honesty|mechanistic interpretability|interpretability|robustness|adversarial attack|(?:knowledge|data|model) poisoning|differential privacy|privacy|machine unlearning|constitutional AI|alignment)\b'
+  context: '\b(AI|LLMs?|language models?|neural|machine learning|deep learning|models?|jailbreak|prompt injection|machine unlearning)\b'
+  ambiguous: 'alignment|privacy|robustness|interpretability|misuse'
+  exclude: '\b(?:image|spatial|geometric|point cloud|sequence|protein) alignment\b'
+data_evaluation:
+  anchors: '\b(dataset (?:construction|creation|curation|collection|release|documentation|governance|quality|filtering|selection|deduplication|distillation|condensation)|data (?:curation|collection|quality|governance|contamination|attribution|filtering|selection|deduplication|valuation|synthesis|augmentation)|synthetic data generation|training data (?:selection|filtering|mixture|attribution|quality)|benchmark (?:construction|creation|design|suite)|evaluation (?:framework|methodology|protocol|metric design)|data-centric (?:AI|machine learning))\b|\b(?:introduce|present|release|construct|create|curate|collect|build)(?:\s+\w+){0,6}\s+(?:dataset|benchmark)\b'
+  contribution_required: true
+embodied_robotics:
+  anchors: '\b(embodied (?:AI|intelligence)|robot(?:s|ic|ics)?|vision[- ]language[- ]action|VLA|world model|manipulation|locomotion|navigation|autonomous driving|sim[- ]to[- ]real|imitation learning)\b'
+  ambiguous: 'navigation|manipulation|world model'
+reinforcement_learning:
+  anchors: '\b(reinforcement learning|offline RL|online RL|multi[- ]agent reinforcement|policy optimization|actor[- ]critic|Markov decision|reward learning|model[- ]based RL|decision making|bandits?|planning|optimal control)\b'
+  ambiguous: 'planning|decision making'
+ai_for_science:
+  anchors: '\b(AI for science|scientific discovery|AI scientist|machine learning for science|protein|drug discovery|molecul(?:e|ar)|materials discovery|weather forecasting|climate model|physics[- ]informed|neural operator|computational biology|genomics|medical AI|clinical AI)\b'
+  context: '\b(AI|machine learning|deep learning|neural|model|learning|prediction|generative)\b'
+vision_graphics:
+  anchors: '\b(computer vision|human[- ]centric vision|visual foundation models?|visual recognition|image (?:classification|segmentation|restoration|matching|retrieval|compression|processing)|video (?:understanding|recognition|segmentation|tracking|compression|processing)|object (?:detection|recognition|tracking)|(?:semantic|instance|panoptic) segmentation|3D (?:vision|reconstruction)|point clouds?|neural rendering|computer graphics|scene (?:understanding|reconstruction)|depth estimation|pose estimation|optical flow|camera calibration|gaussian splatting|neural radiance fields?|NeRF)\b'
+ml_foundations:
+  anchors: '\b(machine learning|deep learning|learning theory|statistical learning|representation learning|self[- ]supervised learning|semi[- ]supervised learning|supervised learning|unsupervised learning|meta[- ]learning|few[- ]shot learning|continual learning|federated learning|transfer learning|domain adaptation|graph neural networks?|graph learning|geometric deep learning|causal (?:inference|discovery|learning)|bayesian (?:learning|inference|optimization)|kernel methods?|generalization (?:bound|theory)|optimization (?:algorithm|method|theory)|gradient (?:descent|method|optimization)|classification|clustering|regression|time[- ]series (?:forecasting|analysis)|neural network theory)\b'
+  context: '\b(machine learning|deep learning|neural|learning|statistical|bayesian|gradient|regression|clustering)\b'
+  ambiguous: 'machine learning|deep learning|classification|clustering|regression'
+language_speech_retrieval:
+  anchors: '\b(natural language processing|computational linguistics|language models?|machine translation|text (?:classification|generation|understanding|summarization)|text[- ]to[- ]SQL|rerank(?:ing|ers?)|coreference|question answering|dialogue? systems?|information retrieval|document retrieval|dense retrieval|semantic search|search engines?|retrieval systems?|named entity recognition|NER|entity linking|relation extraction|sentiment analysis|semantic parsing|syntactic parsing|tokenization|speech recognition|automatic speech recognition|speech processing|speech synthesis|speaker recognition|audio processing|acoustic models?|phonetic|cross[- ]lingual|multilingual NLP)\b'
+systems_architecture:
+  anchors: '\b(operating systems?|distributed systems?|networked systems?|computer networks?|networking|storage systems?|file systems?|database systems?|database management|query processing|cloud computing|edge computing|datacenter|data center|resource scheduling|job scheduling|parallel computing|high performance computing|HPC|computer architecture|processor architecture|memory hierarchy|memory management|cache (?:system|management|coherence)|compilers?|programming languages?|runtime systems?|virtualization|container orchestration|fault tolerance|consensus protocol)\b'
