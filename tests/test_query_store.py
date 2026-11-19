@@ -217,23 +217,37 @@ def test_build_lock_rejects_overlapping_publication(catalog_store):
 
 
 def test_retention_keeps_active_connection_and_idle_reader_working(catalog_store):
-    import os
-    import time
     store.build('unused')
     old = store.PublishedRepository()
     active = old._connect()
     try:
-        paths = [old.path]
         for _ in range(3):
             store.build('unused')
-            paths.append(store.current_path())
-        for index, path in enumerate(paths):
-            stamp = time.time() - 259200 + index
-            os.utime(path, (stamp, stamp))
-        store.build('unused')
         assert not old.path.exists()
         assert active.execute('SELECT count(*) FROM papers').fetchone()[0] == 2
         assert old.query({})['total'] == 2
-        assert len(list(store.current_path().parent.glob('query-*.db'))) == 3
+        assert len(list(store.current_path().parent.glob('query-*.db'))) == 2
     finally:
         active.close()
+
+
+def test_retention_preserves_actual_predecessor_regardless_of_mtime(catalog_store):
+    import os
+    store.build('unused')
+    previous = store.current_path()
+    os.utime(previous, (1, 1))
+    orphan = previous.parent / ('query-' + 'f' * 32 + '.db')
+    orphan.write_bytes(b'not the published predecessor')
+    store.build('unused')
+    assert previous.is_file() and store.current_path().is_file()
+    assert not orphan.exists()
+
+
+def test_failed_build_never_prunes_the_retained_history(catalog_store, monkeypatch):
+    store.build('unused')
+    store.build('unused')
+    paths = set(store.current_path().parent.glob('query-*.db'))
+    monkeypatch.setattr(store, 'validate', Mock(side_effect=ValueError('invalid candidate')))
+    with pytest.raises(ValueError):
+        store.build('unused')
+    assert set(store.current_path().parent.glob('query-*.db')) == paths

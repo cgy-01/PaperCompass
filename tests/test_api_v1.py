@@ -112,3 +112,16 @@ def test_expired_pinned_repository_never_silently_changes_version(application):
         repository.query({}, pinned=True)
     # Legacy callers keep their existing fallback behavior.
     assert repository.query({})['total'] == 2
+
+
+def test_only_one_previous_version_remains_and_older_api_version_returns_409(application):
+    with running(application) as get:
+        oldest = get('/api/v1/bootstrap')[1]['dataVersion']
+        query_store.build('unused')
+        application.load_repository()
+        previous = get('/api/v1/bootstrap')[1]['dataVersion']
+        query_store.build('unused')
+        application.load_repository()
+        assert get('/api/v1/papers?version=' + previous)[0] == 200
+        assert get('/api/v1/papers?version=' + oldest)[0] == 409
+        assert get('/api/v1/papers')[0] == 200

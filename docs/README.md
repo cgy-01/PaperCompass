@@ -17,6 +17,7 @@
 |---|---|---|
 | [MCP 部署说明](mcp_setup.md) | 服务器管理员 | 否 |
 | [自动更新、查询库与部署](admin/automatic_updates.md) | 服务器管理员 | 否 |
+| [磁盘与单份备份保留规则](admin/storage_retention.md) | 服务器管理员 | 否 |
 | [论文主题分类与增量升级](admin/topic_classification.md) | 项目维护者 | 否 |
 | [外部大模型 API 论文分类](admin/api_classification.md) | 项目维护者 | 否 |
 | [新增论文 API 分类规则、谷时与预算归档](reports/2026-11-19-api-classification-policy/README.md) | 项目维护者 | 否 |

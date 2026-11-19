@@ -1,0 +1,18 @@
+[Unit]
+Description=Keep one historical query and one database backup per dataset
+
+[Service]
+Type=oneshot
+# Root-owned, isolated stdlib script; never execute a service-writable script as root.
+ExecStart=/usr/bin/python3 -I /usr/local/libexec/paper-compass-retention.py --data-dir /opt/paper-compass/.runtime-demo --backup-dir /var/backups/paper-compass --apply
+SuccessExitStatus=75
+Nice=15
+CPUQuota=50%
+MemoryMax=128M
+IOSchedulingClass=best-effort
+IOSchedulingPriority=7
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/paper-compass/.runtime-demo /var/backups/paper-compass

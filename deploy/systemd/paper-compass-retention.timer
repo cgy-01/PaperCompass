@@ -1,0 +1,10 @@
+[Unit]
+Description=Prune redundant Paper Compass backups daily
+
+[Timer]
+OnCalendar=*-*-* 03:30:00 Asia/Shanghai
+Persistent=true
+Unit=paper-compass-retention.service
+
+[Install]
+WantedBy=timers.target

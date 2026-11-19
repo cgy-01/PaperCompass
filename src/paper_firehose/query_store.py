@@ -97,6 +97,18 @@ def _sync_directory(path):
         os.close(descriptor)
 
 
+def _prune_query_versions(root, current, previous):
+    """Caller holds build.lock: retain the current and one predecessor only."""
+    keep = {current, previous}
+    for path in root.glob('query-*.db'):
+        if path in keep or path.is_symlink():
+            continue
+        try:
+            path.unlink()
+        except OSError:
+            LOGGER.warning('Unable to prune query version %s', path.name, exc_info=True)
+
+
 def build(config_path, *, updated_at=None):
     """Copy the last read model, update changed rows, validate, then publish.
 
@@ -286,15 +298,10 @@ def build(config_path, *, updated_at=None):
                 finally:
                     manifest.unlink(missing_ok=True)
             LOGGER.info('Published query database %s: %s', name, stats)
-            # Read requests already holding SQLite connections remain valid after
-            # unlink on Linux. Give idle repository objects two days to observe the pointer.
-            try:
-                versions = sorted(root.glob('query-*.db'), key=lambda path: path.stat().st_mtime, reverse=True)
-                for expired in versions[3:]:
-                    if expired != destination and expired.stat().st_mtime < time.time() - 172800:
-                        expired.unlink()
-            except OSError:
-                LOGGER.warning('Unable to prune expired query versions', exc_info=True)
+            # Existing SQLite connections remain valid after unlink on Linux.
+            # Idle legacy readers reopen current; expired pinned versions return
+            # the existing 409 response so clients can refresh their data version.
+            _prune_query_versions(root, destination, previous)
             return stats
         finally:
             if historical_snapshot:
