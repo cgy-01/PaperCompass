@@ -131,11 +131,15 @@ python -m pytest tests/test_title_search_trial.py -q
 
 ## 接入 Paper Compass
 
-启动绑定到回环地址的 Meilisearch 社区版实例，并在项目的 `.env` 中设置：
+单机无密钥模式可直接使用官方社区版。以开发模式启动，只绑定回环地址，服务环境中省略 `MEILI_MASTER_KEY`：
 
-- `PAPER_COMPASS_MEILI_URL=http://127.0.0.1:7700`
-- `PAPER_COMPASS_MEILI_SEARCH_KEY` 使用有搜索权限的 API key，索引范围为 `pc_titles_*`。
-- `PAPER_COMPASS_MEILI_WRITE_KEY` 用于创建索引、更新设置、批量写入、查询任务和统计、删除旧索引。专用本地实例可使用 Default Admin API Key。若 Web 和发布服务使用不同的环境，写入密钥仅需提供给发布服务。
+```bash
+meilisearch --env development --http-addr 127.0.0.1:7700 --db-path .runtime-meilisearch/index --no-analytics --max-indexing-memory 128MiB --max-indexing-threads 1
+```
+
+项目 `.env` 只需要 `PAPER_COMPASS_MEILI_URL=http://127.0.0.1:7700`，省略两个密钥变量。同机进程可以直接读写该实例的索引。Nginx 只代理 Paper Compass 网站和 MCP 入口。
+
+需要限制同机访问时，可为 Meilisearch 设置主密钥，并在 Paper Compass 配置 `PAPER_COMPASS_MEILI_SEARCH_KEY` 和 `PAPER_COMPASS_MEILI_WRITE_KEY`。前者用于搜索，后者用于发布索引。
 
 使用原有 Python 环境执行 `paper-firehose build-search`，为目前发布的 SQLite 快照建立索引，然后启动网站。网站和 MCP 共用此索引。未配置 Meilisearch URL 时，网站使用 SQLite 标题子串查找。升级时请从实际 `.env` 移除废弃的 `PAPER_COMPASS_SEARCH_*` 变量。新的查询快照会移除旧向量表，已有快照和模型文件可按需另外清理。
 

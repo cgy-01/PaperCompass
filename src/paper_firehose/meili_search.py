@@ -34,14 +34,14 @@ class MeiliSearch:
                 or parsed.username is not None or parsed.path or parsed.query or parsed.fragment):
             raise ValueError('Meilisearch URL must be a loopback HTTP origin')
         self.key = os.environ.get('PAPER_COMPASS_MEILI_WRITE_KEY' if writer else 'PAPER_COMPASS_MEILI_SEARCH_KEY', '')
-        if not self.key:
-            raise SearchUnavailable('Meilisearch API key is missing')
         self.opener = build_opener(ProxyHandler({}))
 
     def request(self, path, data=None, *, method=None, missing=False):
+        headers = {'Content-Type': 'application/json'}
+        if self.key:
+            headers['Authorization'] = 'Bearer ' + self.key
         request = Request(self.url + path, data=None if data is None else json.dumps(data).encode(),
-                          method=method, headers={'Content-Type': 'application/json',
-                                                  'Authorization': 'Bearer ' + self.key})
+                          method=method, headers=headers)
         try:
             with self.opener.open(request, timeout=5) as response:
                 return json.load(response)
