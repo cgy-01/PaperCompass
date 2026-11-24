@@ -13,8 +13,8 @@
 .skip-link:focus { translate: 0 0; }
 .search-submit {
   flex: 0 0 auto;
-  align-self: center;
-  min-height: 34px;
+  block-size: var(--search-control-height);
+  aspect-ratio: 54 / 34;
   padding-inline: 12px;
   border: 1px solid var(--line);
   border-radius: 8px;

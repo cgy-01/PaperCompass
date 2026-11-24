@@ -150,6 +150,7 @@ button {
   z-index: 10;
 }
 .search {
+  --search-control-height: 48px;
   max-width: 680px;
   min-width: 0;
   flex: 1;
@@ -167,6 +168,7 @@ button {
 }
 .search input {
   flex: 1;
+  block-size: var(--search-control-height);
   min-width: 0;
   border: 1px solid var(--line);
   border-radius: 12px;
