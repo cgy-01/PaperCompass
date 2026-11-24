@@ -81,22 +81,16 @@ export function renderOverview() {
   const total = Math.max(overview.total || 0, 1),
     percentage = (n) => ((n / total) * 100).toFixed(2) + "%",
     stats = [
-      ["收录论文", (overview.total || 0).toLocaleString(), "本地论文库总量"],
+      ["收录论文总量", (overview.total || 0).toLocaleString()],
+      ["近30天发表", (overview.recent30 || 0).toLocaleString()],
       [
-        "近 30 天发表",
-        (overview.recent30 || 0).toLocaleString(),
-        "按公开日期统计",
-      ],
-      [
-        "主题覆盖",
+        (overview.classified || 0).toLocaleString() + "篇已分类",
         percentage(overview.classified || 0),
-        (overview.classified || 0).toLocaleString() + " 篇已归类",
       ],
       [
-        "论文信息完整度",
+        (overview.informationComplete || 0).toLocaleString() + "篇论文信息完整",
         percentage(overview.informationComplete || 0),
-        (overview.informationComplete || 0).toLocaleString() +
-          " 篇作者、摘要等信息齐全",
+        "作者、摘要、发表日期、来源与原文链接齐全",
       ],
     ];
   $("#heroTopics").textContent = overview.topicCount || 0;
@@ -104,8 +98,8 @@ export function renderOverview() {
   $("#heroSources").title = "按会议系列、期刊与预印本平台统计";
   $("#stats").innerHTML = stats
     .map(
-      ([label, value, detail]) =>
-        `<div class="stat" ${label === "论文信息完整度" ? 'title="作者、摘要、发表日期、来源与原文链接齐全"' : ''}><b>${value}</b><span>${label}</span><small>${detail}</small></div>`,
+      ([label, value, hint]) =>
+        `<div class="stat" ${hint ? `title="${esc(hint)}"` : ""}><b>${value}</b><span>${label}</span></div>`,
     )
     .join("");
   remember(overview.latest || []);
