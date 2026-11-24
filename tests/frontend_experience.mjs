@@ -35,26 +35,29 @@ test('source families group editions without changing exact API names', () => {
 
 class Input extends EventTarget { value=''; form=new EventTarget(); }
 const event=(name,fields={})=>Object.assign(new Event(name,{cancelable:true}),fields);
-const pause=()=>new Promise(resolve=>setTimeout(resolve,25));
-test('Chinese composition and Safari confirming Enter never submit intermediate text', async () => {
-  const input=new Input(),values=[];
-  bindSearch(input,value=>values.push(value),5);
+test('typing and completing IME composition wait for form submission', () => {
+  const input = new Input(), values = [];
+  bindSearch(input, value => values.push(value));
   input.dispatchEvent(event('compositionstart'));
-  input.value='pin';input.dispatchEvent(event('input',{isComposing:true}));
-  input.dispatchEvent(event('keydown',{key:'Enter',isComposing:true}));
-  await pause();assert.deepEqual(values,[]);
-  input.value='强化学习';input.dispatchEvent(event('compositionend'));
-  input.dispatchEvent(event('keydown',{key:'Enter',isComposing:false,keyCode:229}));
-  await pause();assert.deepEqual(values,['强化学习']);
+  input.value = 'pin';
+  input.dispatchEvent(event('input', {isComposing: true}));
+  input.dispatchEvent(event('keydown', {key: 'Enter', isComposing: true}));
+  input.value = '强化学习';
+  input.dispatchEvent(event('compositionend'));
+  input.dispatchEvent(event('input'));
+  assert.deepEqual(values, []);
+  input.form.dispatchEvent(event('submit'));
+  assert.deepEqual(values, ['强化学习']);
 });
-test('explicit form submit and Escape are available without typing shortcuts', async () => {
-  const input=new Input(),values=[];
-  bindSearch(input,value=>values.push(value),5);
-  input.value='  KV cache  ';input.form.dispatchEvent(event('submit'));
-  assert.deepEqual(values,['KV cache']);
-  input.dispatchEvent(event('keydown',{key:'Escape'}));
-  assert.deepEqual(values,['KV cache','']);
-  input.value='agent';input.dispatchEvent(event('input'));
-  input.dispatchEvent(event('keydown',{key:'Enter'}));
-  await pause();assert.deepEqual(values,['KV cache','','agent']);
+
+test('explicit form submit trims the query and can clear the active search', () => {
+  const input = new Input(), values = [];
+  bindSearch(input, value => values.push(value));
+  input.value = '  KV cache  ';
+  input.form.dispatchEvent(event('submit'));
+  input.value = '';
+  input.dispatchEvent(event('input'));
+  assert.deepEqual(values, ['KV cache']);
+  input.form.dispatchEvent(event('submit'));
+  assert.deepEqual(values, ['KV cache', '']);
 });

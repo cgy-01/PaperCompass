@@ -12,21 +12,18 @@
 }
 .skip-link:focus { translate: 0 0; }
 .search-submit {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 20px;
-  height: 20px;
-  padding: 0;
+  flex: 0 0 auto;
+  min-height: 48px;
+  padding-inline: 14px;
   border: 0;
-  background: transparent;
-  pointer-events: auto;
+  border-radius: 12px;
+  background: var(--green);
+  color: #fff;
+  font: inherit;
+  white-space: nowrap;
+  cursor: pointer;
 }
-.search-submit::after {
-  content: "";
-  position: absolute;
-  inset: -12px;
-}
+.search-submit:hover { filter: brightness(0.92); }
 .search input[type="search"] { appearance: none; }
 .search input[type="search"]::-webkit-search-cancel-button { display: none; }
 .app :where(a, button, input, [role="combobox"]):focus-visible {
