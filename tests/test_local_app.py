@@ -31,7 +31,7 @@ def test_read_api_filters_and_paginates(repository):
 
 
 def test_read_api_searches_and_resolves_saved_ids(repository):
-    assert repository.query({'q': ['infrastructure']})['total'] == 2
+    assert repository.query({'q': ['Paper']})['total'] == 2
     result = repository.query({'ids': ['old,new']})
     assert [paper['id'] for paper in result['items']] == ['old', 'new']
 
@@ -74,13 +74,19 @@ def test_serve_generates_shell_starts_loader_and_closes_server(tmp_path, monkeyp
     server.server_close.assert_called_once()
 
 
-def test_documentation_repository_renders_allowlisted_markdown(tmp_path):
-    (tmp_path / "MCP_USER_GUIDE.md").write_text(
+@pytest.mark.parametrize("layout", ["user", "legacy"])
+def test_documentation_repository_renders_allowlisted_markdown(tmp_path, layout):
+    manuals = tmp_path / "user" if layout == "user" else tmp_path
+    manuals.mkdir(exist_ok=True)
+    image_prefix = "../img" if layout == "user" else "./img"
+    (manuals / "MCP_USER_GUIDE.md").write_text(
         "# MCP 用户指南\n\n```bash\ncodex mcp list\n```\n\n"
-        "[部署](mcp_setup.md)\n\n![MCP 设置](./img/mcp_guide.png)",
+        f"![MCP 设置]({image_prefix}/mcp_guide.png)",
         encoding="utf-8",
     )
-    (tmp_path / "mcp_setup.md").write_text("# 部署说明", encoding="utf-8")
+    developer = tmp_path / "developer"
+    developer.mkdir()
+    (developer / "mcp_setup.md").write_text("# 部署说明", encoding="utf-8")
     (tmp_path / "img").mkdir()
     (tmp_path / "img" / "mcp_guide.png").write_bytes(b"png")
     repository = DocumentationRepository(tmp_path)
@@ -92,6 +98,36 @@ def test_documentation_repository_renders_allowlisted_markdown(tmp_path):
     assert 'src="/api/docs/assets/img/mcp_guide.png"' in document["html"]
     assert 'data-doc-slug="mcp-deployment"' not in document["html"]
     assert repository.get("mcp-deployment") is None
+    assert repository.get("developer/mcp_setup") is None
     assert repository.get("../../secrets") is None
     assert repository.asset("img/mcp_guide.png") == tmp_path / "img" / "mcp_guide.png"
     assert repository.asset("../MCP_USER_GUIDE.md") is None
+    assert repository.asset("../developer/mcp_setup.md") is None
+
+
+def test_documentation_prefers_new_manuals_and_preserves_user_links(tmp_path):
+    manuals = tmp_path / "user"
+    manuals.mkdir()
+    (tmp_path / "MCP_USER_GUIDE.md").write_text("# Old manual", encoding="utf-8")
+    (manuals / "MCP_USER_GUIDE.md").write_text(
+        "# New manual\n\n[账号](./ACCOUNT_USER_GUIDE.md)", encoding="utf-8"
+    )
+    (manuals / "ACCOUNT_USER_GUIDE.md").write_text(
+        "# Account\n\n[MCP](MCP_USER_GUIDE.md)", encoding="utf-8"
+    )
+    repository = DocumentationRepository(tmp_path)
+    assert [item["slug"] for item in repository.list()] == ["mcp", "account"]
+    assert "New manual" in repository.get("mcp")["html"]
+    assert 'data-doc-slug="account"' in repository.get("mcp")["html"]
+    assert 'data-doc-slug="mcp"' in repository.get("account")["html"]
+
+
+def test_repository_user_manuals_are_public_but_developer_documents_are_not():
+    repository = DocumentationRepository()
+    assert [item["slug"] for item in repository.list()] == ["mcp", "account"]
+    for item in repository.list():
+        assert repository.get(item["slug"])["html"]
+    assert 'src="/api/docs/assets/img/mcp_guide.png"' in repository.get("mcp")["html"]
+    assert repository.asset("img/mcp_guide.png").is_file()
+    assert repository.get("developer") is None
+    assert repository.get("database_dictionary") is None

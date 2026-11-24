@@ -2,7 +2,7 @@
 
 面向 AI 与计算机研究者的论文工作台：跟踪 arXiv 新论文，收录会议官方目录，按主题浏览，并通过 MCP 为研究 Agent 提供文献检索。
 
-[在线网站](https://papercompass.cn) · [MCP 用户指南](docs/MCP_USER_GUIDE.md) · [配置说明](docs/configuration.md) · [部署与自动更新](docs/admin/automatic_updates.md)
+[在线网站](https://papercompass.cn) · [MCP 用户指南](docs/user/MCP_USER_GUIDE.md) · [配置说明](docs/developer/configuration.md) · [部署与自动更新](docs/developer/admin/automatic_updates.md)
 
 ## 功能
 
@@ -61,7 +61,7 @@ export PAPER_COMPASS_PUBLIC_URL=http://127.0.0.1:8765
 paper-firehose serve --host 127.0.0.1 --port 8765
 ```
 
-打开 <http://127.0.0.1:8765>。业务参数集中在根目录 `.env`，按模块分组，详细规则见[配置说明](docs/configuration.md)。重新打开终端后只需激活 Python 环境，不必重复导出数据目录或 API 参数。
+打开 <http://127.0.0.1:8765>。业务参数集中在根目录 `.env`，按模块分组，详细规则见[配置说明](docs/developer/configuration.md)。重新打开终端后只需激活 Python 环境，不必重复导出数据目录或 API 参数。
 
 另开终端，在相同环境和数据目录下采集：
 
@@ -72,7 +72,7 @@ paper-firehose update --scope arxiv
 
 RSS 完成后先发布，API 补漏完成后再发布。网站自动检测新版本，刷新页面即可读取更新。首次补漏查询近期记录，耗时取决于分类数量、来源响应与机器资源。
 
-本地启动不会自动安装定时任务。已有配置和查询库时，推荐用 `./start_frontend_dev.sh 9000` 开发前端：自动使用独立开发账号并监听前端变更。`./start_dashboard.sh` 保留普通服务启动方式；脚本环境查找行为见[开发说明](docs/development.md)。
+本地启动不会自动安装定时任务。已有配置和查询库时，推荐用 `./start_frontend_dev.sh 9000` 开发前端：自动使用独立开发账号并监听前端变更。`./start_dashboard.sh` 保留普通服务启动方式；脚本环境查找行为见[开发说明](docs/developer/development.md)。
 
 ## 常用命令
 
@@ -100,22 +100,26 @@ RSS 完成后先发布，API 补漏完成后再发布。网站自动检测新版
 | arXiv 主任务 | 每天 14:00 | RSS、API 补漏与发布，失败有限重试 |
 | 会议次要任务 | 每天 06:30 | 近期届次每日检查，较早届次每 7 天检查 |
 
-OpenAlex 默认跳过，需要时显式添加 `--openalex`。原始库、状态文件和查询库保存在运行目录，不随源码分发。详细安装和回滚见[管理员文档](docs/admin/automatic_updates.md)。
+OpenAlex 默认跳过，需要时显式添加 `--openalex`。原始库、状态文件和查询库保存在运行目录，不随源码分发。详细安装和回滚见[管理员文档](docs/developer/admin/automatic_updates.md)。
 
 ## 连接 MCP
 
-公开服务地址为 `https://papercompass.cn/mcp`，连接方式与示例见[MCP 用户指南](docs/MCP_USER_GUIDE.md)。自托管见[MCP 部署说明](docs/mcp_setup.md)。MCP 查询已有论文，不触发采集和数据库写入。
+网页与 MCP 共用 Meilisearch 标题索引。首次启用时运行 `paper-firehose build-search`，配置见[接入说明](docs/developer/admin/meilisearch_title_trial.md)。
+
+公开服务地址为 `https://papercompass.cn/mcp`，连接方式与示例见[MCP 用户指南](docs/user/MCP_USER_GUIDE.md)。自托管见[MCP 部署说明](docs/developer/mcp_setup.md)。MCP 查询已有论文，不触发采集和数据库写入。
 
 ## 文档与开发
 
 - [文档索引](docs/README.md)
-- [配置与环境变量](docs/configuration.md)
-- [开发、测试与目录结构](docs/development.md)
-- [部署与自动更新](docs/admin/automatic_updates.md)
+- [用户文档：网站账号、文献库与 MCP](docs/user/README.md)
+- [开发者文档：开发、接口、部署与数据库](docs/developer/README.md)
+- [配置与环境变量](docs/developer/configuration.md)
+- [开发、测试与目录结构](docs/developer/development.md)
+- [部署与自动更新](docs/developer/admin/automatic_updates.md)
 - [贡献指南](CONTRIBUTING.md)
 - [安全问题报告](SECURITY.md)
 - [第三方素材说明](THIRD_PARTY_NOTICES.md)
-- [源码发布检查](docs/admin/source_release.md)
+- [源码发布检查](docs/developer/admin/source_release.md)
 
 源码和示例配置可以公开；实际配置、密钥、数据库、备份、日志、虚拟环境和同步状态不应提交。
 

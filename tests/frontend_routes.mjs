@@ -29,6 +29,12 @@ test("invalid pages and sort fall back safely", () => {
     assert.equal(parseRoute("#discover?page=" + page).page, 1);
   assert.equal(parseRoute("#discover?sort=unknown").sort, "date");
 });
+test("semantic searches always rank by similarity; empty searches browse by date", () => {
+  assert.equal(parseRoute('#discover?q=通信优化&sort=date').sort, 'similarity');
+  assert.equal(parseRoute('#discover?sort=similarity').sort, 'date');
+  const route = parseRoute('#discover?q=FlashAttention&page=2');
+  assert.deepEqual(parseRoute(routeHash(route)), route);
+});
 test("detail routes contain only the public identifier", () => {
   const id = "a".repeat(64),
     route = parseRoute("#paper/" + id);

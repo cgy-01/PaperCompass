@@ -136,7 +136,7 @@ query_store.build(sys.argv[1])
 from paper_firehose.mcp_server import create_mcp_server
 server=create_mcp_server(api_url=sys.argv[1])
 tools=server._tool_manager.list_tools()
-assert {tool.name for tool in tools}=={'search','fetch','recent_papers','list_topics','list_sources'}
+assert {tool.name for tool in tools}=={'search','find_paper','fetch','recent_papers','list_topics','list_sources'}
 assert all(tool.annotations.readOnlyHint for tool in tools)
 result=asyncio.run(server._tool_manager.call_tool('search',{'query':'smoke','limit':1}))
 assert result['total']==0

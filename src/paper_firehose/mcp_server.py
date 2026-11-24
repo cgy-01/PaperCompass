@@ -61,9 +61,10 @@ class PaperCompassClient:
         source: str = "",
         venue_type: str = "",
         days: int = 0,
-        sort: str = "date",
+        sort: str = "similarity",
         page: int = 1,
         limit: int = 10,
+        search_field: str = "all",
     ) -> dict[str, Any]:
         page = max(1, page)
         limit = min(50, max(1, limit))
@@ -73,9 +74,10 @@ class PaperCompassClient:
             "source": source.strip(),
             "type": venue_type.strip(),
             "days": max(0, days),
-            "sort": sort if sort in {"date", "score", "title"} else "date",
+            "sort": sort if sort in {"date", "score", "title", "similarity"} else "similarity",
             "page": page,
             "page_size": limit,
+            "search_field": search_field if search_field in {'all', 'title'} else 'all',
         }
         return self._get("/api/papers", params=params)
 
@@ -154,9 +156,13 @@ def create_mcp_server(
     server = FastMCP(
         "Paper Compass",
         instructions=(
-            "Search the read-only Paper Compass AI-paper catalog. Prefer date sorting "
-            "for literature monitoring. Search results contain metadata and abstracts, "
+            "Search the read-only Paper Compass AI-paper catalog by title or keywords. "
+            "Use search for keywords and find_paper for a known title. "
+            "Search results are ranked by relevance; "
+            "use recent_papers for date-ordered literature monitoring. Results contain metadata and abstracts, "
             "not the complete paper; use each result URL to access the original source. "
+            ""
+            ""
             "Search responses are paginated. Do not automatically exhaust all pages. "
             "Use total and has_more to judge coverage, and request next_page only when another "
             "page is useful for the user's stated goal. Stop when enough relevant evidence has "
@@ -175,7 +181,8 @@ def create_mcp_server(
     @server.tool(
         name="search",
         description=(
-            "Search papers by literal keywords in title, authors, abstract, venue and topics. "
+            "Search papers by title keywords. "
+            "Results are ordered by relevance when the query is nonempty. "
             "Optional filters use exact Paper Compass topic/source display names. Results are "
             "paginated; use next_page only when more results are needed for the user's goal."
         ),
@@ -188,7 +195,7 @@ def create_mcp_server(
         source: str = "",
         venue_type: Literal["", "会议", "期刊", "预印本", "待核验来源"] = "",
         days: int = 0,
-        sort: Literal["date", "score", "title"] = "date",
+        sort: Literal["date", "score", "title", "similarity"] = "similarity",
         page: int = 1,
         limit: int = 10,
     ) -> dict[str, Any]:
@@ -206,7 +213,31 @@ def create_mcp_server(
             limit=page_size,
         )
         result = _paged_result(payload, requested_page=page, page_size=page_size)
-        result["search_mode"] = "literal substring"
+        result["search_mode"] = payload.get("searchMode", "title")
+        result["sort"] = payload.get("sort", "date" if sort == "similarity" else sort) if query.strip() else sort
+        return result
+
+    @server.tool(
+        name="find_paper",
+        description=(
+            "Find a specific paper by its complete or approximate title, with spelling tolerance. "
+            "Returns compact candidate metadata, IDs and original URLs, without abstracts; verify title/authors/source "
+            "before choosing a candidate, then use fetch(id) to read its complete abstract."
+        ),
+        annotations=READ_ONLY,
+        structured_output=True,
+    )
+    def find_paper(title: str, source: str = "", page: int = 1, limit: int = 5) -> dict[str, Any]:
+        if not title.strip():
+            raise ValueError('A paper title is required')
+        page, page_size = max(1, page), min(50, max(1, limit))
+        payload = paper_api.search(query=title, source=source, sort='similarity',
+                                   search_field='title', page=page, limit=page_size)
+        result = _paged_result(payload, requested_page=page, page_size=page_size)
+        for candidate in result['results']:
+            candidate.pop('text', None)
+        result.update(search_mode=payload.get('searchMode', 'title'), search_field='title',
+                      sort=payload.get('sort', 'date'))
         return result
 
     @server.tool(

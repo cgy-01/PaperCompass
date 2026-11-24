@@ -25,7 +25,8 @@ def project(tmp_path):
         'pyproject.toml': '[project]\nname="example"\nversion="1.0.0"\n',
         'package.json': '{"dependencies":{"lucide":"1.0.0"}}',
         'package-lock.json': '{"packages":{"node_modules/lucide":{"version":"1.0.0"}}}',
-        'src/example.py': 'value = 1\n', 'docs/MCP_USER_GUIDE.md': 'Public manual',
+        'src/example.py': 'value = 1\n', 'docs/user/MCP_USER_GUIDE.md': 'Public manual',
+        'docs/developer/README.md': 'Developer manual',
         'docs/img/example.png': 'public image',
     }
     for name, content in files.items():
@@ -58,6 +59,8 @@ def test_reproducible_bundle_preserves_docs_and_locked_assets_without_runtime(pr
     assert first.read_bytes() == second.read_bytes()
     unpacked = extract_verified(first.parent, tmp_path / 'unpacked')
     assert (unpacked / 'docs/img/example.png').is_file()
+    assert (unpacked / 'docs/user/MCP_USER_GUIDE.md').is_file()
+    assert (unpacked / 'docs/developer/README.md').is_file()
     assert (unpacked / 'node_modules/lucide/dist/esm/iconsAndAliases.js').is_file()
     assert not (unpacked / '.runtime-demo').exists()
     assert not (unpacked / '.git').exists()

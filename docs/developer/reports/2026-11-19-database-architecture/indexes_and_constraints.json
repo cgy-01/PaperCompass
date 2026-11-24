@@ -1,0 +1,456 @@
+{
+  "read_at_utc": "2026-11-19T03:13:55.034881+00:00",
+  "databases": {
+    "history": {
+      "path": "/opt/paper-compass/.runtime-demo/matched_entries_history.db",
+      "indexes_triggers_views": [
+        {
+          "type": "index",
+          "name": "idx_matched_entries_entry_id",
+          "tbl_name": "matched_entries",
+          "sql": "CREATE INDEX idx_matched_entries_entry_id\n            ON matched_entries(entry_id)\n        "
+        },
+        {
+          "type": "index",
+          "name": "idx_matched_entries_matched_date",
+          "tbl_name": "matched_entries",
+          "sql": "CREATE INDEX idx_matched_entries_matched_date \n            ON matched_entries(matched_date)\n        "
+        },
+        {
+          "type": "index",
+          "name": "idx_matched_entries_topics",
+          "tbl_name": "matched_entries",
+          "sql": "CREATE INDEX idx_matched_entries_topics \n            ON matched_entries(topics)\n        "
+        },
+        {
+          "type": "index",
+          "name": "idx_matched_entries_venue_type",
+          "tbl_name": "matched_entries",
+          "sql": "CREATE INDEX idx_matched_entries_venue_type\n                          ON matched_entries(venue_type)"
+        },
+        {
+          "type": "index",
+          "name": "sqlite_autoindex_matched_entries_1",
+          "tbl_name": "matched_entries",
+          "sql": null
+        },
+        {
+          "type": "trigger",
+          "name": "matched_entries_fts_ad",
+          "tbl_name": "matched_entries",
+          "sql": "CREATE TRIGGER matched_entries_fts_ad AFTER DELETE ON matched_entries BEGIN\n                INSERT INTO matched_entries_fts(matched_entries_fts, rowid, title, summary, abstract, authors)\n                VALUES ('delete', old.rowid, old.title, old.summary, old.abstract, old.authors);\n            END"
+        },
+        {
+          "type": "trigger",
+          "name": "matched_entries_fts_ai",
+          "tbl_name": "matched_entries",
+          "sql": "CREATE TRIGGER matched_entries_fts_ai AFTER INSERT ON matched_entries BEGIN\n                INSERT INTO matched_entries_fts(rowid, title, summary, abstract, authors)\n                VALUES (new.rowid, new.title, new.summary, new.abstract, new.authors);\n            END"
+        },
+        {
+          "type": "trigger",
+          "name": "matched_entries_fts_au",
+          "tbl_name": "matched_entries",
+          "sql": "CREATE TRIGGER matched_entries_fts_au AFTER UPDATE ON matched_entries BEGIN\n                INSERT INTO matched_entries_fts(matched_entries_fts, rowid, title, summary, abstract, authors)\n                VALUES ('delete', old.rowid, old.title, old.summary, old.abstract, old.authors);\n                INSERT INTO matched_entries_fts(rowid, title, summary, abstract, authors)\n                VALUES (new.rowid, new.title, new.summary, new.abstract, new.authors);\n            END"
+        },
+        {
+          "type": "trigger",
+          "name": "matched_entries_kw_ad",
+          "tbl_name": "matched_entries",
+          "sql": "CREATE TRIGGER matched_entries_kw_ad AFTER DELETE ON matched_entries BEGIN\n                INSERT INTO matched_entries_kw(matched_entries_kw, rowid, title, summary, abstract, authors)\n                VALUES ('delete', old.rowid, old.title, old.summary, old.abstract, old.authors);\n            END"
+        },
+        {
+          "type": "trigger",
+          "name": "matched_entries_kw_ai",
+          "tbl_name": "matched_entries",
+          "sql": "CREATE TRIGGER matched_entries_kw_ai AFTER INSERT ON matched_entries BEGIN\n                INSERT INTO matched_entries_kw(rowid, title, summary, abstract, authors)\n                VALUES (new.rowid, new.title, new.summary, new.abstract, new.authors);\n            END"
+        },
+        {
+          "type": "trigger",
+          "name": "matched_entries_kw_au",
+          "tbl_name": "matched_entries",
+          "sql": "CREATE TRIGGER matched_entries_kw_au AFTER UPDATE ON matched_entries BEGIN\n                INSERT INTO matched_entries_kw(matched_entries_kw, rowid, title, summary, abstract, authors)\n                VALUES ('delete', old.rowid, old.title, old.summary, old.abstract, old.authors);\n                INSERT INTO matched_entries_kw(rowid, title, summary, abstract, authors)\n                VALUES (new.rowid, new.title, new.summary, new.abstract, new.authors);\n            END"
+        }
+      ],
+      "foreign_keys": {}
+    },
+    "query": {
+      "path": "/opt/paper-compass/.runtime-demo/query-store/query-1b1cde5ab93e4463b5e61e727ae34fa8.db",
+      "indexes_triggers_views": [
+        {
+          "type": "index",
+          "name": "papers_date",
+          "tbl_name": "papers",
+          "sql": "CREATE INDEX papers_date ON papers(timestamp DESC, score DESC)"
+        },
+        {
+          "type": "index",
+          "name": "papers_source",
+          "tbl_name": "papers",
+          "sql": "CREATE INDEX papers_source ON papers(source)"
+        },
+        {
+          "type": "index",
+          "name": "papers_title",
+          "tbl_name": "papers",
+          "sql": "CREATE INDEX papers_title ON papers(title)"
+        },
+        {
+          "type": "index",
+          "name": "papers_type",
+          "tbl_name": "papers",
+          "sql": "CREATE INDEX papers_type ON papers(venue_type)"
+        },
+        {
+          "type": "index",
+          "name": "sqlite_autoindex_fingerprints_1",
+          "tbl_name": "fingerprints",
+          "sql": null
+        },
+        {
+          "type": "index",
+          "name": "sqlite_autoindex_metadata_1",
+          "tbl_name": "metadata",
+          "sql": null
+        },
+        {
+          "type": "index",
+          "name": "sqlite_autoindex_paper_topics_1",
+          "tbl_name": "paper_topics",
+          "sql": null
+        },
+        {
+          "type": "index",
+          "name": "sqlite_autoindex_papers_1",
+          "tbl_name": "papers",
+          "sql": null
+        },
+        {
+          "type": "index",
+          "name": "sqlite_autoindex_public_paper_ids_1",
+          "tbl_name": "public_paper_ids",
+          "sql": null
+        },
+        {
+          "type": "index",
+          "name": "sqlite_autoindex_public_paper_ids_2",
+          "tbl_name": "public_paper_ids",
+          "sql": null
+        },
+        {
+          "type": "index",
+          "name": "topics_name",
+          "tbl_name": "paper_topics",
+          "sql": "CREATE INDEX topics_name ON paper_topics(topic,paper_id)"
+        }
+      ],
+      "foreign_keys": {}
+    },
+    "classification": {
+      "path": "/opt/paper-compass/.runtime-demo/classification/api.db",
+      "indexes_triggers_views": [
+        {
+          "type": "index",
+          "name": "jobs_due",
+          "tbl_name": "jobs",
+          "sql": "CREATE INDEX jobs_due ON jobs(status,next_attempt)"
+        },
+        {
+          "type": "index",
+          "name": "requests_day",
+          "tbl_name": "requests",
+          "sql": "CREATE INDEX requests_day ON requests(day)"
+        },
+        {
+          "type": "index",
+          "name": "sqlite_autoindex_assignments_1",
+          "tbl_name": "assignments",
+          "sql": null
+        },
+        {
+          "type": "index",
+          "name": "sqlite_autoindex_jobs_1",
+          "tbl_name": "jobs",
+          "sql": null
+        },
+        {
+          "type": "index",
+          "name": "sqlite_autoindex_predictions_1",
+          "tbl_name": "predictions",
+          "sql": null
+        },
+        {
+          "type": "index",
+          "name": "sqlite_autoindex_requests_1",
+          "tbl_name": "requests",
+          "sql": null
+        },
+        {
+          "type": "index",
+          "name": "sqlite_autoindex_state_1",
+          "tbl_name": "state",
+          "sql": null
+        },
+        {
+          "type": "index",
+          "name": "sqlite_autoindex_tracked_papers_1",
+          "tbl_name": "tracked_papers",
+          "sql": null
+        }
+      ],
+      "foreign_keys": {}
+    },
+    "users": {
+      "path": "/opt/paper-compass/.runtime-demo/users/users.db",
+      "indexes_triggers_views": [
+        {
+          "type": "index",
+          "name": "sessions_expiry",
+          "tbl_name": "sessions",
+          "sql": "CREATE INDEX sessions_expiry ON sessions(expires_at)"
+        },
+        {
+          "type": "index",
+          "name": "sqlite_autoindex_favorites_1",
+          "tbl_name": "favorites",
+          "sql": null
+        },
+        {
+          "type": "index",
+          "name": "sqlite_autoindex_oauth_states_1",
+          "tbl_name": "oauth_states",
+          "sql": null
+        },
+        {
+          "type": "index",
+          "name": "sqlite_autoindex_reading_1",
+          "tbl_name": "reading",
+          "sql": null
+        },
+        {
+          "type": "index",
+          "name": "sqlite_autoindex_sessions_1",
+          "tbl_name": "sessions",
+          "sql": null
+        },
+        {
+          "type": "index",
+          "name": "sqlite_autoindex_users_1",
+          "tbl_name": "users",
+          "sql": null
+        },
+        {
+          "type": "index",
+          "name": "sqlite_autoindex_users_2",
+          "tbl_name": "users",
+          "sql": null
+        }
+      ],
+      "foreign_keys": {
+        "sessions": [
+          {
+            "id": 0,
+            "seq": 0,
+            "table": "users",
+            "from": "user_id",
+            "to": "id",
+            "on_update": "NO ACTION",
+            "on_delete": "NO ACTION",
+            "match": "NONE"
+          }
+        ],
+        "favorites": [
+          {
+            "id": 0,
+            "seq": 0,
+            "table": "users",
+            "from": "user_id",
+            "to": "id",
+            "on_update": "NO ACTION",
+            "on_delete": "NO ACTION",
+            "match": "NONE"
+          }
+        ],
+        "reading": [
+          {
+            "id": 0,
+            "seq": 0,
+            "table": "users",
+            "from": "user_id",
+            "to": "id",
+            "on_update": "NO ACTION",
+            "on_delete": "NO ACTION",
+            "match": "NONE"
+          }
+        ]
+      }
+    },
+    "events": {
+      "path": "/opt/paper-compass/.runtime-demo/analytics/events.db",
+      "indexes_triggers_views": [
+        {
+          "type": "index",
+          "name": "events_received",
+          "tbl_name": "events",
+          "sql": "CREATE INDEX events_received ON events(received_at)"
+        },
+        {
+          "type": "index",
+          "name": "events_user",
+          "tbl_name": "events",
+          "sql": "CREATE INDEX events_user ON events(user_id,received_at)"
+        },
+        {
+          "type": "index",
+          "name": "sqlite_autoindex_daily_counts_1",
+          "tbl_name": "daily_counts",
+          "sql": null
+        },
+        {
+          "type": "index",
+          "name": "sqlite_autoindex_daily_unique_1",
+          "tbl_name": "daily_unique",
+          "sql": null
+        },
+        {
+          "type": "index",
+          "name": "sqlite_autoindex_daily_visitors_1",
+          "tbl_name": "daily_visitors",
+          "sql": null
+        },
+        {
+          "type": "index",
+          "name": "sqlite_autoindex_events_1",
+          "tbl_name": "events",
+          "sql": null
+        }
+      ],
+      "foreign_keys": {}
+    },
+    "feeds": {
+      "path": "/opt/paper-compass/.runtime-demo/all_feed_entries.db",
+      "indexes_triggers_views": [
+        {
+          "type": "index",
+          "name": "idx_feed_entries_feed_name",
+          "tbl_name": "feed_entries",
+          "sql": "CREATE INDEX idx_feed_entries_feed_name \n            ON feed_entries(feed_name)\n        "
+        },
+        {
+          "type": "index",
+          "name": "idx_feed_entries_first_seen",
+          "tbl_name": "feed_entries",
+          "sql": "CREATE INDEX idx_feed_entries_first_seen \n            ON feed_entries(first_seen)\n        "
+        },
+        {
+          "type": "index",
+          "name": "sqlite_autoindex_feed_entries_1",
+          "tbl_name": "feed_entries",
+          "sql": null
+        },
+        {
+          "type": "index",
+          "name": "sqlite_autoindex_feed_entries_2",
+          "tbl_name": "feed_entries",
+          "sql": null
+        },
+        {
+          "type": "trigger",
+          "name": "feed_entries_fts_ad",
+          "tbl_name": "feed_entries",
+          "sql": "CREATE TRIGGER feed_entries_fts_ad AFTER DELETE ON feed_entries BEGIN\n                INSERT INTO feed_entries_fts(feed_entries_fts, rowid, title, summary, authors)\n                VALUES ('delete', old.rowid, old.title, old.summary, old.authors);\n            END"
+        },
+        {
+          "type": "trigger",
+          "name": "feed_entries_fts_ai",
+          "tbl_name": "feed_entries",
+          "sql": "CREATE TRIGGER feed_entries_fts_ai AFTER INSERT ON feed_entries BEGIN\n                INSERT INTO feed_entries_fts(rowid, title, summary, authors)\n                VALUES (new.rowid, new.title, new.summary, new.authors);\n            END"
+        },
+        {
+          "type": "trigger",
+          "name": "feed_entries_fts_au",
+          "tbl_name": "feed_entries",
+          "sql": "CREATE TRIGGER feed_entries_fts_au AFTER UPDATE ON feed_entries BEGIN\n                INSERT INTO feed_entries_fts(feed_entries_fts, rowid, title, summary, authors)\n                VALUES ('delete', old.rowid, old.title, old.summary, old.authors);\n                INSERT INTO feed_entries_fts(rowid, title, summary, authors)\n                VALUES (new.rowid, new.title, new.summary, new.authors);\n            END"
+        },
+        {
+          "type": "trigger",
+          "name": "feed_entries_kw_ad",
+          "tbl_name": "feed_entries",
+          "sql": "CREATE TRIGGER feed_entries_kw_ad AFTER DELETE ON feed_entries BEGIN\n                INSERT INTO feed_entries_kw(feed_entries_kw, rowid, title, summary, authors)\n                VALUES ('delete', old.rowid, old.title, old.summary, old.authors);\n            END"
+        },
+        {
+          "type": "trigger",
+          "name": "feed_entries_kw_ai",
+          "tbl_name": "feed_entries",
+          "sql": "CREATE TRIGGER feed_entries_kw_ai AFTER INSERT ON feed_entries BEGIN\n                INSERT INTO feed_entries_kw(rowid, title, summary, authors)\n                VALUES (new.rowid, new.title, new.summary, new.authors);\n            END"
+        },
+        {
+          "type": "trigger",
+          "name": "feed_entries_kw_au",
+          "tbl_name": "feed_entries",
+          "sql": "CREATE TRIGGER feed_entries_kw_au AFTER UPDATE ON feed_entries BEGIN\n                INSERT INTO feed_entries_kw(feed_entries_kw, rowid, title, summary, authors)\n                VALUES ('delete', old.rowid, old.title, old.summary, old.authors);\n                INSERT INTO feed_entries_kw(rowid, title, summary, authors)\n                VALUES (new.rowid, new.title, new.summary, new.authors);\n            END"
+        }
+      ],
+      "foreign_keys": {}
+    },
+    "current_run": {
+      "path": "/opt/paper-compass/.runtime-demo/papers.db",
+      "indexes_triggers_views": [
+        {
+          "type": "index",
+          "name": "idx_entries_topic_status",
+          "tbl_name": "entries",
+          "sql": "CREATE INDEX idx_entries_topic_status\n            ON entries(topic, status)\n        "
+        },
+        {
+          "type": "index",
+          "name": "sqlite_autoindex_entries_1",
+          "tbl_name": "entries",
+          "sql": null
+        },
+        {
+          "type": "index",
+          "name": "sqlite_autoindex_entries_2",
+          "tbl_name": "entries",
+          "sql": null
+        },
+        {
+          "type": "trigger",
+          "name": "entries_fts_ad",
+          "tbl_name": "entries",
+          "sql": "CREATE TRIGGER entries_fts_ad AFTER DELETE ON entries BEGIN\n                INSERT INTO entries_fts(entries_fts, rowid, title, summary, abstract, authors)\n                VALUES ('delete', old.rowid, old.title, old.summary, old.abstract, old.authors);\n            END"
+        },
+        {
+          "type": "trigger",
+          "name": "entries_fts_ai",
+          "tbl_name": "entries",
+          "sql": "CREATE TRIGGER entries_fts_ai AFTER INSERT ON entries BEGIN\n                INSERT INTO entries_fts(rowid, title, summary, abstract, authors)\n                VALUES (new.rowid, new.title, new.summary, new.abstract, new.authors);\n            END"
+        },
+        {
+          "type": "trigger",
+          "name": "entries_fts_au",
+          "tbl_name": "entries",
+          "sql": "CREATE TRIGGER entries_fts_au AFTER UPDATE ON entries BEGIN\n                INSERT INTO entries_fts(entries_fts, rowid, title, summary, abstract, authors)\n                VALUES ('delete', old.rowid, old.title, old.summary, old.abstract, old.authors);\n                INSERT INTO entries_fts(rowid, title, summary, abstract, authors)\n                VALUES (new.rowid, new.title, new.summary, new.abstract, new.authors);\n            END"
+        },
+        {
+          "type": "trigger",
+          "name": "entries_kw_ad",
+          "tbl_name": "entries",
+          "sql": "CREATE TRIGGER entries_kw_ad AFTER DELETE ON entries BEGIN\n                INSERT INTO entries_kw(entries_kw, rowid, title, summary, abstract, authors)\n                VALUES ('delete', old.rowid, old.title, old.summary, old.abstract, old.authors);\n            END"
+        },
+        {
+          "type": "trigger",
+          "name": "entries_kw_ai",
+          "tbl_name": "entries",
+          "sql": "CREATE TRIGGER entries_kw_ai AFTER INSERT ON entries BEGIN\n                INSERT INTO entries_kw(rowid, title, summary, abstract, authors)\n                VALUES (new.rowid, new.title, new.summary, new.abstract, new.authors);\n            END"
+        },
+        {
+          "type": "trigger",
+          "name": "entries_kw_au",
+          "tbl_name": "entries",
+          "sql": "CREATE TRIGGER entries_kw_au AFTER UPDATE ON entries BEGIN\n                INSERT INTO entries_kw(entries_kw, rowid, title, summary, abstract, authors)\n                VALUES ('delete', old.rowid, old.title, old.summary, old.abstract, old.authors);\n                INSERT INTO entries_kw(rowid, title, summary, abstract, authors)\n                VALUES (new.rowid, new.title, new.summary, new.abstract, new.authors);\n            END"
+        }
+      ],
+      "foreign_keys": {}
+    }
+  }
+}

@@ -1,0 +1,3200 @@
+{
+  "started_at_utc": "2026-11-19T03:09:04.680523+00:00",
+  "data_dir": "/opt/paper-compass/.runtime-demo",
+  "manifest": {
+    "database": "query-1b1cde5ab93e4463b5e61e727ae34fa8.db",
+    "published_at": "2026-11-18T22:37:39.321367+00:00"
+  },
+  "databases": {
+    "history": {
+      "path": "/opt/paper-compass/.runtime-demo/matched_entries_history.db",
+      "bytes": 1438810112,
+      "allocated_bytes": 1438814208,
+      "modified_at_utc": "2026-11-18T22:35:14.062862+00:00",
+      "row_counts": {
+        "matched_entries": 69702
+      },
+      "page_metrics": {
+        "page_size": 4096,
+        "page_count": 351272,
+        "freelist_count": 478,
+        "journal_mode": "delete"
+      },
+      "sqlite_version": "3.45.1",
+      "sidecars": [],
+      "page_objects_status": "unavailable_or_exceeded_10_seconds"
+    },
+    "query": {
+      "path": "/opt/paper-compass/.runtime-demo/query-store/query-1b1cde5ab93e4463b5e61e727ae34fa8.db",
+      "bytes": 413409280,
+      "allocated_bytes": 413413376,
+      "modified_at_utc": "2026-11-18T22:37:39.318651+00:00",
+      "row_counts": {
+        "fingerprints": 69702,
+        "metadata": 6,
+        "paper_topics": 128641,
+        "papers": 68826,
+        "public_paper_ids": 68826
+      },
+      "page_metrics": {
+        "page_size": 4096,
+        "page_count": 100930,
+        "freelist_count": 0,
+        "journal_mode": "delete"
+      },
+      "sqlite_version": "3.45.1",
+      "sidecars": [],
+      "aggregates": {
+        "visible_papers": 68826,
+        "classified": 60560,
+        "information_complete": 68803
+      },
+      "page_objects": [
+        {
+          "name": "papers",
+          "page_bytes": 309862400,
+          "pages": 75650
+        },
+        {
+          "name": "paper_topics",
+          "page_bytes": 15933440,
+          "pages": 3890
+        },
+        {
+          "name": "sqlite_autoindex_paper_topics_1",
+          "page_bytes": 14524416,
+          "pages": 3546
+        },
+        {
+          "name": "topics_name",
+          "page_bytes": 14139392,
+          "pages": 3452
+        },
+        {
+          "name": "fingerprints",
+          "page_bytes": 12693504,
+          "pages": 3099
+        },
+        {
+          "name": "public_paper_ids",
+          "page_bytes": 10010624,
+          "pages": 2444
+        },
+        {
+          "name": "papers_title",
+          "page_bytes": 6856704,
+          "pages": 1674
+        },
+        {
+          "name": "sqlite_autoindex_public_paper_ids_2",
+          "page_bytes": 6057984,
+          "pages": 1479
+        },
+        {
+          "name": "sqlite_autoindex_papers_1",
+          "page_bytes": 5976064,
+          "pages": 1459
+        },
+        {
+          "name": "sqlite_autoindex_fingerprints_1",
+          "page_bytes": 5951488,
+          "pages": 1453
+        },
+        {
+          "name": "sqlite_autoindex_public_paper_ids_1",
+          "page_bytes": 5746688,
+          "pages": 1403
+        },
+        {
+          "name": "papers_source",
+          "page_bytes": 2076672,
+          "pages": 507
+        },
+        {
+          "name": "papers_date",
+          "page_bytes": 2048000,
+          "pages": 500
+        },
+        {
+          "name": "papers_type",
+          "page_bytes": 1495040,
+          "pages": 365
+        },
+        {
+          "name": "metadata",
+          "page_bytes": 28672,
+          "pages": 7
+        },
+        {
+          "name": "sqlite_schema",
+          "page_bytes": 4096,
+          "pages": 1
+        },
+        {
+          "name": "sqlite_autoindex_metadata_1",
+          "page_bytes": 4096,
+          "pages": 1
+        }
+      ],
+      "page_objects_status": "complete"
+    },
+    "classification": {
+      "path": "/opt/paper-compass/.runtime-demo/classification/api.db",
+      "bytes": 14598144,
+      "allocated_bytes": 14598144,
+      "modified_at_utc": "2026-11-18T18:11:39.060061+00:00",
+      "row_counts": {
+        "assignments": 0,
+        "jobs": 0,
+        "predictions": 0,
+        "requests": 0,
+        "state": 2,
+        "tracked_papers": 69702
+      },
+      "page_metrics": {
+        "page_size": 4096,
+        "page_count": 3564,
+        "freelist_count": 0,
+        "journal_mode": "wal"
+      },
+      "sqlite_version": "3.45.1",
+      "sidecars": [
+        {
+          "path": "/opt/paper-compass/.runtime-demo/classification/api.db-wal",
+          "bytes": 0,
+          "allocated_bytes": 0,
+          "modified_at_utc": "2026-11-18T22:36:13.210220+00:00"
+        },
+        {
+          "path": "/opt/paper-compass/.runtime-demo/classification/api.db-shm",
+          "bytes": 32768,
+          "allocated_bytes": 32768,
+          "modified_at_utc": "2026-11-19T02:57:19.878304+00:00"
+        }
+      ],
+      "job_states": {},
+      "tracked_scopes": {
+        "historical": 69702
+      },
+      "page_objects": [
+        {
+          "name": "tracked_papers",
+          "page_bytes": 8454144,
+          "pages": 2064
+        },
+        {
+          "name": "sqlite_autoindex_tracked_papers_1",
+          "page_bytes": 6090752,
+          "pages": 1487
+        },
+        {
+          "name": "state",
+          "page_bytes": 4096,
+          "pages": 1
+        },
+        {
+          "name": "sqlite_schema",
+          "page_bytes": 4096,
+          "pages": 1
+        },
+        {
+          "name": "sqlite_autoindex_state_1",
+          "page_bytes": 4096,
+          "pages": 1
+        },
+        {
+          "name": "sqlite_autoindex_requests_1",
+          "page_bytes": 4096,
+          "pages": 1
+        },
+        {
+          "name": "sqlite_autoindex_predictions_1",
+          "page_bytes": 4096,
+          "pages": 1
+        },
+        {
+          "name": "sqlite_autoindex_jobs_1",
+          "page_bytes": 4096,
+          "pages": 1
+        },
+        {
+          "name": "sqlite_autoindex_assignments_1",
+          "page_bytes": 4096,
+          "pages": 1
+        },
+        {
+          "name": "requests_day",
+          "page_bytes": 4096,
+          "pages": 1
+        },
+        {
+          "name": "requests",
+          "page_bytes": 4096,
+          "pages": 1
+        },
+        {
+          "name": "predictions",
+          "page_bytes": 4096,
+          "pages": 1
+        },
+        {
+          "name": "jobs_due",
+          "page_bytes": 4096,
+          "pages": 1
+        },
+        {
+          "name": "jobs",
+          "page_bytes": 4096,
+          "pages": 1
+        },
+        {
+          "name": "assignments",
+          "page_bytes": 4096,
+          "pages": 1
+        }
+      ],
+      "page_objects_status": "complete"
+    },
+    "users": {
+      "path": "/opt/paper-compass/.runtime-demo/users/users.db",
+      "bytes": 53248,
+      "allocated_bytes": 53248,
+      "modified_at_utc": "2026-11-18T18:25:42.068702+00:00",
+      "row_counts": {
+        "favorites": 1,
+        "oauth_states": 1,
+        "reading": 1,
+        "sessions": 4,
+        "users": 4
+      },
+      "page_metrics": {
+        "page_size": 4096,
+        "page_count": 13,
+        "freelist_count": 0,
+        "journal_mode": "wal"
+      },
+      "sqlite_version": "3.45.1",
+      "sidecars": [
+        {
+          "path": "/opt/paper-compass/.runtime-demo/users/users.db-wal",
+          "bytes": 0,
+          "allocated_bytes": 0,
+          "modified_at_utc": "2026-11-19T02:36:44.105109+00:00"
+        },
+        {
+          "path": "/opt/paper-compass/.runtime-demo/users/users.db-shm",
+          "bytes": 32768,
+          "allocated_bytes": 32768,
+          "modified_at_utc": "2026-11-19T02:57:19.879304+00:00"
+        }
+      ],
+      "page_objects": [
+        {
+          "name": "users",
+          "page_bytes": 4096,
+          "pages": 1
+        },
+        {
+          "name": "sqlite_schema",
+          "page_bytes": 4096,
+          "pages": 1
+        },
+        {
+          "name": "sqlite_autoindex_users_2",
+          "page_bytes": 4096,
+          "pages": 1
+        },
+        {
+          "name": "sqlite_autoindex_users_1",
+          "page_bytes": 4096,
+          "pages": 1
+        },
+        {
+          "name": "sqlite_autoindex_sessions_1",
+          "page_bytes": 4096,
+          "pages": 1
+        },
+        {
+          "name": "sqlite_autoindex_reading_1",
+          "page_bytes": 4096,
+          "pages": 1
+        },
+        {
+          "name": "sqlite_autoindex_oauth_states_1",
+          "page_bytes": 4096,
+          "pages": 1
+        },
+        {
+          "name": "sqlite_autoindex_favorites_1",
+          "page_bytes": 4096,
+          "pages": 1
+        },
+        {
+          "name": "sessions_expiry",
+          "page_bytes": 4096,
+          "pages": 1
+        },
+        {
+          "name": "sessions",
+          "page_bytes": 4096,
+          "pages": 1
+        },
+        {
+          "name": "reading",
+          "page_bytes": 4096,
+          "pages": 1
+        },
+        {
+          "name": "oauth_states",
+          "page_bytes": 4096,
+          "pages": 1
+        },
+        {
+          "name": "favorites",
+          "page_bytes": 4096,
+          "pages": 1
+        }
+      ],
+      "page_objects_status": "complete"
+    },
+    "events": {
+      "path": "/opt/paper-compass/.runtime-demo/analytics/events.db",
+      "bytes": 413696,
+      "allocated_bytes": 417792,
+      "modified_at_utc": "2026-11-18T18:01:02.586710+00:00",
+      "row_counts": {
+        "daily_counts": 67,
+        "daily_unique": 55,
+        "daily_visitors": 4,
+        "events": 962
+      },
+      "page_metrics": {
+        "page_size": 4096,
+        "page_count": 101,
+        "freelist_count": 0,
+        "journal_mode": "wal"
+      },
+      "sqlite_version": "3.45.1",
+      "sidecars": [
+        {
+          "path": "/opt/paper-compass/.runtime-demo/analytics/events.db-wal",
+          "bytes": 0,
+          "allocated_bytes": 0,
+          "modified_at_utc": "2026-11-19T02:36:44.111110+00:00"
+        },
+        {
+          "path": "/opt/paper-compass/.runtime-demo/analytics/events.db-shm",
+          "bytes": 32768,
+          "allocated_bytes": 32768,
+          "modified_at_utc": "2026-11-19T02:57:19.881304+00:00"
+        }
+      ],
+      "page_objects": [
+        {
+          "name": "events",
+          "page_bytes": 241664,
+          "pages": 59
+        },
+        {
+          "name": "sqlite_autoindex_events_1",
+          "page_bytes": 53248,
+          "pages": 13
+        },
+        {
+          "name": "events_user",
+          "page_bytes": 53248,
+          "pages": 13
+        },
+        {
+          "name": "events_received",
+          "page_bytes": 20480,
+          "pages": 5
+        },
+        {
+          "name": "sqlite_autoindex_daily_unique_1",
+          "page_bytes": 12288,
+          "pages": 3
+        },
+        {
+          "name": "daily_unique",
+          "page_bytes": 12288,
+          "pages": 3
+        },
+        {
+          "name": "sqlite_schema",
+          "page_bytes": 4096,
+          "pages": 1
+        },
+        {
+          "name": "sqlite_autoindex_daily_visitors_1",
+          "page_bytes": 4096,
+          "pages": 1
+        },
+        {
+          "name": "sqlite_autoindex_daily_counts_1",
+          "page_bytes": 4096,
+          "pages": 1
+        },
+        {
+          "name": "daily_visitors",
+          "page_bytes": 4096,
+          "pages": 1
+        },
+        {
+          "name": "daily_counts",
+          "page_bytes": 4096,
+          "pages": 1
+        }
+      ],
+      "page_objects_status": "complete"
+    },
+    "feeds": {
+      "path": "/opt/paper-compass/.runtime-demo/all_feed_entries.db",
+      "bytes": 119226368,
+      "allocated_bytes": 119226368,
+      "modified_at_utc": "2026-11-18T22:35:14.045861+00:00",
+      "row_counts": {
+        "feed_entries": 5169
+      },
+      "page_metrics": {
+        "page_size": 4096,
+        "page_count": 29108,
+        "freelist_count": 374,
+        "journal_mode": "delete"
+      },
+      "sqlite_version": "3.45.1",
+      "sidecars": [],
+      "page_objects": [
+        {
+          "name": "feed_entries_fts_data",
+          "page_bytes": 92942336,
+          "pages": 22691
+        },
+        {
+          "name": "feed_entries_kw_data",
+          "page_bytes": 14483456,
+          "pages": 3536
+        },
+        {
+          "name": "feed_entries",
+          "page_bytes": 8261632,
+          "pages": 2017
+        },
+        {
+          "name": "sqlite_autoindex_feed_entries_2",
+          "page_bytes": 520192,
+          "pages": 127
+        },
+        {
+          "name": "sqlite_autoindex_feed_entries_1",
+          "page_bytes": 266240,
+          "pages": 65
+        },
+        {
+          "name": "idx_feed_entries_feed_name",
+          "page_bytes": 237568,
+          "pages": 58
+        },
+        {
+          "name": "feed_entries_fts_docsize",
+          "page_bytes": 208896,
+          "pages": 51
+        },
+        {
+          "name": "feed_entries_kw_docsize",
+          "page_bytes": 204800,
+          "pages": 50
+        },
+        {
+          "name": "feed_entries_fts_idx",
+          "page_bytes": 176128,
+          "pages": 43
+        },
+        {
+          "name": "idx_feed_entries_first_seen",
+          "page_bytes": 163840,
+          "pages": 40
+        },
+        {
+          "name": "feed_entries_kw_idx",
+          "page_bytes": 61440,
+          "pages": 15
+        },
+        {
+          "name": "sqlite_schema",
+          "page_bytes": 12288,
+          "pages": 3
+        },
+        {
+          "name": "feed_entries_kw_config",
+          "page_bytes": 4096,
+          "pages": 1
+        },
+        {
+          "name": "feed_entries_fts_config",
+          "page_bytes": 4096,
+          "pages": 1
+        }
+      ],
+      "page_objects_status": "complete"
+    },
+    "current_run": {
+      "path": "/opt/paper-compass/.runtime-demo/papers.db",
+      "bytes": 26177536,
+      "allocated_bytes": 26177536,
+      "modified_at_utc": "2026-11-18T22:35:35.743726+00:00",
+      "row_counts": {
+        "entries": 0
+      },
+      "page_metrics": {
+        "page_size": 4096,
+        "page_count": 6391,
+        "freelist_count": 6368,
+        "journal_mode": "delete"
+      },
+      "sqlite_version": "3.45.1",
+      "sidecars": [],
+      "page_objects": [
+        {
+          "name": "sqlite_schema",
+          "page_bytes": 12288,
+          "pages": 3
+        },
+        {
+          "name": "sqlite_autoindex_entries_2",
+          "page_bytes": 4096,
+          "pages": 1
+        },
+        {
+          "name": "sqlite_autoindex_entries_1",
+          "page_bytes": 4096,
+          "pages": 1
+        },
+        {
+          "name": "idx_entries_topic_status",
+          "page_bytes": 4096,
+          "pages": 1
+        },
+        {
+          "name": "entries_kw_idx",
+          "page_bytes": 4096,
+          "pages": 1
+        },
+        {
+          "name": "entries_kw_docsize",
+          "page_bytes": 4096,
+          "pages": 1
+        },
+        {
+          "name": "entries_kw_data",
+          "page_bytes": 4096,
+          "pages": 1
+        },
+        {
+          "name": "entries_kw_config",
+          "page_bytes": 4096,
+          "pages": 1
+        },
+        {
+          "name": "entries_fts_idx",
+          "page_bytes": 4096,
+          "pages": 1
+        },
+        {
+          "name": "entries_fts_docsize",
+          "page_bytes": 4096,
+          "pages": 1
+        },
+        {
+          "name": "entries_fts_data",
+          "page_bytes": 4096,
+          "pages": 1
+        },
+        {
+          "name": "entries_fts_config",
+          "page_bytes": 4096,
+          "pages": 1
+        },
+        {
+          "name": "entries",
+          "page_bytes": 4096,
+          "pages": 1
+        }
+      ],
+      "page_objects_status": "complete"
+    }
+  },
+  "schema": {
+    "history": [
+      {
+        "name": "matched_entries",
+        "kind": "table",
+        "sql": "CREATE TABLE matched_entries (\n                    entry_id TEXT PRIMARY KEY,\n                    feed_name TEXT NOT NULL,\n                    topics TEXT NOT NULL,\n                    title TEXT NOT NULL,\n                    link TEXT NOT NULL,\n                    summary TEXT,\n                    authors TEXT,\n                    abstract TEXT,\n                    doi TEXT,\n                    published_date TEXT,\n                    matched_date TEXT DEFAULT (datetime('now')),\n                    llm_summary TEXT,\n                    paper_qa_summary TEXT,\n                    rank_score REAL\n                , venue_name TEXT, venue_type TEXT, external_id TEXT, cited_by_count INTEGER DEFAULT 0)",
+        "columns": [
+          {
+            "cid": 0,
+            "name": "entry_id",
+            "type": "TEXT",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 1,
+            "hidden": 0
+          },
+          {
+            "cid": 1,
+            "name": "feed_name",
+            "type": "TEXT",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 2,
+            "name": "topics",
+            "type": "TEXT",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 3,
+            "name": "title",
+            "type": "TEXT",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 4,
+            "name": "link",
+            "type": "TEXT",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 5,
+            "name": "summary",
+            "type": "TEXT",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 6,
+            "name": "authors",
+            "type": "TEXT",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 7,
+            "name": "abstract",
+            "type": "TEXT",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 8,
+            "name": "doi",
+            "type": "TEXT",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 9,
+            "name": "published_date",
+            "type": "TEXT",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 10,
+            "name": "matched_date",
+            "type": "TEXT",
+            "notnull": 0,
+            "dflt_value": "datetime('now')",
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 11,
+            "name": "llm_summary",
+            "type": "TEXT",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 12,
+            "name": "paper_qa_summary",
+            "type": "TEXT",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 13,
+            "name": "rank_score",
+            "type": "REAL",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 14,
+            "name": "venue_name",
+            "type": "TEXT",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 15,
+            "name": "venue_type",
+            "type": "TEXT",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 16,
+            "name": "external_id",
+            "type": "TEXT",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 17,
+            "name": "cited_by_count",
+            "type": "INTEGER",
+            "notnull": 0,
+            "dflt_value": "0",
+            "pk": 0,
+            "hidden": 0
+          }
+        ]
+      },
+      {
+        "name": "matched_entries_fts",
+        "kind": "virtual",
+        "sql": "CREATE VIRTUAL TABLE matched_entries_fts USING fts5(title, summary, abstract, authors, content='matched_entries', content_rowid='rowid', tokenize='trigram')",
+        "columns": [
+          {
+            "cid": 0,
+            "name": "title",
+            "type": "",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 1,
+            "name": "summary",
+            "type": "",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 2,
+            "name": "abstract",
+            "type": "",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 3,
+            "name": "authors",
+            "type": "",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 4,
+            "name": "matched_entries_fts",
+            "type": "",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 1
+          },
+          {
+            "cid": 5,
+            "name": "rank",
+            "type": "",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 1
+          }
+        ]
+      },
+      {
+        "name": "matched_entries_fts_config",
+        "kind": "shadow",
+        "sql": "CREATE TABLE 'matched_entries_fts_config'(k PRIMARY KEY, v) WITHOUT ROWID",
+        "columns": [
+          {
+            "cid": 0,
+            "name": "k",
+            "type": "",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 1,
+            "hidden": 0
+          },
+          {
+            "cid": 1,
+            "name": "v",
+            "type": "",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          }
+        ]
+      },
+      {
+        "name": "matched_entries_fts_data",
+        "kind": "shadow",
+        "sql": "CREATE TABLE 'matched_entries_fts_data'(id INTEGER PRIMARY KEY, block BLOB)",
+        "columns": [
+          {
+            "cid": 0,
+            "name": "id",
+            "type": "INTEGER",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 1,
+            "hidden": 0
+          },
+          {
+            "cid": 1,
+            "name": "block",
+            "type": "BLOB",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          }
+        ]
+      },
+      {
+        "name": "matched_entries_fts_docsize",
+        "kind": "shadow",
+        "sql": "CREATE TABLE 'matched_entries_fts_docsize'(id INTEGER PRIMARY KEY, sz BLOB)",
+        "columns": [
+          {
+            "cid": 0,
+            "name": "id",
+            "type": "INTEGER",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 1,
+            "hidden": 0
+          },
+          {
+            "cid": 1,
+            "name": "sz",
+            "type": "BLOB",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          }
+        ]
+      },
+      {
+        "name": "matched_entries_fts_idx",
+        "kind": "shadow",
+        "sql": "CREATE TABLE 'matched_entries_fts_idx'(segid, term, pgno, PRIMARY KEY(segid, term)) WITHOUT ROWID",
+        "columns": [
+          {
+            "cid": 0,
+            "name": "segid",
+            "type": "",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 1,
+            "hidden": 0
+          },
+          {
+            "cid": 1,
+            "name": "term",
+            "type": "",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 2,
+            "hidden": 0
+          },
+          {
+            "cid": 2,
+            "name": "pgno",
+            "type": "",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          }
+        ]
+      },
+      {
+        "name": "matched_entries_kw",
+        "kind": "virtual",
+        "sql": "CREATE VIRTUAL TABLE matched_entries_kw USING fts5(title, summary, abstract, authors, content='matched_entries', content_rowid='rowid', tokenize='porter unicode61')",
+        "columns": [
+          {
+            "cid": 0,
+            "name": "title",
+            "type": "",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 1,
+            "name": "summary",
+            "type": "",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 2,
+            "name": "abstract",
+            "type": "",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 3,
+            "name": "authors",
+            "type": "",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 4,
+            "name": "matched_entries_kw",
+            "type": "",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 1
+          },
+          {
+            "cid": 5,
+            "name": "rank",
+            "type": "",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 1
+          }
+        ]
+      },
+      {
+        "name": "matched_entries_kw_config",
+        "kind": "shadow",
+        "sql": "CREATE TABLE 'matched_entries_kw_config'(k PRIMARY KEY, v) WITHOUT ROWID",
+        "columns": [
+          {
+            "cid": 0,
+            "name": "k",
+            "type": "",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 1,
+            "hidden": 0
+          },
+          {
+            "cid": 1,
+            "name": "v",
+            "type": "",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          }
+        ]
+      },
+      {
+        "name": "matched_entries_kw_data",
+        "kind": "shadow",
+        "sql": "CREATE TABLE 'matched_entries_kw_data'(id INTEGER PRIMARY KEY, block BLOB)",
+        "columns": [
+          {
+            "cid": 0,
+            "name": "id",
+            "type": "INTEGER",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 1,
+            "hidden": 0
+          },
+          {
+            "cid": 1,
+            "name": "block",
+            "type": "BLOB",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          }
+        ]
+      },
+      {
+        "name": "matched_entries_kw_docsize",
+        "kind": "shadow",
+        "sql": "CREATE TABLE 'matched_entries_kw_docsize'(id INTEGER PRIMARY KEY, sz BLOB)",
+        "columns": [
+          {
+            "cid": 0,
+            "name": "id",
+            "type": "INTEGER",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 1,
+            "hidden": 0
+          },
+          {
+            "cid": 1,
+            "name": "sz",
+            "type": "BLOB",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          }
+        ]
+      },
+      {
+        "name": "matched_entries_kw_idx",
+        "kind": "shadow",
+        "sql": "CREATE TABLE 'matched_entries_kw_idx'(segid, term, pgno, PRIMARY KEY(segid, term)) WITHOUT ROWID",
+        "columns": [
+          {
+            "cid": 0,
+            "name": "segid",
+            "type": "",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 1,
+            "hidden": 0
+          },
+          {
+            "cid": 1,
+            "name": "term",
+            "type": "",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 2,
+            "hidden": 0
+          },
+          {
+            "cid": 2,
+            "name": "pgno",
+            "type": "",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          }
+        ]
+      }
+    ],
+    "query": [
+      {
+        "name": "fingerprints",
+        "kind": "table",
+        "sql": "CREATE TABLE fingerprints (id TEXT PRIMARY KEY, fingerprint TEXT NOT NULL)",
+        "columns": [
+          {
+            "cid": 0,
+            "name": "id",
+            "type": "TEXT",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 1,
+            "hidden": 0
+          },
+          {
+            "cid": 1,
+            "name": "fingerprint",
+            "type": "TEXT",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          }
+        ]
+      },
+      {
+        "name": "metadata",
+        "kind": "table",
+        "sql": "CREATE TABLE metadata (key TEXT PRIMARY KEY, value TEXT NOT NULL)",
+        "columns": [
+          {
+            "cid": 0,
+            "name": "key",
+            "type": "TEXT",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 1,
+            "hidden": 0
+          },
+          {
+            "cid": 1,
+            "name": "value",
+            "type": "TEXT",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          }
+        ]
+      },
+      {
+        "name": "paper_topics",
+        "kind": "table",
+        "sql": "CREATE TABLE paper_topics (\n                            paper_id TEXT NOT NULL, topic TEXT NOT NULL, PRIMARY KEY(paper_id,topic))",
+        "columns": [
+          {
+            "cid": 0,
+            "name": "paper_id",
+            "type": "TEXT",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 1,
+            "hidden": 0
+          },
+          {
+            "cid": 1,
+            "name": "topic",
+            "type": "TEXT",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 2,
+            "hidden": 0
+          }
+        ]
+      },
+      {
+        "name": "papers",
+        "kind": "table",
+        "sql": "CREATE TABLE papers (\n                            id TEXT PRIMARY KEY, payload TEXT NOT NULL, search TEXT NOT NULL,\n                            timestamp REAL NOT NULL, score REAL NOT NULL, title TEXT NOT NULL,\n                            source TEXT NOT NULL, venue_type TEXT NOT NULL, theme TEXT NOT NULL,\n                            complete INTEGER NOT NULL, year INTEGER, base_date TEXT NOT NULL,\n                            source_rowid INTEGER NOT NULL)",
+        "columns": [
+          {
+            "cid": 0,
+            "name": "id",
+            "type": "TEXT",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 1,
+            "hidden": 0
+          },
+          {
+            "cid": 1,
+            "name": "payload",
+            "type": "TEXT",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 2,
+            "name": "search",
+            "type": "TEXT",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 3,
+            "name": "timestamp",
+            "type": "REAL",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 4,
+            "name": "score",
+            "type": "REAL",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 5,
+            "name": "title",
+            "type": "TEXT",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 6,
+            "name": "source",
+            "type": "TEXT",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 7,
+            "name": "venue_type",
+            "type": "TEXT",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 8,
+            "name": "theme",
+            "type": "TEXT",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 9,
+            "name": "complete",
+            "type": "INTEGER",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 10,
+            "name": "year",
+            "type": "INTEGER",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 11,
+            "name": "base_date",
+            "type": "TEXT",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 12,
+            "name": "source_rowid",
+            "type": "INTEGER",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          }
+        ]
+      },
+      {
+        "name": "public_paper_ids",
+        "kind": "table",
+        "sql": "CREATE TABLE public_paper_ids (\n                            public_id TEXT PRIMARY KEY, paper_id TEXT NOT NULL UNIQUE)",
+        "columns": [
+          {
+            "cid": 0,
+            "name": "public_id",
+            "type": "TEXT",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 1,
+            "hidden": 0
+          },
+          {
+            "cid": 1,
+            "name": "paper_id",
+            "type": "TEXT",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          }
+        ]
+      }
+    ],
+    "classification": [
+      {
+        "name": "assignments",
+        "kind": "table",
+        "sql": "CREATE TABLE assignments (\n                paper_id TEXT PRIMARY KEY, text_hash TEXT NOT NULL, cache_key TEXT NOT NULL)",
+        "columns": [
+          {
+            "cid": 0,
+            "name": "paper_id",
+            "type": "TEXT",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 1,
+            "hidden": 0
+          },
+          {
+            "cid": 1,
+            "name": "text_hash",
+            "type": "TEXT",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 2,
+            "name": "cache_key",
+            "type": "TEXT",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          }
+        ]
+      },
+      {
+        "name": "jobs",
+        "kind": "table",
+        "sql": "CREATE TABLE jobs (\n                paper_id TEXT PRIMARY KEY, text_hash TEXT NOT NULL, cache_key TEXT NOT NULL,\n                status TEXT NOT NULL, error TEXT NOT NULL DEFAULT '', last_attempt TEXT NOT NULL DEFAULT '',\n                attempts INTEGER NOT NULL DEFAULT 0, next_attempt TEXT NOT NULL DEFAULT '',\n                lease_until TEXT NOT NULL DEFAULT '')",
+        "columns": [
+          {
+            "cid": 0,
+            "name": "paper_id",
+            "type": "TEXT",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 1,
+            "hidden": 0
+          },
+          {
+            "cid": 1,
+            "name": "text_hash",
+            "type": "TEXT",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 2,
+            "name": "cache_key",
+            "type": "TEXT",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 3,
+            "name": "status",
+            "type": "TEXT",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 4,
+            "name": "error",
+            "type": "TEXT",
+            "notnull": 1,
+            "dflt_value": "''",
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 5,
+            "name": "last_attempt",
+            "type": "TEXT",
+            "notnull": 1,
+            "dflt_value": "''",
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 6,
+            "name": "attempts",
+            "type": "INTEGER",
+            "notnull": 1,
+            "dflt_value": "0",
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 7,
+            "name": "next_attempt",
+            "type": "TEXT",
+            "notnull": 1,
+            "dflt_value": "''",
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 8,
+            "name": "lease_until",
+            "type": "TEXT",
+            "notnull": 1,
+            "dflt_value": "''",
+            "pk": 0,
+            "hidden": 0
+          }
+        ]
+      },
+      {
+        "name": "predictions",
+        "kind": "table",
+        "sql": "CREATE TABLE predictions (\n                cache_key TEXT PRIMARY KEY, result TEXT NOT NULL, created_at TEXT NOT NULL)",
+        "columns": [
+          {
+            "cid": 0,
+            "name": "cache_key",
+            "type": "TEXT",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 1,
+            "hidden": 0
+          },
+          {
+            "cid": 1,
+            "name": "result",
+            "type": "TEXT",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 2,
+            "name": "created_at",
+            "type": "TEXT",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          }
+        ]
+      },
+      {
+        "name": "requests",
+        "kind": "table",
+        "sql": "CREATE TABLE requests (\n                id TEXT PRIMARY KEY,day TEXT NOT NULL,started_at TEXT NOT NULL,finished_at TEXT,\n                status TEXT NOT NULL,policy TEXT NOT NULL,model TEXT NOT NULL,\n                reserved_micro INTEGER NOT NULL,charged_micro INTEGER NOT NULL,\n                reserved_tokens INTEGER NOT NULL,charged_tokens INTEGER NOT NULL,\n                usage TEXT,prices TEXT NOT NULL)",
+        "columns": [
+          {
+            "cid": 0,
+            "name": "id",
+            "type": "TEXT",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 1,
+            "hidden": 0
+          },
+          {
+            "cid": 1,
+            "name": "day",
+            "type": "TEXT",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 2,
+            "name": "started_at",
+            "type": "TEXT",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 3,
+            "name": "finished_at",
+            "type": "TEXT",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 4,
+            "name": "status",
+            "type": "TEXT",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 5,
+            "name": "policy",
+            "type": "TEXT",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 6,
+            "name": "model",
+            "type": "TEXT",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 7,
+            "name": "reserved_micro",
+            "type": "INTEGER",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 8,
+            "name": "charged_micro",
+            "type": "INTEGER",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 9,
+            "name": "reserved_tokens",
+            "type": "INTEGER",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 10,
+            "name": "charged_tokens",
+            "type": "INTEGER",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 11,
+            "name": "usage",
+            "type": "TEXT",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 12,
+            "name": "prices",
+            "type": "TEXT",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          }
+        ]
+      },
+      {
+        "name": "state",
+        "kind": "table",
+        "sql": "CREATE TABLE state (key TEXT PRIMARY KEY,value TEXT NOT NULL)",
+        "columns": [
+          {
+            "cid": 0,
+            "name": "key",
+            "type": "TEXT",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 1,
+            "hidden": 0
+          },
+          {
+            "cid": 1,
+            "name": "value",
+            "type": "TEXT",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          }
+        ]
+      },
+      {
+        "name": "tracked_papers",
+        "kind": "table",
+        "sql": "CREATE TABLE tracked_papers (\n                paper_id TEXT PRIMARY KEY,scope TEXT NOT NULL,discovered_at TEXT NOT NULL)",
+        "columns": [
+          {
+            "cid": 0,
+            "name": "paper_id",
+            "type": "TEXT",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 1,
+            "hidden": 0
+          },
+          {
+            "cid": 1,
+            "name": "scope",
+            "type": "TEXT",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 2,
+            "name": "discovered_at",
+            "type": "TEXT",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          }
+        ]
+      }
+    ],
+    "users": [
+      {
+        "name": "favorites",
+        "kind": "table",
+        "sql": "CREATE TABLE favorites (\n                    user_id TEXT NOT NULL REFERENCES users(id), paper_id TEXT NOT NULL,\n                    created_at REAL NOT NULL, PRIMARY KEY(user_id,paper_id))",
+        "columns": [
+          {
+            "cid": 0,
+            "name": "user_id",
+            "type": "TEXT",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 1,
+            "hidden": 0
+          },
+          {
+            "cid": 1,
+            "name": "paper_id",
+            "type": "TEXT",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 2,
+            "hidden": 0
+          },
+          {
+            "cid": 2,
+            "name": "created_at",
+            "type": "REAL",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          }
+        ]
+      },
+      {
+        "name": "oauth_states",
+        "kind": "table",
+        "sql": "CREATE TABLE oauth_states (\n                    state_hash TEXT PRIMARY KEY, binding_hash TEXT NOT NULL,\n                    verifier TEXT NOT NULL, return_to TEXT NOT NULL, expires_at REAL NOT NULL)",
+        "columns": [
+          {
+            "cid": 0,
+            "name": "state_hash",
+            "type": "TEXT",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 1,
+            "hidden": 0
+          },
+          {
+            "cid": 1,
+            "name": "binding_hash",
+            "type": "TEXT",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 2,
+            "name": "verifier",
+            "type": "TEXT",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 3,
+            "name": "return_to",
+            "type": "TEXT",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 4,
+            "name": "expires_at",
+            "type": "REAL",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          }
+        ]
+      },
+      {
+        "name": "reading",
+        "kind": "table",
+        "sql": "CREATE TABLE reading (\n                    user_id TEXT NOT NULL REFERENCES users(id), paper_id TEXT NOT NULL,\n                    created_at REAL NOT NULL, PRIMARY KEY(user_id,paper_id))",
+        "columns": [
+          {
+            "cid": 0,
+            "name": "user_id",
+            "type": "TEXT",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 1,
+            "hidden": 0
+          },
+          {
+            "cid": 1,
+            "name": "paper_id",
+            "type": "TEXT",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 2,
+            "hidden": 0
+          },
+          {
+            "cid": 2,
+            "name": "created_at",
+            "type": "REAL",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          }
+        ]
+      },
+      {
+        "name": "sessions",
+        "kind": "table",
+        "sql": "CREATE TABLE sessions (\n                    token_hash TEXT PRIMARY KEY, user_id TEXT NOT NULL REFERENCES users(id),\n                    expires_at REAL NOT NULL)",
+        "columns": [
+          {
+            "cid": 0,
+            "name": "token_hash",
+            "type": "TEXT",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 1,
+            "hidden": 0
+          },
+          {
+            "cid": 1,
+            "name": "user_id",
+            "type": "TEXT",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 2,
+            "name": "expires_at",
+            "type": "REAL",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          }
+        ]
+      },
+      {
+        "name": "users",
+        "kind": "table",
+        "sql": "CREATE TABLE users (\n                    id TEXT PRIMARY KEY, github_id INTEGER NOT NULL UNIQUE,\n                    login TEXT NOT NULL, name TEXT NOT NULL, avatar_url TEXT NOT NULL,\n                    created_at REAL NOT NULL, last_login_at REAL NOT NULL)",
+        "columns": [
+          {
+            "cid": 0,
+            "name": "id",
+            "type": "TEXT",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 1,
+            "hidden": 0
+          },
+          {
+            "cid": 1,
+            "name": "github_id",
+            "type": "INTEGER",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 2,
+            "name": "login",
+            "type": "TEXT",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 3,
+            "name": "name",
+            "type": "TEXT",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 4,
+            "name": "avatar_url",
+            "type": "TEXT",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 5,
+            "name": "created_at",
+            "type": "REAL",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 6,
+            "name": "last_login_at",
+            "type": "REAL",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "name": "daily_counts",
+        "kind": "table",
+        "sql": "CREATE TABLE daily_counts (\n                    day TEXT NOT NULL, type TEXT NOT NULL, page TEXT NOT NULL,\n                    count INTEGER NOT NULL, PRIMARY KEY(day,type,page))",
+        "columns": [
+          {
+            "cid": 0,
+            "name": "day",
+            "type": "TEXT",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 1,
+            "hidden": 0
+          },
+          {
+            "cid": 1,
+            "name": "type",
+            "type": "TEXT",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 2,
+            "hidden": 0
+          },
+          {
+            "cid": 2,
+            "name": "page",
+            "type": "TEXT",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 3,
+            "hidden": 0
+          },
+          {
+            "cid": 3,
+            "name": "count",
+            "type": "INTEGER",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          }
+        ]
+      },
+      {
+        "name": "daily_unique",
+        "kind": "table",
+        "sql": "CREATE TABLE daily_unique (\n                    day TEXT NOT NULL, kind TEXT NOT NULL, identifier TEXT NOT NULL,\n                    PRIMARY KEY(day,kind,identifier))",
+        "columns": [
+          {
+            "cid": 0,
+            "name": "day",
+            "type": "TEXT",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 1,
+            "hidden": 0
+          },
+          {
+            "cid": 1,
+            "name": "kind",
+            "type": "TEXT",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 2,
+            "hidden": 0
+          },
+          {
+            "cid": 2,
+            "name": "identifier",
+            "type": "TEXT",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 3,
+            "hidden": 0
+          }
+        ]
+      },
+      {
+        "name": "daily_visitors",
+        "kind": "table",
+        "sql": "CREATE TABLE daily_visitors (\n                    day TEXT PRIMARY KEY, visitors INTEGER NOT NULL DEFAULT 0,\n                    users INTEGER NOT NULL DEFAULT 0, sessions INTEGER NOT NULL DEFAULT 0)",
+        "columns": [
+          {
+            "cid": 0,
+            "name": "day",
+            "type": "TEXT",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 1,
+            "hidden": 0
+          },
+          {
+            "cid": 1,
+            "name": "visitors",
+            "type": "INTEGER",
+            "notnull": 1,
+            "dflt_value": "0",
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 2,
+            "name": "users",
+            "type": "INTEGER",
+            "notnull": 1,
+            "dflt_value": "0",
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 3,
+            "name": "sessions",
+            "type": "INTEGER",
+            "notnull": 1,
+            "dflt_value": "0",
+            "pk": 0,
+            "hidden": 0
+          }
+        ]
+      },
+      {
+        "name": "events",
+        "kind": "table",
+        "sql": "CREATE TABLE events (\n                    id TEXT PRIMARY KEY, received_at REAL NOT NULL, day TEXT NOT NULL,\n                    user_id TEXT, visitor_id TEXT NOT NULL, session_id TEXT NOT NULL,\n                    type TEXT NOT NULL, page TEXT NOT NULL, paper_id TEXT NOT NULL,\n                    target TEXT NOT NULL, details TEXT NOT NULL)",
+        "columns": [
+          {
+            "cid": 0,
+            "name": "id",
+            "type": "TEXT",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 1,
+            "hidden": 0
+          },
+          {
+            "cid": 1,
+            "name": "received_at",
+            "type": "REAL",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 2,
+            "name": "day",
+            "type": "TEXT",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 3,
+            "name": "user_id",
+            "type": "TEXT",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 4,
+            "name": "visitor_id",
+            "type": "TEXT",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 5,
+            "name": "session_id",
+            "type": "TEXT",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 6,
+            "name": "type",
+            "type": "TEXT",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 7,
+            "name": "page",
+            "type": "TEXT",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 8,
+            "name": "paper_id",
+            "type": "TEXT",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 9,
+            "name": "target",
+            "type": "TEXT",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 10,
+            "name": "details",
+            "type": "TEXT",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          }
+        ]
+      }
+    ],
+    "feeds": [
+      {
+        "name": "feed_entries",
+        "kind": "table",
+        "sql": "CREATE TABLE feed_entries (\n                entry_id TEXT PRIMARY KEY,\n                feed_name TEXT NOT NULL,\n                title TEXT NOT NULL,\n                link TEXT NOT NULL,\n                summary TEXT,\n                authors TEXT,\n                published_date TEXT,\n                first_seen TEXT DEFAULT (datetime('now')),\n                last_seen TEXT DEFAULT (datetime('now')),\n                UNIQUE(feed_name, entry_id)\n            )",
+        "columns": [
+          {
+            "cid": 0,
+            "name": "entry_id",
+            "type": "TEXT",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 1,
+            "hidden": 0
+          },
+          {
+            "cid": 1,
+            "name": "feed_name",
+            "type": "TEXT",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 2,
+            "name": "title",
+            "type": "TEXT",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 3,
+            "name": "link",
+            "type": "TEXT",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 4,
+            "name": "summary",
+            "type": "TEXT",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 5,
+            "name": "authors",
+            "type": "TEXT",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 6,
+            "name": "published_date",
+            "type": "TEXT",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 7,
+            "name": "first_seen",
+            "type": "TEXT",
+            "notnull": 0,
+            "dflt_value": "datetime('now')",
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 8,
+            "name": "last_seen",
+            "type": "TEXT",
+            "notnull": 0,
+            "dflt_value": "datetime('now')",
+            "pk": 0,
+            "hidden": 0
+          }
+        ]
+      },
+      {
+        "name": "feed_entries_fts",
+        "kind": "virtual",
+        "sql": "CREATE VIRTUAL TABLE feed_entries_fts USING fts5(title, summary, authors, content='feed_entries', content_rowid='rowid', tokenize='trigram')",
+        "columns": [
+          {
+            "cid": 0,
+            "name": "title",
+            "type": "",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 1,
+            "name": "summary",
+            "type": "",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 2,
+            "name": "authors",
+            "type": "",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 3,
+            "name": "feed_entries_fts",
+            "type": "",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 1
+          },
+          {
+            "cid": 4,
+            "name": "rank",
+            "type": "",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 1
+          }
+        ]
+      },
+      {
+        "name": "feed_entries_fts_config",
+        "kind": "shadow",
+        "sql": "CREATE TABLE 'feed_entries_fts_config'(k PRIMARY KEY, v) WITHOUT ROWID",
+        "columns": [
+          {
+            "cid": 0,
+            "name": "k",
+            "type": "",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 1,
+            "hidden": 0
+          },
+          {
+            "cid": 1,
+            "name": "v",
+            "type": "",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          }
+        ]
+      },
+      {
+        "name": "feed_entries_fts_data",
+        "kind": "shadow",
+        "sql": "CREATE TABLE 'feed_entries_fts_data'(id INTEGER PRIMARY KEY, block BLOB)",
+        "columns": [
+          {
+            "cid": 0,
+            "name": "id",
+            "type": "INTEGER",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 1,
+            "hidden": 0
+          },
+          {
+            "cid": 1,
+            "name": "block",
+            "type": "BLOB",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          }
+        ]
+      },
+      {
+        "name": "feed_entries_fts_docsize",
+        "kind": "shadow",
+        "sql": "CREATE TABLE 'feed_entries_fts_docsize'(id INTEGER PRIMARY KEY, sz BLOB)",
+        "columns": [
+          {
+            "cid": 0,
+            "name": "id",
+            "type": "INTEGER",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 1,
+            "hidden": 0
+          },
+          {
+            "cid": 1,
+            "name": "sz",
+            "type": "BLOB",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          }
+        ]
+      },
+      {
+        "name": "feed_entries_fts_idx",
+        "kind": "shadow",
+        "sql": "CREATE TABLE 'feed_entries_fts_idx'(segid, term, pgno, PRIMARY KEY(segid, term)) WITHOUT ROWID",
+        "columns": [
+          {
+            "cid": 0,
+            "name": "segid",
+            "type": "",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 1,
+            "hidden": 0
+          },
+          {
+            "cid": 1,
+            "name": "term",
+            "type": "",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 2,
+            "hidden": 0
+          },
+          {
+            "cid": 2,
+            "name": "pgno",
+            "type": "",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          }
+        ]
+      },
+      {
+        "name": "feed_entries_kw",
+        "kind": "virtual",
+        "sql": "CREATE VIRTUAL TABLE feed_entries_kw USING fts5(title, summary, authors, content='feed_entries', content_rowid='rowid', tokenize='porter unicode61')",
+        "columns": [
+          {
+            "cid": 0,
+            "name": "title",
+            "type": "",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 1,
+            "name": "summary",
+            "type": "",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 2,
+            "name": "authors",
+            "type": "",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 3,
+            "name": "feed_entries_kw",
+            "type": "",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 1
+          },
+          {
+            "cid": 4,
+            "name": "rank",
+            "type": "",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 1
+          }
+        ]
+      },
+      {
+        "name": "feed_entries_kw_config",
+        "kind": "shadow",
+        "sql": "CREATE TABLE 'feed_entries_kw_config'(k PRIMARY KEY, v) WITHOUT ROWID",
+        "columns": [
+          {
+            "cid": 0,
+            "name": "k",
+            "type": "",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 1,
+            "hidden": 0
+          },
+          {
+            "cid": 1,
+            "name": "v",
+            "type": "",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          }
+        ]
+      },
+      {
+        "name": "feed_entries_kw_data",
+        "kind": "shadow",
+        "sql": "CREATE TABLE 'feed_entries_kw_data'(id INTEGER PRIMARY KEY, block BLOB)",
+        "columns": [
+          {
+            "cid": 0,
+            "name": "id",
+            "type": "INTEGER",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 1,
+            "hidden": 0
+          },
+          {
+            "cid": 1,
+            "name": "block",
+            "type": "BLOB",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          }
+        ]
+      },
+      {
+        "name": "feed_entries_kw_docsize",
+        "kind": "shadow",
+        "sql": "CREATE TABLE 'feed_entries_kw_docsize'(id INTEGER PRIMARY KEY, sz BLOB)",
+        "columns": [
+          {
+            "cid": 0,
+            "name": "id",
+            "type": "INTEGER",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 1,
+            "hidden": 0
+          },
+          {
+            "cid": 1,
+            "name": "sz",
+            "type": "BLOB",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          }
+        ]
+      },
+      {
+        "name": "feed_entries_kw_idx",
+        "kind": "shadow",
+        "sql": "CREATE TABLE 'feed_entries_kw_idx'(segid, term, pgno, PRIMARY KEY(segid, term)) WITHOUT ROWID",
+        "columns": [
+          {
+            "cid": 0,
+            "name": "segid",
+            "type": "",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 1,
+            "hidden": 0
+          },
+          {
+            "cid": 1,
+            "name": "term",
+            "type": "",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 2,
+            "hidden": 0
+          },
+          {
+            "cid": 2,
+            "name": "pgno",
+            "type": "",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          }
+        ]
+      }
+    ],
+    "current_run": [
+      {
+        "name": "entries",
+        "kind": "table",
+        "sql": "CREATE TABLE entries (\n                    id TEXT NOT NULL,\n                    topic TEXT NOT NULL,\n                    feed_name TEXT NOT NULL,\n                    title TEXT NOT NULL,\n                    link TEXT NOT NULL,\n                    summary TEXT,\n                    authors TEXT,\n                    abstract TEXT,\n                    doi TEXT,\n                    published_date TEXT,\n                    discovered_date TEXT DEFAULT (datetime('now')),\n                    status TEXT DEFAULT 'new' CHECK(status IN ('new', 'filtered', 'ranked', 'summarized')),\n                    rank_score REAL,\n                    rank_reasoning TEXT,\n                    llm_summary TEXT,\n                    paper_qa_summary TEXT,\n                    PRIMARY KEY (id, topic),\n                    UNIQUE(feed_name, topic, id)\n                )",
+        "columns": [
+          {
+            "cid": 0,
+            "name": "id",
+            "type": "TEXT",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 1,
+            "hidden": 0
+          },
+          {
+            "cid": 1,
+            "name": "topic",
+            "type": "TEXT",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 2,
+            "hidden": 0
+          },
+          {
+            "cid": 2,
+            "name": "feed_name",
+            "type": "TEXT",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 3,
+            "name": "title",
+            "type": "TEXT",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 4,
+            "name": "link",
+            "type": "TEXT",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 5,
+            "name": "summary",
+            "type": "TEXT",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 6,
+            "name": "authors",
+            "type": "TEXT",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 7,
+            "name": "abstract",
+            "type": "TEXT",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 8,
+            "name": "doi",
+            "type": "TEXT",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 9,
+            "name": "published_date",
+            "type": "TEXT",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 10,
+            "name": "discovered_date",
+            "type": "TEXT",
+            "notnull": 0,
+            "dflt_value": "datetime('now')",
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 11,
+            "name": "status",
+            "type": "TEXT",
+            "notnull": 0,
+            "dflt_value": "'new'",
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 12,
+            "name": "rank_score",
+            "type": "REAL",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 13,
+            "name": "rank_reasoning",
+            "type": "TEXT",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 14,
+            "name": "llm_summary",
+            "type": "TEXT",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 15,
+            "name": "paper_qa_summary",
+            "type": "TEXT",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          }
+        ]
+      },
+      {
+        "name": "entries_fts",
+        "kind": "virtual",
+        "sql": "CREATE VIRTUAL TABLE entries_fts USING fts5(title, summary, abstract, authors, content='entries', content_rowid='rowid', tokenize='trigram')",
+        "columns": [
+          {
+            "cid": 0,
+            "name": "title",
+            "type": "",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 1,
+            "name": "summary",
+            "type": "",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 2,
+            "name": "abstract",
+            "type": "",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 3,
+            "name": "authors",
+            "type": "",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 4,
+            "name": "entries_fts",
+            "type": "",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 1
+          },
+          {
+            "cid": 5,
+            "name": "rank",
+            "type": "",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 1
+          }
+        ]
+      },
+      {
+        "name": "entries_fts_config",
+        "kind": "shadow",
+        "sql": "CREATE TABLE 'entries_fts_config'(k PRIMARY KEY, v) WITHOUT ROWID",
+        "columns": [
+          {
+            "cid": 0,
+            "name": "k",
+            "type": "",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 1,
+            "hidden": 0
+          },
+          {
+            "cid": 1,
+            "name": "v",
+            "type": "",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          }
+        ]
+      },
+      {
+        "name": "entries_fts_data",
+        "kind": "shadow",
+        "sql": "CREATE TABLE 'entries_fts_data'(id INTEGER PRIMARY KEY, block BLOB)",
+        "columns": [
+          {
+            "cid": 0,
+            "name": "id",
+            "type": "INTEGER",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 1,
+            "hidden": 0
+          },
+          {
+            "cid": 1,
+            "name": "block",
+            "type": "BLOB",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          }
+        ]
+      },
+      {
+        "name": "entries_fts_docsize",
+        "kind": "shadow",
+        "sql": "CREATE TABLE 'entries_fts_docsize'(id INTEGER PRIMARY KEY, sz BLOB)",
+        "columns": [
+          {
+            "cid": 0,
+            "name": "id",
+            "type": "INTEGER",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 1,
+            "hidden": 0
+          },
+          {
+            "cid": 1,
+            "name": "sz",
+            "type": "BLOB",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          }
+        ]
+      },
+      {
+        "name": "entries_fts_idx",
+        "kind": "shadow",
+        "sql": "CREATE TABLE 'entries_fts_idx'(segid, term, pgno, PRIMARY KEY(segid, term)) WITHOUT ROWID",
+        "columns": [
+          {
+            "cid": 0,
+            "name": "segid",
+            "type": "",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 1,
+            "hidden": 0
+          },
+          {
+            "cid": 1,
+            "name": "term",
+            "type": "",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 2,
+            "hidden": 0
+          },
+          {
+            "cid": 2,
+            "name": "pgno",
+            "type": "",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          }
+        ]
+      },
+      {
+        "name": "entries_kw",
+        "kind": "virtual",
+        "sql": "CREATE VIRTUAL TABLE entries_kw USING fts5(title, summary, abstract, authors, content='entries', content_rowid='rowid', tokenize='porter unicode61')",
+        "columns": [
+          {
+            "cid": 0,
+            "name": "title",
+            "type": "",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 1,
+            "name": "summary",
+            "type": "",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 2,
+            "name": "abstract",
+            "type": "",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 3,
+            "name": "authors",
+            "type": "",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          },
+          {
+            "cid": 4,
+            "name": "entries_kw",
+            "type": "",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 1
+          },
+          {
+            "cid": 5,
+            "name": "rank",
+            "type": "",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 1
+          }
+        ]
+      },
+      {
+        "name": "entries_kw_config",
+        "kind": "shadow",
+        "sql": "CREATE TABLE 'entries_kw_config'(k PRIMARY KEY, v) WITHOUT ROWID",
+        "columns": [
+          {
+            "cid": 0,
+            "name": "k",
+            "type": "",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 1,
+            "hidden": 0
+          },
+          {
+            "cid": 1,
+            "name": "v",
+            "type": "",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          }
+        ]
+      },
+      {
+        "name": "entries_kw_data",
+        "kind": "shadow",
+        "sql": "CREATE TABLE 'entries_kw_data'(id INTEGER PRIMARY KEY, block BLOB)",
+        "columns": [
+          {
+            "cid": 0,
+            "name": "id",
+            "type": "INTEGER",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 1,
+            "hidden": 0
+          },
+          {
+            "cid": 1,
+            "name": "block",
+            "type": "BLOB",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          }
+        ]
+      },
+      {
+        "name": "entries_kw_docsize",
+        "kind": "shadow",
+        "sql": "CREATE TABLE 'entries_kw_docsize'(id INTEGER PRIMARY KEY, sz BLOB)",
+        "columns": [
+          {
+            "cid": 0,
+            "name": "id",
+            "type": "INTEGER",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 1,
+            "hidden": 0
+          },
+          {
+            "cid": 1,
+            "name": "sz",
+            "type": "BLOB",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          }
+        ]
+      },
+      {
+        "name": "entries_kw_idx",
+        "kind": "shadow",
+        "sql": "CREATE TABLE 'entries_kw_idx'(segid, term, pgno, PRIMARY KEY(segid, term)) WITHOUT ROWID",
+        "columns": [
+          {
+            "cid": 0,
+            "name": "segid",
+            "type": "",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 1,
+            "hidden": 0
+          },
+          {
+            "cid": 1,
+            "name": "term",
+            "type": "",
+            "notnull": 1,
+            "dflt_value": null,
+            "pk": 2,
+            "hidden": 0
+          },
+          {
+            "cid": 2,
+            "name": "pgno",
+            "type": "",
+            "notnull": 0,
+            "dflt_value": null,
+            "pk": 0,
+            "hidden": 0
+          }
+        ]
+      }
+    ]
+  },
+  "query_versions": [
+    {
+      "path": "/opt/paper-compass/.runtime-demo/query-store/query-1b1cde5ab93e4463b5e61e727ae34fa8.db",
+      "bytes": 413409280,
+      "allocated_bytes": 413413376,
+      "modified_at_utc": "2026-11-18T22:37:39.318651+00:00"
+    },
+    {
+      "path": "/opt/paper-compass/.runtime-demo/query-store/query-83ae95df98fe468bbd9fe909dba672d1.db",
+      "bytes": 405905408,
+      "allocated_bytes": 405909504,
+      "modified_at_utc": "2026-11-18T18:12:36.829359+00:00"
+    }
+  ],
+  "database_backups": [
+    {
+      "path": "/opt/paper-compass/.runtime-demo/all_feed_entries.20261119-063032.backup.db",
+      "bytes": 119226368,
+      "allocated_bytes": 119226368,
+      "modified_at_utc": "2026-11-18T22:30:33.553668+00:00"
+    },
+    {
+      "path": "/opt/paper-compass/.runtime-demo/matched_entries_history.20261119-063032.backup.db",
+      "bytes": 1389060096,
+      "allocated_bytes": 1389060096,
+      "modified_at_utc": "2026-11-18T22:30:51.644392+00:00"
+    },
+    {
+      "path": "/var/backups/paper-compass/20261119-0a8e690/databases/analytics/events.db",
+      "bytes": 413696,
+      "allocated_bytes": 413696,
+      "modified_at_utc": "2026-11-19T02:36:44.140111+00:00"
+    },
+    {
+      "path": "/var/backups/paper-compass/20261119-0a8e690/databases/classification/api.db",
+      "bytes": 14598144,
+      "allocated_bytes": 14598144,
+      "modified_at_utc": "2026-11-19T02:36:44.194113+00:00"
+    },
+    {
+      "path": "/var/backups/paper-compass/20261119-0a8e690/databases/papers.db",
+      "bytes": 26177536,
+      "allocated_bytes": 26177536,
+      "modified_at_utc": "2026-11-19T02:36:44.076108+00:00"
+    },
+    {
+      "path": "/var/backups/paper-compass/20261119-0a8e690/databases/users/users.db",
+      "bytes": 53248,
+      "allocated_bytes": 53248,
+      "modified_at_utc": "2026-11-19T02:36:44.109110+00:00"
+    }
+  ],
+  "filesystem": {
+    "total_bytes": 41882943488,
+    "used_bytes": 19121422336,
+    "available_bytes": 20825784320,
+    "reserved_free_bytes": 1935736832
+  },
+  "directories_allocated_bytes": {
+    "/opt/paper-compass": 10468462592,
+    "/opt/paper-compass/.venv": 6382370816,
+    "/opt/paper-compass/node_modules": 28303360,
+    "/opt/paper-compass/.runtime-demo": 4046135296,
+    "/opt/paper-compass/.runtime-demo/query-store": 819331072,
+    "/opt/paper-compass/.runtime-demo/classification": 14635008,
+    "/opt/paper-compass/.runtime-demo/users": 90112,
+    "/opt/paper-compass/.runtime-demo/analytics": 454656,
+    "/var/backups/paper-compass": 42401792,
+    "/var/log": 164757504
+  },
+  "application_only_allocated_bytes": 11653120,
+  "swapfile": {
+    "path": "/swapfile",
+    "bytes": 2147483648,
+    "allocated_bytes": 2147487744,
+    "modified_at_utc": "2026-09-27T16:41:47.877708+00:00"
+  },
+  "timers": "NEXT                            LEFT LAST                              PASSED UNIT                            ACTIVATES\nThu 2026-11-19 14:00:00 CST 2h 50min Wed 2026-11-18 14:00:23 CST      21h ago paper-compass-update.timer      paper-compass-update.service\nThu 2026-11-19 18:10:00 CST       7h Thu 2026-11-19 02:12:50 CST            - paper-compass-classify.timer    paper-compass-classify.service\nFri 2026-11-20 03:30:00 CST      16h Thu 2026-11-19 10:41:24 CST            - paper-compass-retention.timer   paper-compass-retention.service\nFri 2026-11-20 06:30:00 CST      19h Thu 2026-11-19 06:30:12 CST 4h 39min ago paper-compass-conferences.timer paper-compass-conferences.service\n\n4 timers listed.\n",
+  "deployment_commit": "50ed6344d989a38242f7aced252d3e11caac0f9e",
+  "source_fingerprints": [
+    {
+      "path": "src/paper_firehose/query_store.py",
+      "sha256": "d68d62549fd5188cff529f1e526d9a710caa637cfcbb2a961551df3ab46fb6bb"
+    },
+    {
+      "path": "src/paper_firehose/core/database.py",
+      "sha256": "e8dbd039c7d5f730511147d77034cd7ab41acab488bde9cc4ae11827eff6f3ec"
+    },
+    {
+      "path": "src/paper_firehose/commands/update.py",
+      "sha256": "70b16823806846562991ae1cccfa692747edd4eac6b0d89d10c83d03655b7ca3"
+    },
+    {
+      "path": "src/paper_firehose/commands/arxiv.py",
+      "sha256": "9d8647d07f8f0e8ab7e18c22a287b38bd429f7d32add297399f3ffaf6ae26d2d"
+    },
+    {
+      "path": "src/paper_firehose/commands/official_sources.py",
+      "sha256": "f97279c80927434c13b43fad5ae95fb23e4cd7d1a3c44b25d75c07208229a3ee"
+    },
+    {
+      "path": "src/paper_firehose/commands/classify_papers.py",
+      "sha256": "83da210397466b7d0ce00e830d16a763fbb28438b5a776ea8d9d4e2a839d417a"
+    },
+    {
+      "path": "src/paper_firehose/classification_store.py",
+      "sha256": "93b57532e31db7bdedb2664c1e6cf3e496e16b593538b9bd630cd992696c844d"
+    },
+    {
+      "path": "src/paper_firehose/api_classification.py",
+      "sha256": "9f7aa8804738449cae23bb5e6816df5d9ec81192797492b887c9395f5f4adb63"
+    },
+    {
+      "path": "src/paper_firehose/user_store.py",
+      "sha256": "992d72ecec55c81b539bdddfa94fcbc69b4749d66da01cea41847c00cb872d0e"
+    },
+    {
+      "path": "src/paper_firehose/event_store.py",
+      "sha256": "9e02300a389addfb83c3eb825d5e398de4ce606bb1913ef7ef5f3c09c0e90256"
+    },
+    {
+      "path": "src/paper_firehose/accounts.py",
+      "sha256": "95abcef556f3d1d92bfcec7405aa7dd417a96a6f9df09cfb00d1cafc8be724b9"
+    },
+    {
+      "path": "src/paper_firehose/mcp_server.py",
+      "sha256": "da621532c68d4b9fce966520f23318e9453470a270aadf4726e5d87b07954166"
+    },
+    {
+      "path": "src/paper_firehose/local_app.py",
+      "sha256": "bc6b7dc12c3f9bb33f4c0dbdba2a10a5674e1a4d37aaca3067b66b714060716b"
+    }
+  ],
+  "finished_at_utc": "2026-11-19T03:09:23.229063+00:00"
+}

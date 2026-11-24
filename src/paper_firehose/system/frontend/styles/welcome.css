@@ -1687,7 +1687,7 @@ body.is-welcome {
     transparent 60%
   );
 }
-/* Measured against the 30fps reference recording (docs/admin/welcome_motion.md).
+/* Measured against the 30fps reference recording (docs/developer/admin/welcome_motion.md).
    Times are relative to the new page's first paint, excluding pre-refresh frames.
    CSS starts immediately so content cannot flash before JavaScript initializes. */
 .is-welcome .welcome-intro > *,

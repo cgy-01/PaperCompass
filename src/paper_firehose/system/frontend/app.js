@@ -73,6 +73,7 @@ export function syncFilters() {
     $("#sourceFilter").value = state.source;
     $("#dateFilter").value = state.days;
     $("#sortFilter").value = state.sort;
+    $("#sortFilter").disabled = !!state.query;
     $("#globalSearch").value = state.query;
     $("#libraryFilter").value = state.libraryMode;
     syncCustomSelects();
@@ -269,6 +270,7 @@ async function init() {
     };
   bindSearch($("#globalSearch"), query => {
       state.query = query;
+      state.sort = query ? "similarity" : "date";
       state.page = 1;
       state.view = "discover";
       commitRoute();

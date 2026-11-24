@@ -142,7 +142,7 @@ def test_pending_arxiv_candidate_is_searchable_without_public_topic_marker(catal
     assert paper['topics'] == paper['topicKeys'] == []
     assert paper['theme'] == ''
     assert PENDING_TOPIC not in json.dumps(paper)
-    assert store.PublishedRepository().query({'q': ['Candidate paper']})['total'] == 1
+    assert store.PublishedRepository().query({'q': ['Candidate paper']})['items'][0]['id'] == 'new'
     assert store.PublishedRepository().bootstrap()['overview']['classified'] == 1
 
 
@@ -157,14 +157,15 @@ def test_suspicious_drop_is_not_published(catalog_store):
     assert store.current_path() == old_path
 
 
-def test_api_contract_and_literal_search(catalog_store):
+def test_api_contract_and_title_search(catalog_store):
     raw, _ = catalog_store
     with sqlite3.connect(raw) as conn:
         conn.execute("UPDATE matched_entries SET abstract='100% GPU_test infrastructure' WHERE entry_id='new'")
     store.build('unused')
     repository = store.PublishedRepository()
-    assert repository.query({'q': ['100% gpu_']})['total'] == 1
-    assert repository.query({'q': ['AI Infra']})['total'] == 2
+    result = repository.query({'q': ['Paper new']})
+    assert result['items'][0]['id'] == 'new'
+    assert repository.query({'q': ['AI Infra']})['total'] == 0
     assert repository.query({'source': ['other']})['total'] == 0
     assert repository.query({'theme': ['AI Infra'], 'page_size': ['1']})['pages'] == 2
     assert repository.query({'sort': ['score']})['items'][0]['id'] == 'old'

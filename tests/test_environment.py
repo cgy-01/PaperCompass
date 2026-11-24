@@ -20,7 +20,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def test_all_business_keys_are_in_one_template():
     names = re.findall(r'(?m)^#?\s*([A-Z][A-Z0-9_]+)=', (ROOT / '.env.example').read_text())
-    assert len(names) == len(set(names)) == 29
+    assert len(names) == len(set(names)) == len(env.ENV_KEYS)
     assert set(names) == env.ENV_KEYS
 
 

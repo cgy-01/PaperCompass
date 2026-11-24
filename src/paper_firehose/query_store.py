@@ -23,6 +23,7 @@ from .classification import CLASSIFIER_VERSION
 from .api_classification import AssignmentReader, VERSION as API_CLASSIFIER_VERSION, api_enabled, digest
 from .core.config import ConfigManager
 from .core.paths import resolve_data_file, resolve_data_path
+from . import meili_search
 
 LOGGER = logging.getLogger(__name__)
 FORMAT_VERSION = 1
@@ -104,6 +105,12 @@ def _prune_query_versions(root, current, previous):
         if path in keep or path.is_symlink():
             continue
         try:
+            if meili_search.enabled():
+                try:
+                    meili_search.MeiliSearch(writer=True).remove(path)
+                except meili_search.SearchUnavailable:
+                    LOGGER.warning("Unable to prune search index for %s", path.name)
+                    continue
             path.unlink()
         except OSError:
             LOGGER.warning('Unable to prune query version %s', path.name, exc_info=True)
@@ -236,10 +243,8 @@ def build(config_path, *, updated_at=None):
                         timestamp = _timestamp(paper)
                         if not math.isfinite(timestamp):
                             raise ValueError('Invalid paper timestamp: ' + key)
-                        search = ' '.join([paper['title'], paper['authors'], paper['summary'],
-                                           paper['source'], *paper['topics']]).casefold()
                         conn.execute('INSERT INTO papers VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)', (
-                            key, json.dumps(paper, ensure_ascii=False), search, timestamp, paper['score'],
+                            key, json.dumps(paper, ensure_ascii=False), '', timestamp, paper['score'],
                             paper['title'].casefold(), paper['source'], paper['venueType'], paper['theme'],
                             int(complete), year, base_date or '', rowid))
                         conn.executemany('INSERT INTO paper_topics VALUES (?,?)', [(key, topic) for topic in paper['topics']])
@@ -253,6 +258,9 @@ def build(config_path, *, updated_at=None):
                     conn.create_function('paper_public_id', 1, public_id, deterministic=True)
                     conn.execute('DELETE FROM public_paper_ids WHERE paper_id NOT IN (SELECT id FROM papers)')
                     conn.execute('INSERT OR IGNORE INTO public_paper_ids SELECT paper_public_id(id),id FROM papers')
+                    conn.execute('DROP TABLE IF EXISTS paper_embeddings')
+                    conn.execute("DELETE FROM metadata WHERE key='semantic_search'")
+                    conn.execute("UPDATE papers SET search='' WHERE search!=''")
                     public_catalog = [{k: v for k, v in topic.items() if k not in {'pattern', 'classification'}} for topic in catalog]
                     previous_time = conn.execute("SELECT value FROM metadata WHERE key='updated_at'").fetchone()
                     if updated_at is None:
@@ -286,6 +294,9 @@ def build(config_path, *, updated_at=None):
                 os.replace(candidate, destination)
                 with destination.open('rb') as database_file:
                     os.fsync(database_file.fileno())
+                if meili_search.enabled():
+                    with closing(read_connection(destination)) as search_conn:
+                        meili_search.MeiliSearch(writer=True).build(destination, search_conn)
                 manifest = root / ('manifest-' + uuid.uuid4().hex + '.tmp')
                 try:
                     with manifest.open('w', encoding='utf-8') as output:
@@ -399,21 +410,28 @@ class PublishedRepository:
             if theme:
                 clauses.append('id IN (SELECT paper_id FROM paper_topics WHERE topic=?)')
                 values.append(theme)
-            query = params.get('q', [''])[0].strip().casefold()
-            if query:
-                clauses.append('instr(search,?)>0')
-                values.append(query)
+            query = params.get('q', [''])[0].strip()
             try:
                 days = max(0, int(params.get('days', ['0'])[0] or 0))
                 page = max(1, int(params.get('page', ['1'])[0]))
                 size = min(100, max(1, int(params.get('page_size', ['30'])[0])))
             except ValueError:
                 days, page, size = 0, 1, 30
+            cutoff_timestamp = None
             if days:
+                if days > 730000:
+                    raise ValueError("Date range is too large")
                 clauses.append('timestamp>=?')
                 cutoff = datetime.now(timezone.utc).replace(second=0, microsecond=0) - timedelta(days=days)
-                values.append(cutoff.timestamp())
+                cutoff_timestamp = cutoff.timestamp()
+                values.append(cutoff_timestamp)
             where = ' WHERE ' + ' AND '.join(clauses) if clauses else ''
+            if query:
+                if meili_search.enabled():
+                    return meili_search.MeiliSearch().search(conn, query, params, cutoff_timestamp, page, size)
+                clauses.append('instr(title, ?) > 0')
+                values.append(query.casefold())
+                where = ' WHERE ' + ' AND '.join(clauses)
             total = self._count(conn, where, values)
             pages = max(1, (total + size - 1) // size)
             page = min(page, pages)

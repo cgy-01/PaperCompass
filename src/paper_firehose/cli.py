@@ -124,6 +124,27 @@ def build_query(ctx: click.Context) -> None:
         raise click.ClickException(str(exc)) from exc
 
 
+@cli.command('build-search')
+def build_search():
+    """Create the Meilisearch title index for the current published snapshot."""
+    import fcntl
+    from contextlib import closing
+    from . import meili_search
+
+    if not meili_search.enabled():
+        raise click.ClickException('Set PAPER_COMPASS_MEILI_URL first')
+    try:
+        directory = query_store.resolve_data_path('query-store')
+        with (directory / 'build.lock').open('a') as lock:
+            fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            database = query_store.current_path()
+            with closing(query_store.read_connection(database)) as connection:
+                meili_search.MeiliSearch(writer=True).build(database, connection)
+        click.echo(f'Search index ready for {database.name}')
+    except (OSError, RuntimeError, ValueError) as exc:
+        raise click.ClickException(str(exc)) from exc
+
+
 @cli.command('classify-papers')
 @click.option('--input', 'input_path', type=click.Path(exists=True, dir_okay=False), help='Classify a JSON title/abstract array.')
 @click.option('--output', 'output_path', type=click.Path(dir_okay=False), help='New JSON result file; existing files are never replaced.')

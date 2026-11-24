@@ -100,8 +100,17 @@ def test_public_identity_and_old_snapshot_compatibility(application, catalog_sto
 def test_count_cache_is_bounded(application):
     repository = application.repository
     for i in range(140):
-        repository.query({'q': [str(i)]})
+        repository.query({'source': [str(i)]})
     assert len(repository._counts) == 128
+
+
+def test_title_search_without_meilisearch(application):
+    with running(application) as get:
+        status, result = get('/api/v1/papers?q=Paper&sort=date')
+        assert status == 200
+        assert result['total'] == 2
+        assert 'summary' not in result['items'][0]
+        assert get('/api/v1/papers?q=infrastructure')[1]['total'] == 0
 
 
 def test_expired_pinned_repository_never_silently_changes_version(application):

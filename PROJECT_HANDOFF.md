@@ -3,7 +3,7 @@
 > 当前实现说明｜更新于 2026-09-29
 > 运行形态：SQLite 数据库、Python 只读 API、按需加载的 Web 前端、只读 MCP
 
-v1.2 开发新增独立账号与行为服务：原始论文库及论文 API 继续只读，用户写入位于 `users/users.db`，行为明细与每日汇总位于 `analytics/events.db`。GitHub 登录需要环境凭据；配置、备份和回滚见 [账号与分析部署说明](docs/admin/accounts_analytics.md)。
+v1.2 开发新增独立账号与行为服务：原始论文库及论文 API 继续只读，用户写入位于 `users/users.db`，行为明细与每日汇总位于 `analytics/events.db`。GitHub 登录需要环境凭据；配置、备份和回滚见 [账号与分析部署说明](docs/developer/admin/accounts_analytics.md)。
 > 产品定位：面向计算机与 AI 研究者的论文雷达，优先覆盖顶会完整论文集，并用主题标签辅助筛选。
 
 ## 1. 产品与数据流
@@ -22,9 +22,9 @@ OpenAlex ────────────────┘                    
 - **会议路线：以会议官方论文集为准，先保证指定届次的论文目录完整，再做主题分类。**
 - **主题路线：从 arXiv 和 OpenAlex 按关键词召回近期论文，只保留明确命中重点主题的结果。**
 
-前端 HTML 不再内嵌全部论文。网站只读取独立的、版本化发布的 SQLite 查询库：启动加载预生成的统计，正文按页读取，不扫描原始库或执行全量分类。首页通过 `/api/bootstrap` 获取小型聚合数据，发现页通过 `/api/papers` 按 30 篇分页读取。公开服务不提供数据库更新接口。管理员执行 `paper-firehose update`，顺序更新 RSS、OpenAlex 和所有已配置会议来源，再从原始库只读快照构建候选查询库；按内容指纹只重新分类变化记录，校验后原子切换发布指针。旧请求继续使用旧版本，失败保留旧发布库。arXiv 主 timer 每天北京时间 04:00 启动一次，会议次要 timer 在 06:30 独立运行，共用写锁避免并发写入。首次部署须先执行 `build-query`，后续网站重启不再等待全库分类。安装、保留版本和回滚见 `docs/admin/automatic_updates.md`。默认运行目录为 `.runtime-demo/`，派生查询库位于其 `query-store/` 子目录，原始库结构不变。
+前端 HTML 不再内嵌全部论文。网站只读取独立的、版本化发布的 SQLite 查询库：启动加载预生成的统计，正文按页读取，不扫描原始库或执行全量分类。首页通过 `/api/bootstrap` 获取小型聚合数据，发现页通过 `/api/papers` 按 30 篇分页读取。公开服务不提供数据库更新接口。管理员执行 `paper-firehose update`，顺序更新 RSS、OpenAlex 和所有已配置会议来源，再从原始库只读快照构建候选查询库；按内容指纹只重新分类变化记录，校验后原子切换发布指针。旧请求继续使用旧版本，失败保留旧发布库。arXiv 主 timer 每天北京时间 04:00 启动一次，会议次要 timer 在 06:30 独立运行，共用写锁避免并发写入。首次部署须先执行 `build-query`，后续网站重启不再等待全库分类。安装、保留版本和回滚见 `docs/developer/admin/automatic_updates.md`。默认运行目录为 `.runtime-demo/`，派生查询库位于其 `query-store/` 子目录，原始库结构不变。
 
-MCP 与采集流水线解耦：独立 MCP 进程通过上述只读 HTTP API 检索现有论文，不直接加载 SQLite，也不包含抓取、同步、刷新、删除等写操作。Codex、Claude 等 Agent 可调用 `search`、`fetch`、`recent_papers`、`list_topics` 和 `list_sources` 获取题录与摘要。用户连接与使用方式见 `docs/MCP_USER_GUIDE.md`，服务器部署见 `docs/mcp_setup.md`。
+MCP 与采集流水线解耦：独立 MCP 进程通过上述只读 HTTP API 检索现有论文，不直接加载 SQLite，也不包含抓取、同步、刷新、删除等写操作。Codex、Claude 等 Agent 可调用 `search`、`fetch`、`recent_papers`、`list_topics` 和 `list_sources` 获取题录与摘要。用户连接与使用方式见 `docs/user/MCP_USER_GUIDE.md`，服务器部署见 `docs/developer/mcp_setup.md`。
 
 “CVPR 2025”等会议入口代表官方论文集；“大模型”“Agent”等入口代表规则分类后的子集，两者数量不应相等。
 
@@ -153,7 +153,7 @@ LLM 不再用 `language model`、`transformer`、`foundation model`、`prompting
 
 ## 5. 前端筛选、排序与百分比
 
-v1.1 开发版将前端实现拆到 `system/frontend/` 的页面、组件、路由、请求与样式模块，HTML 模板只保留外壳。新前端使用 `/api/v1/bootstrap`、`/api/v1/papers` 轻量列表和 `/api/v1/papers/<hash>` 完整详情；以下旧接口仍兼容 MCP 和既有客户端。页面采用 `#home` 等 hash 路由，论文地址使用稳定 SHA-256 标识，标题与卡片空白处均进入站内详情，再由用户选择打开原文。升级、版本分页与回滚见 [网站 API v1](docs/api_v1.md)。
+v1.1 开发版将前端实现拆到 `system/frontend/` 的页面、组件、路由、请求与样式模块，HTML 模板只保留外壳。新前端使用 `/api/v1/bootstrap`、`/api/v1/papers` 轻量列表和 `/api/v1/papers/<hash>` 完整详情；以下旧接口仍兼容 MCP 和既有客户端。页面采用 `#home` 等 hash 路由，论文地址使用稳定 SHA-256 标识，标题与卡片空白处均进入站内详情，再由用户选择打开原文。升级、版本分页与回滚见 [网站 API v1](docs/developer/api_v1.md)。
 
 前端支持按论文类型、具体会议/期刊、上述主题、时间窗口和关键词筛选，并在浏览器本地保存收藏和已读状态。会议卡片只显示会议名和数量，不给整届会议强行挂研究主题；点击会议或主题时会清除冲突的旧筛选条件。筛选条件会发送到只读 `/api/papers`，后端只返回当前页，不再把完整论文库交给浏览器。
 
@@ -219,9 +219,11 @@ PAPER_FIREHOSE_DATA_DIR=.runtime-demo \
 | `start_dashboard.sh` | 本地一键启动 |
 | `src/paper_firehose/local_app.py` | 只读论文 API、分页查询和服务端缓存 |
 | `src/paper_firehose/mcp_server.py` | 面向 Agent 的只读 MCP 适配层 |
-| `docs/README.md` | 项目用户手册目录 |
-| `docs/MCP_USER_GUIDE.md` | MCP 连接、工具说明、使用示例与排错 |
-| `docs/mcp_setup.md` | MCP 本地测试、服务器部署和客户端接入 |
+| `docs/README.md` | 用户与开发者文档总入口 |
+| `docs/user/README.md` | 网站与 MCP 用户手册目录 |
+| `docs/developer/README.md` | 开发、部署、运维与报告目录 |
+| `docs/user/MCP_USER_GUIDE.md` | MCP 连接、工具说明、使用示例与排错 |
+| `docs/developer/mcp_setup.md` | MCP 本地测试、服务器部署和客户端接入 |
 | `src/paper_firehose/commands/official_sources.py` | 官方会议适配器 |
 | `src/paper_firehose/commands/conference_metadata.py` | 会议作者、摘要补全 |
 | `src/paper_firehose/commands/openalex.py` | OpenAlex 补充数据 |

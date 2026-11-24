@@ -1,0 +1,14 @@
+{
+  "validated_at_utc": "2026-11-19T03:22:38.494646+00:00",
+  "database_types": 7,
+  "business_tables": 23,
+  "business_fields": 140,
+  "record_counts_and_capacity_consistent": true,
+  "rendered_markdown_tables": 11,
+  "source_fingerprints_match": true,
+  "secret_scan_passed": true,
+  "aggregates_and_schema_only": true,
+  "server_data_or_configuration_modified": false,
+  "new_paid_calls": 0,
+  "local_links_checked": 34
+}

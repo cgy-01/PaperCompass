@@ -3,8 +3,12 @@ GitHub Actions setup
 
 .. note::
 
-   Audience: repository maintainers. This operational document is not
-   published in the Paper Compass website user manual.
+   Historical reference only. The Pages and ingestion workflows described
+   below are disabled under ``.github/legacy-workflows/``. They are not the
+   current deployment procedure. Use ``admin/github_ci_cd.md`` for current CI
+   and manual release delivery, and ``admin/automatic_updates.md`` for server
+   collection tasks. This developer document is not published in the website
+   user manual.
 
 The repository ships with workflows that run the full paper-firehose pipeline on
 a schedule and publish results to GitHub Pages. Follow this checklist when you

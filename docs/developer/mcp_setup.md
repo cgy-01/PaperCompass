@@ -21,13 +21,14 @@ npx @modelcontextprotocol/inspector \
 
 可用工具：
 
-- `search`：按关键词、主题、来源、类型和时间检索；
+- `search`：按论文标题关键词检索；
+- `find_paper`：按完整或近似标题查找论文；
 - `fetch`：按检索结果 ID 读取一篇论文的完整目录元数据与摘要；
 - `recent_papers`：读取最近若干天的新论文；
 - `list_topics`：列出合法主题名称和数量；
 - `list_sources`：列出会议、期刊、预印本来源和数量。
 
-当前关键词查询是数据库现有 Web API 的字面子串检索，不是向量语义检索。返回的是题录、作者、摘要、主题和原文 URL，不包含论文 PDF 全文。
+网页与 MCP 共用标题搜索。配置见[Meilisearch 接入说明](admin/meilisearch_title_trial.md)。搜索结果包含题录、摘要和原文 URL。
 
 `search` 和 `recent_papers` 是有界分页接口，单页最多返回 50 篇。响应会返回
 `page`、`pages`、`has_more` 和 `next_page`。客户端不应默认遍历全部页面，而应

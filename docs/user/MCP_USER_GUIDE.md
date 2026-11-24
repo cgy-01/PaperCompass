@@ -73,7 +73,7 @@ Codex CLI 和 Codex IDE 扩展共用 `~/.codex/config.toml` 中的 MCP 配置。
 3. 名称填写 `Paper Compass`，选择 **流式HTTP**，地址填写 `https://papercompass.cn/mcp`；
 4. 新建对话，在工具菜单中启用 Paper Compass，再输入调研需求。
 
-![MCP设置教程](./img/mcp_guide.png)
+![MCP设置教程](../img/mcp_guide.png)
 
 ## 3. 连接 Claude
 
@@ -123,7 +123,8 @@ Team 或 Enterprise 工作区需要 Owner/Primary Owner 先在 **Organization se
 | 工具 | 用途 | 常用条件 |
 |---|---|---|
 | `search` | 搜索论文 | 关键词、主题、来源、论文类型、时间、排序、页码、每页数量 |
-| `fetch` | 获取一篇论文的详细信息 | `search` 返回的论文 ID |
+| `find_paper` | 按完整或近似标题查找指定论文 | 论文标题，可选来源和页码 |
+| `fetch` | 获取一篇论文的详细信息 | `search` 或 `find_paper` 返回的论文 ID |
 | `recent_papers` | 查看最近一段时间的新论文 | 天数、主题、来源、论文类型、页码、每页数量 |
 | `list_topics` | 查看 Paper Compass 支持的研究主题 | 无 |
 | `list_sources` | 查看会议、期刊和预印本来源 | 来源类型、数量 |
@@ -138,13 +139,22 @@ Team 或 Enterprise 工作区需要 Owner/Primary Owner 先在 **Organization se
 排序方式包括：
 
 - `date`：发布日期优先，适合追踪最新工作；
-- `score`：相关度优先；
+- `similarity`：兼容旧客户端的相关性排序参数；
+- `score`：数据库已有分数，不代表与本次查询的相似度；
 - `title`：按标题排序。
 
-当前关键词搜索采用字面子串匹配，会检查标题、作者、摘要、来源和主题。它不是向量语义搜索，因此关键词应尽量使用论文中可能真实出现的术语。
+关键词搜索匹配论文标题。查询英文论文时，建议使用英文关键词或原始标题。追踪最新论文时，使用 `recent_papers`。
+
+查找指定文章可以直接说：
+
+```text
+使用 Paper Compass 查找《Attention Is All You Need》。
+先用 find_paper 找到候选，核对标题、作者与来源，
+再用 fetch 读取最相关一篇的完整摘要，并给我原文链接。
+```
 
 `search` 和 `recent_papers` 使用分页返回结果，单页最多 50 篇。响应中的 `total`
-表示全部匹配数量；当 `has_more` 为 `true` 时，使用同一组筛选和排序参数，并把
+表示当前筛选范围内参与排序的候选数量；当 `has_more` 为 `true` 时，使用同一组筛选和排序参数，并把
 `page` 设置为 `next_page`，即可继续读取。Agent 默认应根据用户目标、当前结果的
 相关性和覆盖度决定是否读取下一页，而不是自动遍历全部结果；只有用户明确要求
 “全部”“穷尽”或完整导出时，才持续读取到 `next_page` 为 `null`。分页限制的是

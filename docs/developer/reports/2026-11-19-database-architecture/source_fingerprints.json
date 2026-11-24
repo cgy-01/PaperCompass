@@ -1,0 +1,59 @@
+{
+  "deployment_commit": "50ed6344d989a38242f7aced252d3e11caac0f9e",
+  "files": [
+    {
+      "path": "src/paper_firehose/query_store.py",
+      "sha256": "d68d62549fd5188cff529f1e526d9a710caa637cfcbb2a961551df3ab46fb6bb"
+    },
+    {
+      "path": "src/paper_firehose/core/database.py",
+      "sha256": "e8dbd039c7d5f730511147d77034cd7ab41acab488bde9cc4ae11827eff6f3ec"
+    },
+    {
+      "path": "src/paper_firehose/commands/update.py",
+      "sha256": "70b16823806846562991ae1cccfa692747edd4eac6b0d89d10c83d03655b7ca3"
+    },
+    {
+      "path": "src/paper_firehose/commands/arxiv.py",
+      "sha256": "9d8647d07f8f0e8ab7e18c22a287b38bd429f7d32add297399f3ffaf6ae26d2d"
+    },
+    {
+      "path": "src/paper_firehose/commands/official_sources.py",
+      "sha256": "f97279c80927434c13b43fad5ae95fb23e4cd7d1a3c44b25d75c07208229a3ee"
+    },
+    {
+      "path": "src/paper_firehose/commands/classify_papers.py",
+      "sha256": "83da210397466b7d0ce00e830d16a763fbb28438b5a776ea8d9d4e2a839d417a"
+    },
+    {
+      "path": "src/paper_firehose/classification_store.py",
+      "sha256": "93b57532e31db7bdedb2664c1e6cf3e496e16b593538b9bd630cd992696c844d"
+    },
+    {
+      "path": "src/paper_firehose/api_classification.py",
+      "sha256": "9f7aa8804738449cae23bb5e6816df5d9ec81192797492b887c9395f5f4adb63"
+    },
+    {
+      "path": "src/paper_firehose/user_store.py",
+      "sha256": "992d72ecec55c81b539bdddfa94fcbc69b4749d66da01cea41847c00cb872d0e"
+    },
+    {
+      "path": "src/paper_firehose/event_store.py",
+      "sha256": "9e02300a389addfb83c3eb825d5e398de4ce606bb1913ef7ef5f3c09c0e90256"
+    },
+    {
+      "path": "src/paper_firehose/accounts.py",
+      "sha256": "95abcef556f3d1d92bfcec7405aa7dd417a96a6f9df09cfb00d1cafc8be724b9"
+    },
+    {
+      "path": "src/paper_firehose/mcp_server.py",
+      "sha256": "da621532c68d4b9fce966520f23318e9453470a270aadf4726e5d87b07954166"
+    },
+    {
+      "path": "src/paper_firehose/local_app.py",
+      "sha256": "bc6b7dc12c3f9bb33f4c0dbdba2a10a5674e1a4d37aaca3067b66b714060716b"
+    }
+  ],
+  "local_source_matches_server": true,
+  "runtime_source_changed_for_this_report": false
+}

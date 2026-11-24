@@ -22,6 +22,7 @@ import markdown
 from .commands import dashboard
 from .accounts import AccountAPI
 from .query_store import PublishedRepository, present_paper
+from .meili_search import SearchUnavailable
 from .core.paths import resolve_data_path
 
 
@@ -72,14 +73,14 @@ class DocumentationRepository:
     CATALOG = (
         {
             "slug": "mcp",
-            "file": "MCP_USER_GUIDE.md",
+            "file": "user/MCP_USER_GUIDE.md",
             "title": "MCP 用户指南",
             "description": "连接 Codex、Claude Code，并让 Agent 使用 Paper Compass 调研论文。",
             "icon": "plug-zap",
         },
         {
             "slug": "account",
-            "file": "ACCOUNT_USER_GUIDE.md",
+            "file": "user/ACCOUNT_USER_GUIDE.md",
             "title": "账号与文献库",
             "description": "登录、同步收藏、导入本机记录与使用情况设置。",
             "icon": "user-round",
@@ -94,18 +95,25 @@ class DocumentationRepository:
         )
         self._by_slug = {item["slug"]: item for item in self.CATALOG}
 
+    def _document_path(self, item: dict[str, str]) -> Path:
+        path = self.docs_dir / item["file"]
+        if path.is_file():
+            return path
+        # Preserve flat custom documentation directories used by older instances.
+        return self.docs_dir / Path(item["file"]).name
+
     def list(self) -> list[dict[str, Any]]:
         return [
             {key: value for key, value in item.items() if key != "file"}
             for item in self.CATALOG
-            if (self.docs_dir / item["file"]).is_file()
+            if self._document_path(item).is_file()
         ]
 
     def get(self, slug: str) -> dict[str, Any] | None:
         item = self._by_slug.get(slug)
         if item is None:
             return None
-        path = self.docs_dir / item["file"]
+        path = self._document_path(item)
         if not path.is_file():
             return None
         source = path.read_text(encoding="utf-8")
@@ -115,16 +123,16 @@ class DocumentationRepository:
             output_format="html5",
         )
         # Keep links between allowlisted manuals inside the product document view.
-        internal_links = {entry["file"]: entry["slug"] for entry in self.CATALOG}
+        internal_links = {Path(entry["file"]).name: entry["slug"] for entry in self.CATALOG}
         for filename, target_slug in internal_links.items():
             html = re.sub(
-                rf'href="{re.escape(filename)}"',
+                rf'href="(?:\./)?{re.escape(filename)}"',
                 f'href="#" data-doc-slug="{target_slug}"',
                 html,
             )
         # Serve Markdown images from docs/img without copying them into runtime HTML.
         html = re.sub(
-            r'src="(?:\./)?(img/[^"?#]+)([?#][^"]*)?"',
+            r'src="(?:\./|\.\./)?(img/[^"?#]+)([?#][^"]*)?"',
             lambda match: (
                 f'src="/api/docs/assets/{match.group(1)}{match.group(2) or ""}"'
             ),
@@ -360,8 +368,12 @@ def _handler(app: LocalApplication):
                             for key in ('page', 'page_size', 'days'):
                                 if key in params and int(params[key][0]) < (0 if key == 'days' else 1):
                                     raise ValueError(key)
-                            if params.get('sort', ['date'])[0] not in ('date', 'score', 'title'):
+                            if params.get('sort', ['date'])[0] not in ('date', 'score', 'title', 'similarity'):
                                 raise ValueError('sort')
+                            if params.get('search_field', ['all'])[0] not in ('all', 'title'):
+                                raise ValueError('search_field')
+                            if len(params.get('q', [''])[0].strip()) > 4096:
+                                raise ValueError('q')
                         except ValueError:
                             self._json({'error': 'invalid pagination or sort parameters'}, HTTPStatus.BAD_REQUEST)
                             return
@@ -378,6 +390,10 @@ def _handler(app: LocalApplication):
                         self._json({'error': 'not found'}, HTTPStatus.NOT_FOUND)
                 except FileNotFoundError:
                     self._json({'error': 'data version expired; reload the list'}, HTTPStatus.CONFLICT)
+                except SearchUnavailable:
+                    self._json({'error': 'search temporarily unavailable'}, HTTPStatus.SERVICE_UNAVAILABLE)
+                except ValueError:
+                    self._json({'error': 'invalid search parameters'}, HTTPStatus.BAD_REQUEST)
                 return
             if parsed.path == "/api/bootstrap":
                 repository = self._paper_repository()
@@ -387,7 +403,12 @@ def _handler(app: LocalApplication):
             if parsed.path == "/api/papers":
                 repository = self._paper_repository()
                 if repository is not None:
-                    self._json(repository.query(parse_qs(parsed.query)))
+                    try:
+                        self._json(repository.query(parse_qs(parsed.query)))
+                    except SearchUnavailable:
+                        self._json({'error': 'search temporarily unavailable'}, HTTPStatus.SERVICE_UNAVAILABLE)
+                    except ValueError:
+                        self._json({'error': 'invalid search parameters'}, HTTPStatus.BAD_REQUEST)
                 return
             if parsed.path == "/api/health":
                 state = "ready" if app.repository else "failed" if app.repository_error else "loading"

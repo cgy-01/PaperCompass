@@ -1,0 +1,11 @@
+{
+  "unit_base": 1024,
+  "one_per_type_current_main_files_bytes": 2012688384,
+  "historical_query_bytes": 405905408,
+  "current_and_historical_database_main_files_bytes": 2418593792,
+  "wal_and_shm_bytes": 98304,
+  "backup_database_files_bytes": 1549529088,
+  "database_files_including_history_and_backups": 14,
+  "raw_density_mib_per_1000_existing_rows": 19.68603842070529,
+  "query_density_mib_per_1000_existing_papers": 5.728326686136053
+}

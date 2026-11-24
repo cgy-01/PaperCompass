@@ -1,6 +1,6 @@
 # 参与 Paper Compass
 
-欢迎提交问题、改进建议和 Pull Request。安装与测试见 [开发说明](docs/development.md)。
+欢迎提交问题、改进建议和 Pull Request。安装与测试见 [开发说明](docs/developer/development.md)。
 
 提交问题时说明复现步骤、系统/Python 版本、预期结果和实际结果。日志先移除密钥、收件人、内部地址及其他私人信息；不上传完整生产数据库。
 

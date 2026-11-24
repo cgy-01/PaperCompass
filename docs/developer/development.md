@@ -31,7 +31,9 @@ src/paper_firehose/
   system/templates/        前端与其他 HTML 模板
   system/frontend/         页面、路由、请求层、公共组件与样式
 deploy/systemd/            采集与独立分类任务部署示例
-docs/                      用户、管理员和开发者文档
+docs/user/                 网站与 MCP 用户手册
+docs/developer/            开发、接口、部署、运维与报告
+docs/img/                  共享文档图片
 tests/                     测试
 ```
 
@@ -79,7 +81,7 @@ paper-firehose dashboard
 
 ## 文档与打包
 
-网站只展示 `DocumentationRepository.CATALOG` 显式登记的用户文档。增加管理员文档不等于将其加入网站导航。
+文档按读者分为 `docs/user/` 与 `docs/developer/`。部署、运维、研究报告均归入开发者文档，详见[文档总入口](../README.md)。网站只展示 `DocumentationRepository.CATALOG` 显式登记的用户文档；增加开发者文档不等于将其加入网站导航。共享图片仍位于 `docs/img/`，网站文档 API 和图片地址不变，旧的自定义平铺文档目录继续兼容。
 
 当前以源码安装为支持路径。独立 wheel 的用户文档和 Node 图标资源尚未作为完整分发流程验证，不应宣称 `pip install` 某个同名发行包即可得到当前产品。
 

@@ -27,7 +27,7 @@ export function parseRoute(hash) {
     days: ["30", "90", "365"].includes(params.get("days"))
       ? params.get("days")
       : "",
-    sort: ["date", "score", "title"].includes(params.get("sort"))
+    sort: (params.get("q") || "").trim() ? "similarity" : ["date", "score", "title"].includes(params.get("sort"))
       ? params.get("sort")
       : "date",
     query: params.get("q") || "",

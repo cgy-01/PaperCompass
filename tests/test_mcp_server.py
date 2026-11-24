@@ -53,7 +53,7 @@ def _call(server, name, arguments=None):
 def test_mcp_exposes_only_bounded_read_tools():
     server = create_mcp_server(client=FakePaperClient())
     tools = {tool.name: tool for tool in server._tool_manager.list_tools()}
-    assert set(tools) == {"search", "fetch", "recent_papers", "list_topics", "list_sources"}
+    assert set(tools) == {"search", "find_paper", "fetch", "recent_papers", "list_topics", "list_sources"}
     assert all(tool.annotations.readOnlyHint for tool in tools.values())
     assert all(tool.annotations.destructiveHint is False for tool in tools.values())
 
@@ -89,6 +89,22 @@ def test_search_last_page_has_no_continuation():
     result = _call(server, "search", {"query": "serving", "page": 3})
     assert result["has_more"] is False
     assert result["next_page"] is None
+
+
+def test_find_specific_paper_uses_title_filter_and_preserves_fetch_id():
+    client = FakePaperClient()
+    result = _call(create_mcp_server(client=client), 'find_paper', {'title': '高效大模型服务'})
+    assert client.last_search['search_field'] == 'title'
+    assert client.last_search['sort'] == 'similarity'
+    assert result['results'][0]['id'] == PAPER['id']
+    assert result['results'][0]['url'] == PAPER['url']
+    assert result['search_mode'] == 'title'
+    assert 'text' not in result['results'][0]  # Fetch discloses the chosen abstract later.
+
+
+def test_find_specific_paper_rejects_empty_title():
+    with pytest.raises(ToolError, match='title'):
+        _call(create_mcp_server(client=FakePaperClient()), 'find_paper', {'title': '  '})
 
 
 def test_recent_papers_supports_pagination():

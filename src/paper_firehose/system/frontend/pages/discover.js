@@ -62,8 +62,7 @@ export async function renderDiscover(retryVersion = true) {
     if (request !== discoverRequest || state.view !== "discover") return;
     state.page = data.page;
     const papers = remember(data.items);
-    $("#resultCount").textContent =
-      `找到 ${data.total.toLocaleString()} 篇论文`;
+    $("#resultCount").textContent = `找到 ${data.total.toLocaleString()} 篇论文`;
     grid.innerHTML =
       papers.map(card).join("") || empty("没有符合条件的论文");
     feedback.textContent = "";
