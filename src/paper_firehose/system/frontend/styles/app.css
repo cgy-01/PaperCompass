@@ -157,13 +157,21 @@ button {
   gap: 8px;
   position: relative;
 }
+.search-icon {
+  position: absolute;
+  inset-inline-start: 13px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted);
+  pointer-events: none;
+}
 .search input {
   flex: 1;
   min-width: 0;
   border: 1px solid var(--line);
   border-radius: 12px;
   background: #fff;
-  padding: 12px 14px;
+  padding: 12px 14px 12px 42px;
   color: var(--ink);
   outline: none;
 }
